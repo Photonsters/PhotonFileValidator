@@ -3,22 +3,22 @@ A file viewer application for AnyCubic Photon sliced files (*.photon and *.cbddl
 
 ![Main screen](https://github.com/Photonsters/PhotonFileViewer/raw/master/doc/screen1.png)
 
-##Photon files
+## Photon files
 
-###What is a Photon file
+### What is a Photon file
 
-###Why do I want to view a photon file
+### Why do I want to view a photon file
 
-##Installation
+## Installation
 
-###Install on Windows
+### Install on Windows
 
-###Install on macOS
+### Install on macOS
 
-###Install on Linux
+### Install on Linux
 
-##Developer Information
+## Developer Information
 
-###Source code layout
+### Source code layout
 
-###Code Implementation
+### Code Implementation
