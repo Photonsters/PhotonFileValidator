@@ -12,9 +12,19 @@ one printable layer. The 3D printer then prints each layer by exposing liquid re
 The Photon file also contains information about the height of each layer, for how long each layer is exposed to UV light, and some settings for overexposing the first layers to make the print stick to the build plate.
 
 ### Why do I want to view a photon file
-In the ideal world, - you don't. The slicer makes the file, and the printer used the file to print your object.
+In the ideal world, - you don't. The slicer makes the file, and the printer use the file to print your object.
 
-But, sometimes prints fail. The Photon File Viewer can show you all the layers and settings stored in the file.
+But, sometimes prints fail.
+
+There are a lot of reasons why prints are failing.
+
+- Missing or weak support. When the printer is done printing one layer, the layer is lifted off the botom plastic film (FEP). The support must be strong enough to support the lift (pull).
+- Wrong exposure or off time settings. Each Resin is different in the chemical content, so each resin have a limited time range where it cures each layer.
+- Separated Resin. Most resin needs to be shaken or stirred befor use, which ensures that the resin compunds are mixed in the correct manor.
+- File, model or slicing errors. Applications have bugs, so errors could be intruduced in the process.
+- Printer errors. When buying a budget printer, some will only pass the quality control on a good day. Some components might be designed with no fault margin, introducing periodic errors (like the power supply and the LCD).
+
+The Photon File Viewer can show you all the layers in full resolution and all settings stored in the file.
 
 The Viewer can also analyze the file for layers that contains areas that is not supported (printed in mid-air, called islands). Islands are a problem, because the model will not be printed as designed.
 In the best scenario the island will stick to the plastic bottom of the printer or attach itself to the printed model, but it could also be trapped between the printer and the model, breaking the FEP or the LCD screen.
