@@ -97,9 +97,9 @@ As small islands can be hard to find, the application will draw horizontal and v
 The slicer produces preview images that is used by the printer to help you select the correct model to print. You can also see the preview images in the file viewer application.
 
 ## Print Margin
-You can optional set a safety margin. When a safty margin is set, the application will check that all model layers is not printed outside the margin.
+Your printer might have issues printing close to the border. To avoid this, you can optional set a safety margin. When a safty margin is set, the application will check that all model layers is not printed outside the margin.
 
-The margin is set in pixels (0.04725mm) and you find the settings in the file photon.properties in the folder where the jar file is installed. You can edit the file with a text editor.
+The margin is set in pixels (0.04725mm) and you find the settings in the photon.properties file, located in the folder where the jar file is installed. You can edit the file with a text editor.
 
 The default is: margin=0
 
