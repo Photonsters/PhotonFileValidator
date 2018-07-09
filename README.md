@@ -104,7 +104,7 @@ The margin is set in pixels (0.04725mm) and you find the settings in the photon.
 The default is: margin=0
 
 ## Time calculations
-In the information dialog you can see the estimated time for the print. The Photon slicer is known (versions 1.3.6 and before) for showing false print times. The reason is that the application is not including the peel time (the time is takes to remove the model from the FEB). On a standard Photon printer the peel time is 5.5 seconds.
+In the information dialog you can see the estimated time for the print. The Photon slicer is known (versions 1.3.6 and before) for showing false print times. The reason is that the application is not including the peel time (the time is takes to remove the model from the FEP). On a standard Photon printer the peel time is 5.5 seconds.
 
 If you modify the Photon printer to have faster or slower peel time, so to handle this you can change the settings used to calculate the time. You find the settings in photon.properties file where the jar is installed.
 
