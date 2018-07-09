@@ -71,7 +71,7 @@ With the open button you can browse your local file system for files with the .p
 
 During load, it will translate each layer to an image and check you file for overhangs and unsupported areas. The application will update status information so you can follow the process.
 
-When the load is done, it will show layer 0, which is the first layer the printer will print. If will also show if the model extends beyond the border or have islands.
+When the load is done, it will show layer 0, which is the first layer the printer will print. It will also show if the model extends beyond the border or have islands.
 
 ## Save the file
 If you want to try printing the file with other settings, select the save button. In the save dialog you will be able to change the file name, the normal exposure time, the off time, the bottom layers count and the bottom layer exposure time.
@@ -81,9 +81,9 @@ With the show information button you can see the following information:
 
 - Build area set in the file, should be 68.4 * 120.96 mm for the Photon printer.
 - Resolution of the printer, should be 1440 * 2560 pixels for the Photon printer.
-- Print information
+- Print information, with **resin usage** and **time**.
 
-The Print information contains the layer height, the total number of pixels on all layers, the *extimated volume of resin* to be used and the *time* it will take to print it.
+The Print information contains the layer height, the total number of pixels on all layers, the extimated **volume of resin** to be used and the **time** it will take to print it.
 
 ## Jump to layers with to large model areas.
 If you set a safty border margin, each layer is check for areas that expand outside the margin. The application will show a list of the first layers. Use the >> button to jump to the next layer. If there are no more layers, it will go back to the first again.
