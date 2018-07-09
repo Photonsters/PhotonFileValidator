@@ -35,7 +35,7 @@ There are a lot of reasons why prints are failing.
 The Photon File Viewer can show you all the layers in full resolution and all settings stored in the file.
 
 The Viewer can also analyze the file for layers that contains areas that is not supported (printed in mid-air, called islands). Islands are a problem, because the model will not be printed as designed.
-In the best scenario the island will stick to the plastic bottom of the printer or attach itself to the printed model, but it could also be trapped between the printer and the model, breaking the FEP or the LCD screen.
+In the best scenario the island will stick to the plastic bottom of the printer or attach itself to the printed model, but if you are unlucky - it could be trapped between the printer and the model, breaking the FEP or the LCD screen.
 
 
 
@@ -62,6 +62,58 @@ Download the zip and unpack it, then run the installer. The installer is not sig
 The linux installer is build from the same source, but not tested. Feel free to test and provide feedback.
 
 [Download Linux version](https://github.com/Photonsters/PhotonFileViewer/raw/master/release/release/photonfileviewer-1.0-linux-installer.run)
+
+## Usage
+
+### Open a slice file
+With the open button you can browse your local file system for files with the .photon file extension. When a file has been selected, it will load the file.
+
+During load, it will translate each layer to an image and check you file for overhangs and unsupported areas. The application will update status information so you can follow the process.
+
+When the load is done, it will show layer 0, which is the first layer the printer will print. If will also show if the model extends beyond the border or have islands.
+
+## Save the file
+If you want to try printing the file with other settings, select the save button. In the save dialog you will be able to change the file name, the normal exposure time, the off time, the bottom layers count and the bottom layer exposure time.
+
+## Show Information
+With the show information button you can see the following information:
+
+- Build area set in the file, should be 68.4 * 120.96 mm for the Photon printer.
+- Resolution of the printer, should be 1440 * 2560 pixels for the Photon printer.
+- Print information
+
+The Print information contains the layer height, the total number of pixels on all layers, the *extimated volume of resin* to be used and the *time* it will take to print it.
+
+## Jump to layers with to large model areas.
+If you set a safty border margin, each layer is check for areas that expand outside the margin. The application will show a list of the first layers. Use the >> button to jump to the next layer. If there are no more layers, it will go back to the first again.
+
+## Jump to layers with islands
+If you model contains islands, if will show a list with the first layer numbers. With the >> button you can quickly jump to the next layer that contains islands.
+
+As small islands can be hard to find, the application will draw horizontal and vertical cross lines to help you locate the islands. If the island area are very big, no cross lines will be drawn.
+
+## Show previews
+The slicer produces preview images that is used by the printer to help you select the correct model to print. You can also see the preview images in the file viewer application.
+
+## Print Margin
+You can optional set a safety margin. When a safty margin is set, the application will check that all model layers is not printed outside the margin.
+
+The margin is set in pixels (0.04725mm) and you find the settings in the file photon.properties in the folder where the jar file is installed. You can edit the file with a text editor.
+
+The default is: margin=0
+
+## Time calculations
+In the information dialog you can see the estimated time for the print. The Photon slicer is known (versions 1.3.6 and before) for showing false print times. The reason is that the application is not including the peel time (the time is takes to remove the model from the FEB). On a standard Photon printer the peel time is 5.5 seconds.
+
+If you modify the Photon printer to have faster or slower peel time, so to handle this you can change the settings used to calculate the time. You find the settings in photon.properties file where the jar is installed.
+
+The default is: peel=5.5
+
+
+### Command line usage
+You can use the application from the command line: java -jar PhotonFileCheck.jar
+
+You can add a Photon slice file name as argument, and the file will be loaded when the application starts.
 
 ## Developer Information
 
