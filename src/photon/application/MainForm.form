@@ -102,7 +102,7 @@
           </component>
           <component id="cb72" class="javax.swing.JSpinner" binding="layerSpinner">
             <constraints>
-              <grid row="0" column="5" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="1" indent="1" use-parent-layout="false">
+              <grid row="0" column="5" row-span="1" col-span="1" vsize-policy="2" hsize-policy="0" anchor="8" fill="1" indent="1" use-parent-layout="false">
                 <minimum-size width="80" height="-1"/>
                 <preferred-size width="80" height="-1"/>
                 <maximum-size width="80" height="-1"/>
@@ -183,14 +183,14 @@
                   <component id="31d5" class="javax.swing.JButton" binding="marginNextBtn">
                     <constraints>
                       <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="1" fill="1" indent="0" use-parent-layout="false">
-                        <minimum-size width="30" height="18"/>
-                        <preferred-size width="30" height="18"/>
-                        <maximum-size width="30" height="18"/>
+                        <minimum-size width="50" height="18"/>
+                        <preferred-size width="50" height="18"/>
+                        <maximum-size width="50" height="18"/>
                       </grid>
                     </constraints>
                     <properties>
                       <enabled value="false"/>
-                      <text value="-&gt;"/>
+                      <text value="&gt;&gt;"/>
                     </properties>
                   </component>
                 </children>
@@ -223,14 +223,14 @@
                   <component id="6828f" class="javax.swing.JButton" binding="islandNextBtn">
                     <constraints>
                       <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="1" fill="1" indent="0" use-parent-layout="false">
-                        <minimum-size width="30" height="18"/>
-                        <preferred-size width="30" height="18"/>
-                        <maximum-size width="30" height="18"/>
+                        <minimum-size width="50" height="18"/>
+                        <preferred-size width="50" height="18"/>
+                        <maximum-size width="50" height="18"/>
                       </grid>
                     </constraints>
                     <properties>
                       <enabled value="false"/>
-                      <text value="-&gt;"/>
+                      <text value="&gt;&gt;"/>
                     </properties>
                   </component>
                 </children>
@@ -293,9 +293,9 @@
                   <component id="91988" class="javax.swing.JButton" binding="previewLargeBtn">
                     <constraints>
                       <grid row="0" column="3" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="0" fill="1" indent="0" use-parent-layout="false">
-                        <minimum-size width="110" height="20"/>
-                        <preferred-size width="110" height="20"/>
-                        <maximum-size width="110" height="20"/>
+                        <minimum-size width="130" height="20"/>
+                        <preferred-size width="130" height="20"/>
+                        <maximum-size width="130" height="20"/>
                       </grid>
                     </constraints>
                     <properties>
@@ -306,9 +306,9 @@
                   <component id="6d304" class="javax.swing.JButton" binding="previewSmallBtn">
                     <constraints>
                       <grid row="0" column="4" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="0" fill="1" indent="0" use-parent-layout="false">
-                        <minimum-size width="110" height="20"/>
-                        <preferred-size width="110" height="20"/>
-                        <maximum-size width="110" height="20"/>
+                        <minimum-size width="130" height="20"/>
+                        <preferred-size width="130" height="20"/>
+                        <maximum-size width="130" height="20"/>
                       </grid>
                     </constraints>
                     <properties>

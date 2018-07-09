@@ -168,27 +168,6 @@ public class MainForm extends BaseForm implements ActionListener, ItemListener {
 
     }
 
-    public static byte[] getBinaryData(File entry) throws Exception {
-        if (entry.isFile()) {
-            int fileSize = (int) entry.length();
-            byte[] fileData = new byte[fileSize];
-
-            InputStream stream = new FileInputStream(entry);
-            int bytesRead = 0;
-            while (bytesRead < fileSize) {
-                int readCount = stream.read(fileData, bytesRead, fileSize - bytesRead);
-                if (readCount < 0) {
-                    throw new IOException("Could not read all bytes of the file");
-                }
-                bytesRead += readCount;
-            }
-
-            return fileData;
-        }
-        return null;
-    }
-
-
     public static void main(String[] args) {
         // Place the name and menubar correctly on a macOS
 
@@ -200,7 +179,7 @@ public class MainForm extends BaseForm implements ActionListener, ItemListener {
         MainForm mainForm = new MainForm();
         JPanel panel = mainForm.mainPanel;
         mainForm.frame = frame;
-        MainUtils.makeMenuBar(frame, mainForm);
+        // MainUtils.makeMenuBar(frame, mainForm);
         frame.setContentPane(panel);
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         frame.pack();
@@ -271,7 +250,7 @@ public class MainForm extends BaseForm implements ActionListener, ItemListener {
         panel1.add(layerOfftime, new GridConstraints(0, 3, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, new Dimension(150, -1), new Dimension(150, -1), new Dimension(150, -1), 0, false));
         layerSpinner = new JSpinner();
         layerSpinner.setEnabled(false);
-        panel1.add(layerSpinner, new GridConstraints(0, 5, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, new Dimension(80, -1), new Dimension(80, -1), new Dimension(80, -1), 1, false));
+        panel1.add(layerSpinner, new GridConstraints(0, 5, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_CAN_GROW, new Dimension(80, -1), new Dimension(80, -1), new Dimension(80, -1), 1, false));
         final JPanel panel2 = new JPanel();
         panel2.setLayout(new GridLayoutManager(1, 2, new Insets(0, 0, 0, 0), -1, -1));
         mainPanel.add(panel2, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
@@ -296,8 +275,8 @@ public class MainForm extends BaseForm implements ActionListener, ItemListener {
         panel4.add(spacer2, new GridConstraints(0, 2, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, 1, null, null, null, 0, false));
         marginNextBtn = new JButton();
         marginNextBtn.setEnabled(false);
-        marginNextBtn.setText("->");
-        panel4.add(marginNextBtn, new GridConstraints(0, 1, 1, 1, GridConstraints.ANCHOR_NORTH, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, new Dimension(30, 18), new Dimension(30, 18), new Dimension(30, 18), 0, false));
+        marginNextBtn.setText(">>");
+        panel4.add(marginNextBtn, new GridConstraints(0, 1, 1, 1, GridConstraints.ANCHOR_NORTH, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, new Dimension(50, 18), new Dimension(50, 18), new Dimension(50, 18), 0, false));
         final JPanel panel5 = new JPanel();
         panel5.setLayout(new GridLayoutManager(1, 3, new Insets(0, 0, 0, 0), -1, -1));
         infoPanel.add(panel5, new GridConstraints(2, 0, 1, 1, GridConstraints.ANCHOR_NORTH, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, new Dimension(-1, 30), new Dimension(-1, 30), new Dimension(-1, 30), 0, false));
@@ -308,8 +287,8 @@ public class MainForm extends BaseForm implements ActionListener, ItemListener {
         panel5.add(spacer3, new GridConstraints(0, 2, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, 1, null, null, null, 0, false));
         islandNextBtn = new JButton();
         islandNextBtn.setEnabled(false);
-        islandNextBtn.setText("->");
-        panel5.add(islandNextBtn, new GridConstraints(0, 1, 1, 1, GridConstraints.ANCHOR_NORTH, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, new Dimension(30, 18), new Dimension(30, 18), new Dimension(30, 18), 0, false));
+        islandNextBtn.setText(">>");
+        panel5.add(islandNextBtn, new GridConstraints(0, 1, 1, 1, GridConstraints.ANCHOR_NORTH, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, new Dimension(50, 18), new Dimension(50, 18), new Dimension(50, 18), 0, false));
         final JPanel panel6 = new JPanel();
         panel6.setLayout(new GridLayoutManager(1, 7, new Insets(0, 0, 0, 0), -1, -1));
         infoPanel.add(panel6, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, new Dimension(-1, 30), new Dimension(-1, 30), new Dimension(-1, 30), 0, false));
@@ -329,11 +308,11 @@ public class MainForm extends BaseForm implements ActionListener, ItemListener {
         previewLargeBtn = new JButton();
         previewLargeBtn.setEnabled(false);
         previewLargeBtn.setText("Preview Large");
-        panel6.add(previewLargeBtn, new GridConstraints(0, 3, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, new Dimension(110, 20), new Dimension(110, 20), new Dimension(110, 20), 0, false));
+        panel6.add(previewLargeBtn, new GridConstraints(0, 3, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, new Dimension(130, 20), new Dimension(130, 20), new Dimension(130, 20), 0, false));
         previewSmallBtn = new JButton();
         previewSmallBtn.setEnabled(false);
         previewSmallBtn.setText("Preview Small");
-        panel6.add(previewSmallBtn, new GridConstraints(0, 4, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, new Dimension(110, 20), new Dimension(110, 20), new Dimension(110, 20), 0, false));
+        panel6.add(previewSmallBtn, new GridConstraints(0, 4, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, new Dimension(130, 20), new Dimension(130, 20), new Dimension(130, 20), 0, false));
     }
 
     /**
