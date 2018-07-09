@@ -26,11 +26,12 @@ But, sometimes prints fail.
 
 There are a lot of reasons why prints are failing.
 
+- Leveling, both the printer and the build plate must be leveled. If the printer is not leveled the resin will not flow correctly under the model between layers. If the build plate is not leveled, the distance between the build playe and the bottom layer (FEP) will be too short in some areas and too wide in others.
 - Missing or weak support. When the printer is done printing one layer, the layer is lifted off the botom plastic film (FEP). The support must be strong enough to support the lift (pull).
 - Wrong exposure or off time settings. Each Resin is different in the chemical content, so each resin have a limited time range where it fully cures each layer. To short exposure and you have uncured liquid resin between you new layer and the previous printed layers, and the model will break off the build plate. To much and the layers will overcure and get thinner than the distance the pinter will lift for the next layer, ending in the model will break off the build plate.
 - Separated Resin. Most resin needs to be shaken or stirred befor use, which ensures that the resin compunds are mixed in the correct manor.
 - File, model or slicing errors. Applications have bugs, so errors could be intruduced in the process.
-- Printer errors. When buying a budget printer, some will only pass the quality control on a good day. Some components might be designed with no fault margin, introducing periodic errors (like the power supply shortage and the LCD screen flicking).
+- Printer errors. When buying a budget printer, some will only pass the quality control on a good day. Some components might be designed with no fault margin, introducing periodic errors (like power supply shortage and the LCD screen flicking).
 - Temperature, if the resin is to cold it will not flow under the model between the layers, if to hot it will have issues with overcuring.
 
 The Photon File Viewer can help you by showing all the layers in full resolution and all settings stored in the file.
