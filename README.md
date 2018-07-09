@@ -32,12 +32,28 @@ In the best scenario the island will stick to the plastic bottom of the printer 
 
 
 ## Installation
+If you already have Java installed, you can simply download the jar file and execute it (dobbeltclick or from command line: java -jar PhotonFileCheck.jar
+
+[Download Jar version](https://github.com/Photonsters/PhotonFileViewer/raw/master/release/photonfileviewer-1.0.zip)
+
 
 ### Install on Windows
+![Windows Main screen](https://github.com/Photonsters/PhotonFileViewer/raw/master/doc/windows.png)
+
+The windows installer is not signed, so you have to go through some warning pages before you are allowed to install it.
+
+[Download Windows version](https://github.com/Photonsters/PhotonFileViewer/raw/master/release/photonfileviewer-1.0-windows-installer.exe)
+
 
 ### Install on macOS
+Download the zip and unpack it, then run the installer. The installer is not signed, so you may have to locate the installer in finder and right click on it and select open.
+
+[Download Mac version](https://github.com/Photonsters/PhotonFileViewer/raw/master/release/photonfileviewer-1.0-osx-installer.zip)
 
 ### Install on Linux
+The linux installer is build from the same source, but not tested. Feel free to test and provide feedback.
+
+[Download Linux version](https://github.com/Photonsters/PhotonFileViewer/raw/master/release/release/photonfileviewer-1.0-linux-installer.run)
 
 ## Developer Information
 
