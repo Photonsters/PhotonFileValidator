@@ -34,19 +34,15 @@ import photon.application.dialogs.SaveDialog;
 import photon.application.utilities.MainUtils;
 import photon.application.utilities.PhotonLoadWorker;
 import photon.file.ui.PhotonLayerImage;
+import photon.file.ui.ScrollPosition;
+import photon.file.ui.ScrollUtil;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
+import java.awt.event.*;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
 
 /**
  * by bn on 29/06/2018.
@@ -72,11 +68,14 @@ public class MainForm extends BaseForm implements ActionListener, ItemListener {
     public JButton previewSmallBtn;
     private JPanel infoPanel;
     private JLabel logoLabel;
+    public JSlider zoomSlider;
 
     public final JFileChooser fc;
     public InformationDialog informationDialog;
     public PreviewDialog previewDialog;
     public SaveDialog saveDialog;
+
+    private int zoom = 0;
 
     public MainForm() {
 
@@ -142,6 +141,27 @@ public class MainForm extends BaseForm implements ActionListener, ItemListener {
                 showPreview(false);
             }
         });
+
+        zoomSlider.addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                int newZoom = ((JSlider) e.getSource()).getValue();
+                if (newZoom != zoom) {
+                    zoom = newZoom;
+                    if (zoom == 0) {
+                        ((PhotonLayerImage) layerImage).reScale(1, photonFile.getWidth(), photonFile.getHeight());
+                    } else if (zoom > 0) {
+                        ((PhotonLayerImage) layerImage).reScale(1f + (zoom / 2f), photonFile.getWidth(), photonFile.getHeight());
+                    } else {
+                        ((PhotonLayerImage) layerImage).reScale(1f + (zoom / 4f), photonFile.getWidth(), photonFile.getHeight());
+                    }
+                    changeLayer();
+                    ScrollUtil.scrollTo(me.imageScrollPane, ScrollPosition.HorizontalCenter);
+                    ScrollUtil.scrollTo(me.imageScrollPane, ScrollPosition.VerticalCenter);
+                }
+            }
+        });
+
     }
 
     @Override
@@ -175,7 +195,7 @@ public class MainForm extends BaseForm implements ActionListener, ItemListener {
         System.setProperty("com.apple.mrj.application.apple.menu.about.name", "Photon File Check");
         System.setProperty("apple.laf.useScreenMenuBar", "true");
 
-        JFrame frame = new JFrame("Photon File Check");
+        JFrame frame = new JFrame("Photon File Check 1.1");
         MainForm mainForm = new MainForm();
         JPanel panel = mainForm.mainPanel;
         mainForm.frame = frame;
@@ -229,7 +249,7 @@ public class MainForm extends BaseForm implements ActionListener, ItemListener {
         imageScrollPane.setViewportView(layerImage);
         layerImage.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(new Color(-16777216)), null));
         final JPanel panel1 = new JPanel();
-        panel1.setLayout(new GridLayoutManager(1, 6, new Insets(0, 0, 0, 0), -1, -1));
+        panel1.setLayout(new GridLayoutManager(1, 7, new Insets(0, 0, 0, 0), -1, -1));
         mainPanel.add(panel1, new GridConstraints(2, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
         layerNo = new JLabel();
         layerNo.setText("Layer 0/0");
@@ -250,7 +270,19 @@ public class MainForm extends BaseForm implements ActionListener, ItemListener {
         panel1.add(layerOfftime, new GridConstraints(0, 3, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, new Dimension(150, -1), new Dimension(150, -1), new Dimension(150, -1), 0, false));
         layerSpinner = new JSpinner();
         layerSpinner.setEnabled(false);
-        panel1.add(layerSpinner, new GridConstraints(0, 5, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_CAN_GROW, new Dimension(80, -1), new Dimension(80, -1), new Dimension(80, -1), 1, false));
+        panel1.add(layerSpinner, new GridConstraints(0, 6, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_CAN_GROW, new Dimension(80, -1), new Dimension(80, -1), new Dimension(80, -1), 1, false));
+        zoomSlider = new JSlider();
+        zoomSlider.setEnabled(false);
+        zoomSlider.setMajorTickSpacing(1);
+        zoomSlider.setMaximum(2);
+        zoomSlider.setMinimum(-2);
+        zoomSlider.setMinorTickSpacing(1);
+        zoomSlider.setPaintTicks(true);
+        zoomSlider.setPaintTrack(true);
+        zoomSlider.setSnapToTicks(true);
+        zoomSlider.setValue(0);
+        zoomSlider.setValueIsAdjusting(true);
+        panel1.add(zoomSlider, new GridConstraints(0, 5, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, new Dimension(100, -1), new Dimension(100, -1), new Dimension(100, -1), 0, false));
         final JPanel panel2 = new JPanel();
         panel2.setLayout(new GridLayoutManager(1, 2, new Insets(0, 0, 0, 0), -1, -1));
         mainPanel.add(panel2, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));

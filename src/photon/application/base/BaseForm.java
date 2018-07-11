@@ -131,27 +131,30 @@ public class BaseForm {
 
     public void showFileInformation() {
         String information = loadedFileName + " (" + photonFile.getInformation() + ")";
-
-        me.layerImage.setPreferredSize(new Dimension(photonFile.getWidth(), photonFile.getHeight()));
-        ((PhotonLayerImage) me.layerImage).reInit(photonFile.getWidth(), photonFile.getHeight());
+        me.zoomSlider.setValue(0);
+        ((PhotonLayerImage) me.layerImage).reScale(1, photonFile.getWidth(), photonFile.getHeight());
         if (photonFile.getLayerCount() > 0) {
             PhotonFileLayer fileLayer = photonFile.getLayer(0);
-            showLayerInformation(0, fileLayer);
-            ((PhotonLayerImage) me.layerImage).drawLayer(true, fileLayer, margin);
-            me.layerImage.repaint();
+            if (fileLayer!=null) {
+                showLayerInformation(0, fileLayer);
+                ((PhotonLayerImage) me.layerImage).drawLayer(true, fileLayer, margin);
+                me.layerImage.repaint();
 
-            ScrollUtil.scrollTo(me.imageScrollPane, ScrollPosition.HorizontalCenter);
-            ScrollUtil.scrollTo(me.imageScrollPane, ScrollPosition.VerticalCenter);
+                ScrollUtil.scrollTo(me.imageScrollPane, ScrollPosition.HorizontalCenter);
+                ScrollUtil.scrollTo(me.imageScrollPane, ScrollPosition.VerticalCenter);
 
-            if (photonFile.getLayerCount() > 0) {
-                me.layerSpinner.setEnabled(false);
-                me.layerSpinner.setValue(0);
-                SpinnerNumberModel spinnerNumberModel = (SpinnerNumberModel) me.layerSpinner.getModel();
-                spinnerNumberModel.setMinimum(0);
-                spinnerNumberModel.setMaximum(photonFile.getLayerCount() - 1);
-                me.layerSpinner.setEnabled(true);
-            } else {
-                me.layerSpinner.setEnabled(false);
+                if (photonFile.getLayerCount() > 0) {
+                    me.layerSpinner.setEnabled(false);
+                    me.layerSpinner.setValue(0);
+                    SpinnerNumberModel spinnerNumberModel = (SpinnerNumberModel) me.layerSpinner.getModel();
+                    spinnerNumberModel.setMinimum(0);
+                    spinnerNumberModel.setMaximum(photonFile.getLayerCount() - 1);
+                    me.layerSpinner.setEnabled(true);
+                    me.zoomSlider.setEnabled(true);
+                } else {
+                    me.layerSpinner.setEnabled(false);
+                    me.zoomSlider.setEnabled(false);
+                }
             }
         }
         me.layerInfo.setForeground(photonFile.getIslandLayerCount() > 0 ? Color.red : Color.decode("#006600"));

@@ -45,13 +45,14 @@ public class PhotonFileLayer {
     private int unknown4;
 
     private byte[] imageData;
-    private ArrayList<BitSet> unpackedImage;
-    private ArrayList<BitSet> supportedRows;
-    private ArrayList<BitSet> unSupportedRows;
+
+    private byte[] packedLayerImage;
+
     private ArrayList<BitSet> islandRows;
     private int isLandsCount;
     private long pixels;
 
+    private boolean extendsMargin;
     private PhotonFileHeader photonFileHeader;
 
     private PhotonFileLayer(PhotonInputStream ds) throws Exception {
@@ -92,13 +93,13 @@ public class PhotonFileLayer {
     }
 
     public static int getByteSize() {
-        return 4+4+4+4 + 4 + 4+4+4+4;
+        return 4 + 4 + 4 + 4 + 4 + 4 + 4 + 4 + 4;
     }
 
-    public void unpackImage(int resolutionX) {
+    public ArrayList<BitSet> unpackImage(int resolutionX) {
         pixels = 0;
         resolutionX = resolutionX - 1;
-        unpackedImage = new ArrayList<>();
+        ArrayList<BitSet> unpackedImage = new ArrayList<>();
         BitSet currentRow = new BitSet();
         unpackedImage.add(currentRow);
         int x = 0;
@@ -128,80 +129,81 @@ public class PhotonFileLayer {
                 x = 0;
             }
         }
+        return unpackedImage;
     }
 
-    private void calculate(PhotonFileLayer photonFileLayer) {
-        init();
+    private void calculate(ArrayList<BitSet> unpackedImage, ArrayList<BitSet> previousUnpackedImage, PhotonLayer photonLayer) {
+        islandRows = new ArrayList<>();
+        isLandsCount = 0;
 
-        PhotonIslands photonIslands = new PhotonIslands(photonFileHeader.getResolutionX(), photonFileHeader.getResolutionY());
+        photonLayer.clear();
 
         for (int y = 0; y < unpackedImage.size(); y++) {
-            BitSet supportedRow = new BitSet();
-            BitSet unSupported = new BitSet();
             BitSet currentRow = unpackedImage.get(y);
-            BitSet prevRow = photonFileLayer.getUnpackedImage().get(y);
-            if (currentRow != null && prevRow != null) {
+            BitSet prevRow = previousUnpackedImage != null ? previousUnpackedImage.get(y) : null;
+            if (currentRow != null) {
                 for (int x = 0; x < currentRow.length(); x++) {
                     if (currentRow.get(x)) {
-                        if (prevRow.get(x)) {
-                            supportedRow.set(x);
-                            photonIslands.supported(x,y);
+                        if (prevRow == null || prevRow.get(x)) {
+                            photonLayer.supported(x, y);
                         } else {
-                            unSupported.set(x);
-                            photonIslands.unSupported(x,y);
+                            photonLayer.island(x, y);
                         }
                     }
                 }
             }
-            supportedRows.add(supportedRow);
-            unSupportedRows.add(unSupported);
         }
 
-        // Double reduce to handle single line connections.
-        photonIslands.reduce();
-        photonIslands.reduce();
-        isLandsCount = photonIslands.setIslands(islandRows);
+        photonLayer.reduce();
 
+        isLandsCount = photonLayer.setIslands(islandRows);
     }
 
-    private void init() {
-        supportedRows = new ArrayList<>();
-        unSupportedRows = new ArrayList<>();
-        islandRows = new ArrayList<>();
-        isLandsCount = 0;
-    }
-
-    public static List<PhotonFileLayer> readLayers(PhotonFileHeader photonFileHeader, byte[] file, IPhotonLoadProgress iPhotonLoadProgress) throws Exception {
-        byte[] data = Arrays.copyOfRange(file, photonFileHeader.getLayersDefinitionOffsetAddress(), file.length);
-        PhotonInputStream ds = new PhotonInputStream(new ByteArrayInputStream(data));
+    public static List<PhotonFileLayer> readLayers(PhotonFileHeader photonFileHeader, byte[] file, int margin, IPhotonLoadProgress iPhotonLoadProgress) throws Exception {
+        PhotonLayer photonLayer = new PhotonLayer(photonFileHeader.getResolutionX(), photonFileHeader.getResolutionY());
 
         List<PhotonFileLayer> layers = new ArrayList<>();
-        for (int i = 0; i < photonFileHeader.getNumberOfLayers(); i++) {
-            iPhotonLoadProgress.showInfo("Reading photon file layer " + i + "/" + photonFileHeader.getNumberOfLayers());
-            PhotonFileLayer layer = new PhotonFileLayer(ds);
-            layer.photonFileHeader = photonFileHeader;
-            layer.imageData = Arrays.copyOfRange(file, layer.dataAddress, layer.dataAddress + layer.dataSize);
-            layer.unpackImage(photonFileHeader.getResolutionX());
-            if (i > 0) {
-                layer.calculate(layers.get(i - 1));
-            } else {
-                layer.init();
+
+
+        try (PhotonInputStream ds = new PhotonInputStream(new ByteArrayInputStream(file, photonFileHeader.getLayersDefinitionOffsetAddress(), file.length))) {
+            ArrayList<BitSet> previousUnpackedImage = null;
+            for (int i = 0; i < photonFileHeader.getNumberOfLayers(); i++) {
+
+                iPhotonLoadProgress.showInfo("Reading photon file layer " + i + "/" + photonFileHeader.getNumberOfLayers());
+
+                PhotonFileLayer layer = new PhotonFileLayer(ds);
+                layer.photonFileHeader = photonFileHeader;
+                layer.imageData = Arrays.copyOfRange(file, layer.dataAddress, layer.dataAddress + layer.dataSize);
+
+                ArrayList<BitSet> unpackedImage = layer.unpackImage(photonFileHeader.getResolutionX());
+
+                if (margin > 0) {
+                    layer.extendsMargin = layer.checkMagin(unpackedImage, margin);
+                }
+
+                layer.calculate(unpackedImage, previousUnpackedImage, photonLayer);
+
+                layers.add(layer);
+                if (previousUnpackedImage != null) {
+                    previousUnpackedImage.clear();
+                }
+                previousUnpackedImage = unpackedImage;
+
+                layer.packedLayerImage = photonLayer.packLayerImage();
+
             }
-            layers.add(layer);
         }
+
+        photonLayer.unLink();
+        System.gc();
+
+        // System.out.println("Layer ALL, " + String.format("%10d", ((Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / (1024 * 1024))) + " MB");
+
         return layers;
     }
 
-    public ArrayList<BitSet> getUnpackedImage() {
-        return unpackedImage;
-    }
-
-    public ArrayList<BitSet> getSupportedRows() {
-        return supportedRows;
-    }
-
-    public ArrayList<BitSet> getUnSupportedRows() {
-        return unSupportedRows;
+    public ArrayList<PhotonRow> getRows() {
+        return PhotonLayer.getRows(packedLayerImage, photonFileHeader.getResolutionX());
     }
 
     public ArrayList<BitSet> getIslandRows() {
@@ -238,32 +240,34 @@ public class PhotonFileLayer {
 
     public void unLink() {
         imageData = null;
-        unpackedImage.clear();
-        supportedRows.clear();
-        unSupportedRows.clear();
+        packedLayerImage = null;
         islandRows.clear();
         photonFileHeader = null;
     }
 
-    public boolean checkMagin(int margin) {
-        if (unpackedImage.size()>margin) {
+    public boolean doExtendMargin() {
+        return extendsMargin;
+    }
+
+    private boolean checkMagin(ArrayList<BitSet> unpackedImage, int margin) {
+        if (unpackedImage.size() > margin) {
             // check top margin rows
-            for(int i=0; i<margin; i++) {
+            for (int i = 0; i < margin; i++) {
                 if (!unpackedImage.get(i).isEmpty()) {
                     return true;
                 }
             }
             // check bottom margin rows
-            for(int i=unpackedImage.size()-margin; i<unpackedImage.size(); i++) {
+            for (int i = unpackedImage.size() - margin; i < unpackedImage.size(); i++) {
                 if (!unpackedImage.get(i).isEmpty()) {
                     return true;
                 }
             }
 
-            for(int i=margin; i<unpackedImage.size()-margin; i++) {
+            for (int i = margin; i < unpackedImage.size() - margin; i++) {
                 BitSet row = unpackedImage.get(i);
                 int nextBit = row.nextSetBit(0);
-                    if (nextBit>=0 && nextBit<margin) {
+                if (nextBit >= 0 && nextBit < margin) {
                     return true;
                 }
                 nextBit = row.nextSetBit(photonFileHeader.getResolutionX() - margin);

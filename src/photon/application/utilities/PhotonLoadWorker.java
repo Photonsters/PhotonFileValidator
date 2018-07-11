@@ -51,6 +51,7 @@ public class PhotonLoadWorker extends SwingWorker<Integer, String> implements IP
         mainForm.islandNextBtn.setEnabled(false);
         mainForm.marginNextBtn.setEnabled(false);
         mainForm.layerSpinner.setEnabled(false);
+        mainForm.zoomSlider.setEnabled(false);
     }
 
     @Override
@@ -70,9 +71,13 @@ public class PhotonLoadWorker extends SwingWorker<Integer, String> implements IP
     @Override
     protected Integer doInBackground() throws Exception {
         publish("Loading file...");
-        mainForm.photonFile = new PhotonFile().readFile(file, this);
-        if (mainForm.margin > 0) {
-            mainForm.photonFile.checkMargin(mainForm.margin);
+        try {
+            mainForm.photonFile = new PhotonFile();
+            mainForm.photonFile.setMargin(mainForm.margin);
+            mainForm.photonFile.readFile(file, this);
+        } catch (Exception e) {
+            publish(e.getMessage());
+            return 0;
         }
         publish("Complete...");
         return 1;

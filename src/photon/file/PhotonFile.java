@@ -43,6 +43,7 @@ public class PhotonFile {
     private int islandLayerCount;
     private ArrayList<Integer> islandLayers;
 
+    private int margin;
     private ArrayList<Integer> marginLayers;
 
     public PhotonFile readFile(File file) throws Exception {
@@ -65,10 +66,22 @@ public class PhotonFile {
         iPhotonLoadProgress.showInfo("Reading photon small preview image information...");
         previewTwo = new PhotonFilePreview(photonFileHeader.getPreviewTwoOffsetAddress(), file);
         iPhotonLoadProgress.showInfo("Reading photon layers information...");
-        layers = PhotonFileLayer.readLayers(photonFileHeader, file, iPhotonLoadProgress);
+        layers = PhotonFileLayer.readLayers(photonFileHeader, file, margin, iPhotonLoadProgress);
         islandList = null;
         islandLayerCount = 0;
         islandLayers = new ArrayList<>();
+
+        marginLayers = new ArrayList<>();
+        if (margin > 0) {
+            int i = 0;
+            for (PhotonFileLayer layer : layers) {
+                if (layer.doExtendMargin()) {
+                    marginLayers.add(i);
+                }
+                i++;
+            }
+        }
+
         return this;
     }
 
@@ -98,11 +111,11 @@ public class PhotonFile {
         previewOne.save(os, previewOnePos);
         previewTwo.save(os, previewTwoPos);
 
-        for(int i = 0; i < photonFileHeader.getNumberOfLayers(); i++) {
+        for (int i = 0; i < photonFileHeader.getNumberOfLayers(); i++) {
             dataPosition = layers.get(i).save(os, dataPosition);
         }
 
-        for(int i = 0; i < photonFileHeader.getNumberOfLayers(); i++) {
+        for (int i = 0; i < photonFileHeader.getNumberOfLayers(); i++) {
             layers.get(i).saveData(os);
         }
     }
@@ -129,6 +142,7 @@ public class PhotonFile {
     }
 
     public String getInformation() {
+        if (photonFileHeader == null) return "";
         return String.format("T: %.3f", photonFileHeader.getLayerHeight()) +
                 ", E: " + formatSeconds(photonFileHeader.getNormalExposure()) +
                 ", O: " + formatSeconds(photonFileHeader.getOffTime()) +
@@ -145,39 +159,43 @@ public class PhotonFile {
     }
 
     public int getIslandLayerCount() {
-        if (islandList==null) {
+        if (islandList == null) {
             findIslands();
         }
         return islandLayerCount;
     }
 
     public ArrayList<Integer> getIslandLayers() {
-        if (islandList==null) {
+        if (islandList == null) {
             findIslands();
         }
         return islandLayers;
     }
 
+    public void setMargin(int margin) {
+        this.margin = margin;
+    }
+
     public ArrayList<Integer> getMarginLayers() {
-        if (marginLayers==null) {
+        if (marginLayers == null) {
             return new ArrayList<>();
         }
         return marginLayers;
     }
 
     public String getMarginInformation() {
-        if (marginLayers==null) {
+        if (marginLayers == null) {
             return "No safty margin set, printing to the boarder.";
         } else {
-            if (marginLayers.size()==0) {
+            if (marginLayers.size() == 0) {
                 return "The model is within the defined safty margin.";
-            } else if (marginLayers.size()==1) {
+            } else if (marginLayers.size() == 1) {
                 return "The layer " + marginLayers.get(0) + " contains model parts that extend beyond the margin.";
             }
             StringBuilder marginList = new StringBuilder();
             int count = 0;
-            for(int layer : marginLayers) {
-                if (count>10) {
+            for (int layer : marginLayers) {
+                if (count > 10) {
                     marginList.append(", ...");
                     break;
                 } else {
@@ -191,12 +209,12 @@ public class PhotonFile {
     }
 
     public String getLayerInformation() {
-        if (islandList==null) {
+        if (islandList == null) {
             findIslands();
         }
-        if (islandLayerCount==0) {
+        if (islandLayerCount == 0) {
             return "No layers have islands :-)";
-        } else if (islandLayerCount==1) {
+        } else if (islandLayerCount == 1) {
             return "Don't print this file, layer " + islandList.toString() + " has one or more unsupported islands.";
         }
         return "Don't print this file, layers " + islandList.toString() + " have unsupported islands.";
@@ -205,19 +223,21 @@ public class PhotonFile {
     private void findIslands() {
         islandList = new StringBuilder();
         islandLayerCount = 0;
-        for(int i=0; i<photonFileHeader.getNumberOfLayers(); i++) {
-            PhotonFileLayer layer = layers.get(i);
-            if (layer.getIsLandsCount()>0) {
-                if (islandLayerCount<11) {
-                    if (islandLayerCount==10) {
-                        islandList.append(", ...");
-                    } else {
-                        if (islandList.length() > 0) islandList.append(", ");
-                        islandList.append(i);
+        if (layers!=null) {
+            for (int i = 0; i < photonFileHeader.getNumberOfLayers(); i++) {
+                PhotonFileLayer layer = layers.get(i);
+                if (layer.getIsLandsCount() > 0) {
+                    if (islandLayerCount < 11) {
+                        if (islandLayerCount == 10) {
+                            islandList.append(", ...");
+                        } else {
+                            if (islandList.length() > 0) islandList.append(", ");
+                            islandList.append(i);
+                        }
                     }
+                    islandLayerCount++;
+                    islandLayers.add(i);
                 }
-                islandLayerCount++;
-                islandLayers.add(i);
             }
         }
     }
@@ -235,7 +255,7 @@ public class PhotonFile {
     }
 
     public PhotonFileLayer getLayer(int i) {
-        if (layers!=null && layers.size()>i) {
+        if (layers != null && layers.size() > i) {
             return layers.get(i);
         }
         return null;
@@ -243,8 +263,8 @@ public class PhotonFile {
 
     public long getPixels() {
         long total = 0;
-        if (layers!=null) {
-            for(PhotonFileLayer layer : layers) {
+        if (layers != null) {
+            for (PhotonFileLayer layer : layers) {
                 total += layer.getPixels();
             }
         }
@@ -269,10 +289,10 @@ public class PhotonFile {
             PhotonFileLayer layer = layers.remove(0);
             layer.unLink();
         }
-        if (islandLayers!=null) {
+        if (islandLayers != null) {
             islandLayers.clear();
         }
-        if (marginLayers!=null) {
+        if (marginLayers != null) {
             marginLayers.clear();
         }
         photonFileHeader.unLink();
@@ -284,23 +304,11 @@ public class PhotonFile {
         System.gc();
     }
 
-    public void checkMargin(int margin) {
-        marginLayers = new ArrayList<>();
-        if (layers!=null) {
-            int i = 0;
-            for(PhotonFileLayer layer : layers) {
-                if (layer.checkMagin(margin)) {
-                    marginLayers.add(i);
-                }
-                i++;
-            }
-        }
-    }
 
     public void adjustLayerSettings() {
-        for(int i = 0; i<layers.size(); i++) {
+        for (int i = 0; i < layers.size(); i++) {
             PhotonFileLayer layer = layers.get(i);
-            if (i<photonFileHeader.getBottomLayers()) {
+            if (i < photonFileHeader.getBottomLayers()) {
                 layer.setLayerExposure(photonFileHeader.getBottomExposureTimeSeconds());
             } else {
                 layer.setLayerExposure(photonFileHeader.getNormalExposure());

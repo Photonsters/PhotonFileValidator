@@ -41,7 +41,7 @@ In the best scenario the island will stick to the plastic bottom of the printer 
 
 
 ## Installation
-If you already have Java installed, you can simply download the jar file and execute it (dobbeltclick or from command line: java -jar PhotonFileCheck.jar
+If you already have Java installed, you can simply download the jar file and execute it (dobbeltclick or from command line: **java -jar PhotonFileCheck.jar**
 
 [Download Jar version](https://github.com/Photonsters/PhotonFileViewer/raw/master/release/photonfileviewer-1.0.zip)
 
@@ -62,7 +62,7 @@ Download the zip and unpack it, then run the installer. The installer is not sig
 ### Install on Linux
 The linux installer is build from the same source, but not tested. Feel free to test and provide feedback.
 
-[Download Linux version](https://github.com/Photonsters/PhotonFileViewer/raw/master/release/release/photonfileviewer-1.0-linux-installer.run)
+Feedback from users:  **The linux installer does not work, install Java and use the Jar version**
 
 ## Usage
 
@@ -93,6 +93,9 @@ If you model contains islands, if will show a list with the first layer numbers.
 
 As small islands can be hard to find, the application will draw horizontal and vertical cross lines to help you locate the islands. If the island area are very big, no cross lines will be drawn.
 
+## Zoom layers
+Layers are show 1:1 (zoom center position) which allow you to see exactly what the printer will print. If you want to close in on details, use the zoom scale right positions, or if you want to get better overview on a smaller screen, you can use the left scale positions.
+
 ## Show previews
 The slicer produces preview images that is used by the printer to help you select the correct model to print. You can also see the preview images in the file viewer application.
 
@@ -115,6 +118,10 @@ The default is: peel=5.5
 You can use the application from the command line: java -jar PhotonFileCheck.jar
 
 You can add a Photon slice file name as argument, and the file will be loaded when the application starts.
+
+If you have trouble loading large files, add more memory to to the application like:
+
+java -Xms3g -Xmx6g -jar PhotonFileCheck.jar
 
 ## Developer Information
 
