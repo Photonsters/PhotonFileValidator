@@ -71,8 +71,8 @@ public class PhotonFile {
         islandLayerCount = 0;
         islandLayers = new ArrayList<>();
 
-        marginLayers = new ArrayList<>();
         if (margin > 0) {
+            marginLayers = new ArrayList<>();
             int i = 0;
             for (PhotonFileLayer layer : layers) {
                 if (layer.doExtendMargin()) {

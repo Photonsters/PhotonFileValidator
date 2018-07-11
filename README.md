@@ -55,9 +55,9 @@ The windows installer is not signed, so you have to go through some warning page
 
 
 ### Install on macOS
-Download the zip and unpack it, then run the installer. The installer is not signed, so you may have to locate the installer in finder and right click on it and select open.
+Download the dmg and open it, then drag the app to the applications folder link. The App is not signed, so you may have to locate the app in finder and right click on it and select open.
 
-[Download Mac version](https://github.com/Photonsters/PhotonFileViewer/raw/master/release/photonfileviewer-1.1-osx-installer.zip)
+[Download Mac version](https://github.com/Photonsters/PhotonFileViewer/raw/master/release/photonfileviewer-1.1.dmg)
 
 ### Install on Linux
 The linux installer is build from the same source, but not tested. Feel free to test and provide feedback.

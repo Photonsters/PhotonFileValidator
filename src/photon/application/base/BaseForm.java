@@ -46,7 +46,7 @@ import java.util.ArrayList;
 import java.util.Properties;
 
 /**
- *  by bn on 09/07/2018.
+ * by bn on 09/07/2018.
  */
 public class BaseForm {
     protected MainForm me;
@@ -135,7 +135,7 @@ public class BaseForm {
         ((PhotonLayerImage) me.layerImage).reScale(1, photonFile.getWidth(), photonFile.getHeight());
         if (photonFile.getLayerCount() > 0) {
             PhotonFileLayer fileLayer = photonFile.getLayer(0);
-            if (fileLayer!=null) {
+            if (fileLayer != null) {
                 showLayerInformation(0, fileLayer);
                 ((PhotonLayerImage) me.layerImage).drawLayer(true, fileLayer, margin);
                 me.layerImage.repaint();
@@ -169,32 +169,36 @@ public class BaseForm {
     }
 
 
-
     public void getSystemInformation() {
         try {
             File file = new File("photon.properties");
+            if (!file.exists() || !file.isFile()) {
+                String userDir = System.getProperty("user.home");
+                file = new File(userDir + File.separatorChar + "photon.properties");
+            }
             if (file.exists() && file.isFile()) {
-                Properties prop = new Properties();
-                prop.load(new FileInputStream(file));
-                try {
-                    me.margin = Integer.parseInt(prop.getProperty("margin"));
-                } catch (Exception e) {
-                    me.margin = 0;
-                }
+                    Properties prop = new Properties();
+                    prop.load(new FileInputStream(file));
+                    try {
+                        me.margin = Integer.parseInt(prop.getProperty("margin"));
+                        me.marginInfo.setText("Margin set to: " + me.margin);
+                    } catch (Exception e) {
+                        me.margin = 0;
+                    }
 
-                float peel;
-                try {
-                    peel = Float.parseFloat(prop.getProperty("peel"));
-                } catch (Exception ex) {
-                    peel = 5.5f;
-                }
-                if (me.informationDialog == null) {
-                    me.informationDialog = new InformationDialog(me.frame);
-                }
-                me.informationDialog.setPeel(peel);
+                    float peel;
+                    try {
+                        peel = Float.parseFloat(prop.getProperty("peel"));
+                    } catch (Exception ex) {
+                        peel = 5.5f;
+                    }
+                    if (me.informationDialog == null) {
+                        me.informationDialog = new InformationDialog(me.frame);
+                    }
+                    me.informationDialog.setPeel(peel);
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            me.marginInfo.setText(e.getMessage());
         }
     }
 
