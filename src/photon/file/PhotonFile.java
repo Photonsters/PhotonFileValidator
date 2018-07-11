@@ -185,7 +185,7 @@ public class PhotonFile {
 
     public String getMarginInformation() {
         if (marginLayers == null) {
-            return "No safty margin set, printing to the boarder.";
+            return "No safty margin set, printing to the border.";
         } else {
             if (marginLayers.size() == 0) {
                 return "The model is within the defined safty margin.";
