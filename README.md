@@ -43,7 +43,7 @@ In the best scenario the island will stick to the plastic bottom of the printer 
 ## Installation
 If you already have Java installed, you can simply download the jar file and execute it (dobbeltclick or from command line: **java -jar PhotonFileCheck.jar**
 
-[Download Jar version](https://github.com/Photonsters/PhotonFileValidator/raw/master/release/photonfilevalidator120.zip)
+[Download Jar version](https://github.com/Photonsters/PhotonFileValidator/blob/master/release/photonfilevalidator120.zip)
 
 
 ### Install on Windows
@@ -51,12 +51,12 @@ If you already have Java installed, you can simply download the jar file and exe
 
 The windows installer is not signed, so you have to go through some warning pages before you are allowed to install it.
 
-[Download Windows version](https://github.com/Photonsters/PhotonFileValidator/raw/master/release/photonfilevalidatorsetup120.exe)
+[Download Windows version](https://github.com/Photonsters/PhotonFileValidator/blob/master/release/photonfilevalidatorsetup120.exe)
 
 ### Install on macOS
 Download the dmg and open it, then drag the app to the applications folder link. The App is not signed, so you may have to locate the app in finder and right click on it and select open.
 
-[Download Mac version](https://github.com/Photonsters/PhotonFileValidator/raw/master/release/photonfilevalidator120.dmg)
+[Download Mac version](https://github.com/Photonsters/PhotonFileValidator/blob/master/release/photonfilevalidator120.dmg)
 
 [Read more on opening unsigned apps on Apple Support](https://support.apple.com/kb/ph25088?locale=en_US)
 
