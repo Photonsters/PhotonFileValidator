@@ -51,7 +51,7 @@ If you already have Java installed, you can simply download the jar file and exe
 
 The windows installer is not signed, so you have to go through some warning pages before you are allowed to install it.
 
-[Download Windows version](https://github.com/Photonsters/PhotonFileViewer/raw/master/release/photonfileviewer-1.1-windows-installer.exe)
+[Download Windows version](https://github.com/Photonsters/PhotonFileViewer/raw/master/release/PhotonFileViewerSetup-1.1.exe)
 
 ### Install on macOS
 Download the dmg and open it, then drag the app to the applications folder link. The App is not signed, so you may have to locate the app in finder and right click on it and select open.
