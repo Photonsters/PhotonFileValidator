@@ -3,7 +3,7 @@
   <dontWrapJar>false</dontWrapJar>
   <headerType>gui</headerType>
   <jar>/Users/bn/3DPrint/Photon/PhotonFileViewer/out/artifacts/PhotonFileCheck_jar/PhotonFileCheck.jar</jar>
-  <outfile>/Users/bn/3DPrint/Photon/PhotonFileViewer/release/photonfileviewer-1.1.exe</outfile>
+  <outfile>/Users/bn/3DPrint/Photon/PhotonFileViewer/out/win/photonfileviewer.exe</outfile>
   <errTitle></errTitle>
   <cmdLine></cmdLine>
   <chdir>.</chdir>
