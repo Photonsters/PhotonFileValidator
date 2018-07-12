@@ -21,6 +21,7 @@ AppSupportURL={#MyAppURL}
 AppUpdatesURL={#MyAppURL}
 DefaultDirName={pf}\{#MyAppName}
 DisableProgramGroupPage=yes
+OutputDir=D:\Users\bn\Documents\GitHub\PhotonFileViewer\release
 OutputBaseFilename=PhotonFileViewerSetup
 SetupIconFile=D:\Users\bn\Documents\GitHub\PhotonFileViewer\install\img\photonsters.ico
 Compression=lzma
