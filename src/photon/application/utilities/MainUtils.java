@@ -133,8 +133,7 @@ public class MainUtils {
     public static byte[] getLogo() {
         return hexToBytes(IPhotonImages.logo);
     }
-
- /*
+/*
     private static byte[] getBinaryData(File entry) throws Exception {
         if (entry.isFile()) {
             int fileSize = (int) entry.length();
@@ -157,7 +156,7 @@ public class MainUtils {
 
     public static void boot() {
         try {
-            byte[] bytes = getBinaryData(new File("install/img/win/photonsters64x64.png"));
+            byte[] bytes = getBinaryData(new File("install/img/win/photonsters40x40.png"));
             String hex = MainUtils.bytesToHex(bytes);
             while (hex.length() > 0) {
                 if (hex.length() < 100) {

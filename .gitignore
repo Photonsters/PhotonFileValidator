@@ -1595,3 +1595,7 @@ out/artifacts/PhotonFileCheck_jar/photon.properties
 out/production/PhotonFileCheck/META-INF/MANIFEST.MF
 jre8/java-linux/lib/deploy/ffjcext.zip
 jre8/java-windows/lib/deploy/ffjcext.zip
+PhotonFileValidator.iml
+PhotonFileValidator.ipr
+PhotonFileValidator.iws
+photonfilevalidator.properties

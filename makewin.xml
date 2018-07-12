@@ -2,14 +2,14 @@
 <launch4jConfig>
   <dontWrapJar>false</dontWrapJar>
   <headerType>gui</headerType>
-  <jar>/Users/bn/3DPrint/Photon/PhotonFileViewer/out/artifacts/PhotonFileCheck_jar/PhotonFileCheck.jar</jar>
-  <outfile>/Users/bn/3DPrint/Photon/PhotonFileViewer/out/win/photonfileviewer.exe</outfile>
+  <jar>/Users/bn/3DPrint/Photon/PhotonFileViewer/out/artifacts/PhotonFileValidator.jar</jar>
+  <outfile>/Users/bn/3DPrint/Photon/PhotonFileViewer/out/win/photonfilevalidator.exe</outfile>
   <errTitle></errTitle>
   <cmdLine></cmdLine>
   <chdir>.</chdir>
   <priority>normal</priority>
   <downloadUrl>http://java.com/download</downloadUrl>
-  <supportUrl></supportUrl>
+  <supportUrl>https://github.com/Photonsters/PhotonFileValidator</supportUrl>
   <stayAlive>false</stayAlive>
   <restartOnCrash>false</restartOnCrash>
   <manifest></manifest>
@@ -32,16 +32,16 @@
     <timeoutErr>true</timeoutErr>
   </splash>
   <versionInfo>
-    <fileVersion>1.1.0.0</fileVersion>
-    <txtFileVersion>1.1</txtFileVersion>
-    <fileDescription>Photon File Viewer</fileDescription>
+    <fileVersion>1.2.0.0</fileVersion>
+    <txtFileVersion>1.2</txtFileVersion>
+    <fileDescription>Photon File Validator</fileDescription>
     <copyright>(C) Copyright by Bonosoft</copyright>
-    <productVersion>1.1.0.0</productVersion>
-    <txtProductVersion>1.1</txtProductVersion>
-    <productName>Photon File Viewer</productName>
+    <productVersion>1.2.0.0</productVersion>
+    <txtProductVersion>1.2</txtProductVersion>
+    <productName>Photon File Validator</productName>
     <companyName>Bonosoft</companyName>
-    <internalName>Photon file checker</internalName>
-    <originalFilename>photonfileviewer-1.1.exe</originalFilename>
+    <internalName>Photon file validator</internalName>
+    <originalFilename>photonfilevalidator.exe</originalFilename>
     <trademarks></trademarks>
     <language>ENGLISH_US</language>
   </versionInfo>

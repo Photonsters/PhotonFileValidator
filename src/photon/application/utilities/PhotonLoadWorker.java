@@ -52,6 +52,7 @@ public class PhotonLoadWorker extends SwingWorker<Integer, String> implements IP
         mainForm.marginNextBtn.setEnabled(false);
         mainForm.layerSpinner.setEnabled(false);
         mainForm.zoomSlider.setEnabled(false);
+        mainForm.layerSlider.setEnabled(false);
     }
 
     @Override

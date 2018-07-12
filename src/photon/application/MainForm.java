@@ -69,6 +69,7 @@ public class MainForm extends BaseForm implements ActionListener, ItemListener {
     private JPanel infoPanel;
     private JLabel logoLabel;
     public JSlider zoomSlider;
+    public JSlider layerSlider;
 
     public final JFileChooser fc;
     public InformationDialog informationDialog;
@@ -162,6 +163,16 @@ public class MainForm extends BaseForm implements ActionListener, ItemListener {
             }
         });
 
+        layerSlider.addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                int pos = ((JSlider) e.getSource()).getValue();
+                if (pos != (int) layerSpinner.getValue()) {
+                    layerSpinner.setValue(pos);
+                }
+            }
+        });
+
     }
 
     @Override
@@ -189,7 +200,7 @@ public class MainForm extends BaseForm implements ActionListener, ItemListener {
     }
 
     public static void main(String[] args) {
-        JFrame frame = new JFrame("Photon File Viewer 1.1");
+        JFrame frame = new JFrame("Photon File Validator 1.2");
         MainUtils.setIcon(frame);
         MainForm mainForm = new MainForm();
         JPanel panel = mainForm.mainPanel;
@@ -233,7 +244,7 @@ public class MainForm extends BaseForm implements ActionListener, ItemListener {
     private void $$$setupUI$$$() {
         createUIComponents();
         mainPanel = new JPanel();
-        mainPanel.setLayout(new GridLayoutManager(4, 1, new Insets(5, 5, 5, 5), -1, -1));
+        mainPanel.setLayout(new GridLayoutManager(5, 1, new Insets(5, 5, 5, 5), -1, -1));
         imageScrollPane = new JScrollPane();
         imageScrollPane.setHorizontalScrollBarPolicy(32);
         imageScrollPane.setVerticalScrollBarPolicy(22);
@@ -339,6 +350,10 @@ public class MainForm extends BaseForm implements ActionListener, ItemListener {
         previewSmallBtn.setEnabled(false);
         previewSmallBtn.setText("Preview Small");
         panel6.add(previewSmallBtn, new GridConstraints(0, 4, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, new Dimension(130, 20), new Dimension(130, 20), new Dimension(130, 20), 0, false));
+        layerSlider = new JSlider();
+        layerSlider.setEnabled(false);
+        layerSlider.setValue(0);
+        mainPanel.add(layerSlider, new GridConstraints(4, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
     }
 
     /**

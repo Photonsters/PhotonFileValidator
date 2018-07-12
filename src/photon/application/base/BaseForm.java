@@ -123,7 +123,7 @@ public class BaseForm {
 
     protected void showLayerInformation(int layer, PhotonFileLayer fileLayer) {
         me.layerNo.setForeground(fileLayer.getIsLandsCount() > 0 ? Color.red : Color.black);
-        me.layerNo.setText("Layer " + layer + "/" + me.photonFile.getLayerCount());
+        me.layerNo.setText("Layer " + layer + "/" + (me.photonFile.getLayerCount()-1));
         me.layerZ.setText(String.format("Z: %.4f mm", fileLayer.getLayerPositionZ()));
         me.layerExposure.setText(String.format("Exposure: %.1fs", fileLayer.getLayerExposure()));
         me.layerOfftime.setText(String.format("Off Time: %.1fs", fileLayer.getLayerOffTime()));
@@ -144,14 +144,20 @@ public class BaseForm {
                 ScrollUtil.scrollTo(me.imageScrollPane, ScrollPosition.VerticalCenter);
 
                 if (photonFile.getLayerCount() > 0) {
+                    me.layerSlider.setEnabled(false);
+                    me.layerSlider.setValue(0);
+                    me.layerSlider.setMaximum(photonFile.getLayerCount() - 1);
+
                     me.layerSpinner.setEnabled(false);
                     me.layerSpinner.setValue(0);
                     SpinnerNumberModel spinnerNumberModel = (SpinnerNumberModel) me.layerSpinner.getModel();
                     spinnerNumberModel.setMinimum(0);
                     spinnerNumberModel.setMaximum(photonFile.getLayerCount() - 1);
                     me.layerSpinner.setEnabled(true);
+                    me.layerSlider.setEnabled(true);
                     me.zoomSlider.setEnabled(true);
                 } else {
+                    me.layerSlider.setEnabled(false);
                     me.layerSpinner.setEnabled(false);
                     me.zoomSlider.setEnabled(false);
                 }
@@ -239,6 +245,10 @@ public class BaseForm {
             showLayerInformation(layer, fileLayer);
             ((PhotonLayerImage) me.layerImage).drawLayer(layer == 0, fileLayer, margin);
             me.layerImage.repaint();
+
+            me.layerSlider.setEnabled(false);
+            me.layerSlider.setValue(layer);
+            me.layerSlider.setEnabled(true);
         }
     }
 }
