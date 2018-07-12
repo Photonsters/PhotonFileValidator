@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch4jConfig>
+  <dontWrapJar>false</dontWrapJar>
+  <headerType>gui</headerType>
+  <jar>/Users/bn/3DPrint/Photon/PhotonFileViewer/out/artifacts/PhotonFileCheck_jar/PhotonFileCheck.jar</jar>
+  <outfile>/Users/bn/3DPrint/Photon/PhotonFileViewer/release/photonfileviewer-1.1.exe</outfile>
+  <errTitle></errTitle>
+  <cmdLine></cmdLine>
+  <chdir>.</chdir>
+  <priority>normal</priority>
+  <downloadUrl>http://java.com/download</downloadUrl>
+  <supportUrl></supportUrl>
+  <stayAlive>false</stayAlive>
+  <restartOnCrash>false</restartOnCrash>
+  <manifest></manifest>
+  <icon>/Users/bn/3DPrint/Photon/PhotonFileViewer/install/img/photonsters.ico</icon>
+  <jre>
+    <path></path>
+    <bundledJre64Bit>false</bundledJre64Bit>
+    <bundledJreAsFallback>false</bundledJreAsFallback>
+    <minVersion>1.8.0</minVersion>
+    <maxVersion></maxVersion>
+    <jdkPreference>preferJre</jdkPreference>
+    <runtimeBits>64/32</runtimeBits>
+    <initialHeapSize>1024</initialHeapSize>
+    <maxHeapSize>5120</maxHeapSize>
+  </jre>
+  <splash>
+    <file>/Users/bn/3DPrint/Photon/PhotonFileViewer/install/img/photonsters.bmp</file>
+    <waitForWindow>true</waitForWindow>
+    <timeout>60</timeout>
+    <timeoutErr>true</timeoutErr>
+  </splash>
+  <versionInfo>
+    <fileVersion>1.1.0.0</fileVersion>
+    <txtFileVersion>1.1</txtFileVersion>
+    <fileDescription>Photon File Viewer</fileDescription>
+    <copyright>(C) Copyright by Bonosoft</copyright>
+    <productVersion>1.1.0.0</productVersion>
+    <txtProductVersion>1.1</txtProductVersion>
+    <productName>Photon File Viewer</productName>
+    <companyName>Bonosoft</companyName>
+    <internalName>Photon file checker</internalName>
+    <originalFilename>photonfileviewer-1.1.exe</originalFilename>
+    <trademarks></trademarks>
+    <language>ENGLISH_US</language>
+  </versionInfo>
+</launch4jConfig>
