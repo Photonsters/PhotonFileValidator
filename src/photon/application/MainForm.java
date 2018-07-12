@@ -189,17 +189,11 @@ public class MainForm extends BaseForm implements ActionListener, ItemListener {
     }
 
     public static void main(String[] args) {
-        // Place the name and menubar correctly on a macOS
-
-        // System.setProperty("apple.awt.application.name", "Photon File Check");
-        // System.setProperty("com.apple.mrj.application.apple.menu.about.name", "Photon File Check");
-        // System.setProperty("apple.laf.useScreenMenuBar", "true");
-
-        JFrame frame = new JFrame("Photon File Check 1.1");
+        JFrame frame = new JFrame("Photon File Viewer 1.1");
+        MainUtils.setIcon(frame);
         MainForm mainForm = new MainForm();
         JPanel panel = mainForm.mainPanel;
         mainForm.frame = frame;
-        // MainUtils.makeMenuBar(frame, mainForm);
         frame.setContentPane(panel);
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         frame.pack();
