@@ -50,12 +50,14 @@ In the best scenario the island will stick to the plastic bottom of the printer 
 The windows installer is not signed, so you have to go through some warning pages before you are allowed to install it.
 
 Download: win-photonfilevalidator-x.x.exe (if you have java version 8 or above installed)
+
 Download: win-jre-photonfilevalidator-x.x.exe (includes a java jre runtime engine)
 
 ### Install on macOS
 Download the dmg and open it, then drag the app to the applications folder link. The App is not signed, so you may have to locate the app in finder and right click on it and select open.
 
 Download: osx-photonfilevalidator-x.x.dmg (if you have java version 8 or above installed)
+
 Download: osx-jre-photonfilevalidator-x.x.dmg (includes a java jre runtime engine)
 
 [Read more on opening unsigned apps on Apple Support](https://support.apple.com/kb/ph25088?locale=en_US)
