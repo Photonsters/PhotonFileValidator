@@ -2,8 +2,8 @@
 <launch4jConfig>
   <dontWrapJar>false</dontWrapJar>
   <headerType>gui</headerType>
-  <jar>/Users/bn/3DPrint/Photon/PhotonFileViewer/out/artifacts/PhotonFileValidator.jar</jar>
-  <outfile>/Users/bn/3DPrint/Photon/PhotonFileViewer/out/win/photonfilevalidator.exe</outfile>
+  <jar>D:\Users\bn\Documents\GitHub\PhotonFileViewer\out\artifacts\PhotonFileValidator.jar</jar>
+  <outfile>D:\Users\bn\Documents\GitHub\PhotonFileViewer\out\win\photonfilevalidator.exe</outfile>
   <errTitle></errTitle>
   <cmdLine></cmdLine>
   <chdir>.</chdir>
@@ -13,10 +13,10 @@
   <stayAlive>false</stayAlive>
   <restartOnCrash>false</restartOnCrash>
   <manifest></manifest>
-  <icon>/Users/bn/3DPrint/Photon/PhotonFileViewer/install/img/photonsters.ico</icon>
+  <icon>D:\Users\bn\Documents\GitHub\PhotonFileViewer\install\img\icons\photonsters.ico</icon>
   <jre>
-    <path></path>
-    <bundledJre64Bit>false</bundledJre64Bit>
+    <path>jre</path>
+    <bundledJre64Bit>true</bundledJre64Bit>
     <bundledJreAsFallback>false</bundledJreAsFallback>
     <minVersion>1.8.0</minVersion>
     <maxVersion></maxVersion>
@@ -26,7 +26,7 @@
     <maxHeapSize>5120</maxHeapSize>
   </jre>
   <splash>
-    <file>/Users/bn/3DPrint/Photon/PhotonFileViewer/install/img/photonsters.bmp</file>
+    <file>D:\Users\bn\Documents\GitHub\PhotonFileViewer\install\img\logos\photonsters.bmp</file>
     <waitForWindow>true</waitForWindow>
     <timeout>60</timeout>
     <timeoutErr>true</timeoutErr>
