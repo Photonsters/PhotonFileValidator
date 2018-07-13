@@ -38,9 +38,11 @@ import photon.file.ui.ScrollPosition;
 import photon.file.ui.ScrollUtil;
 
 import javax.swing.*;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Properties;
@@ -57,9 +59,23 @@ public class BaseForm {
     public int margin = 0;
 
     protected void openFile() {
-        int returnVal = me.fc.showOpenDialog(me.openBtn);
-        if (returnVal == JFileChooser.APPROVE_OPTION) {
-            File file = me.fc.getSelectedFile();
+        FileDialog d = new FileDialog(me.frame);
+        d.setFilenameFilter(new FilenameFilter()
+        {
+            @Override
+            public boolean accept(File file, String s)
+            {
+                // enter code to return TRUE or FALSE here
+                return s.contains(".photon") || s.contains(".cbddlp");
+            }
+        });
+        d.setVisible(true);
+        String fileName = d.getDirectory() + d.getFile();
+        if (fileName!=null && fileName.length()>0) {
+            File file = new File(fileName);
+//        int returnVal = me.fc.showOpenDialog(me.openBtn);
+//        if (returnVal == JFileChooser.APPROVE_OPTION) {
+//            File file = me.fc.getSelectedFile();
             if (MainUtils.isPhotonFile(file)) {
                 me.saveBtn.setEnabled(false);
                 me.informationBtn.setEnabled(false);
@@ -166,10 +182,12 @@ public class BaseForm {
         me.layerInfo.setForeground(photonFile.getIslandLayerCount() > 0 ? Color.red : Color.decode("#006600"));
         me.layerInfo.setText(photonFile.getLayerInformation());
         me.islandNextBtn.setEnabled(photonFile.getIslandLayerCount() > 0);
+        me.islandPrevBtn.setEnabled(photonFile.getIslandLayerCount() > 0);
 
         me.marginInfo.setForeground(photonFile.getMarginLayers().size() > 0 ? Color.red : Color.decode("#006600"));
         me.marginInfo.setText(photonFile.getMarginInformation());
         me.marginNextBtn.setEnabled(photonFile.getMarginLayers().size() > 0);
+        me.marginPrevBtn.setEnabled(photonFile.getMarginLayers().size() > 0);
 
         me.frame.setTitle(information);
     }
@@ -213,7 +231,7 @@ public class BaseForm {
         loadedFileName = file.getName();
     }
 
-    protected void gotoNextLeayer(ArrayList<Integer> layers) {
+    protected void gotoNextLayer(ArrayList<Integer> layers) {
         if (me.layerSpinner.isEnabled() && photonFile != null) {
             int currentLayer = (Integer) me.layerSpinner.getValue();
             Integer nextLayer = null;
@@ -224,8 +242,28 @@ public class BaseForm {
                 }
             }
             if (nextLayer == null) {
-                // current layer is higher than all island layers, select the first to allow a new cycle.
+                // current layer is higher than all layers, select the first to allow a new cycle.
                 me.layerSpinner.setValue(layers.get(0));
+            } else {
+                me.layerSpinner.setValue(nextLayer);
+            }
+        }
+    }
+
+    protected void gotoPrevLayer(ArrayList<Integer> layers) {
+        if (me.layerSpinner.isEnabled() && photonFile != null) {
+            int currentLayer = (Integer) me.layerSpinner.getValue();
+            Integer nextLayer = null;
+            for (int i : layers) {
+                if (i < currentLayer) {
+                    nextLayer = i;
+                } else {
+                    break;
+                }
+            }
+            if (nextLayer == null) {
+                // current layer is lower than all layers, select the last to allow a new cycle.
+                me.layerSpinner.setValue(layers.get(layers.size()-1));
             } else {
                 me.layerSpinner.setValue(nextLayer);
             }
