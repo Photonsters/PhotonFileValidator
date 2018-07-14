@@ -68,7 +68,7 @@ public class PhotonLayerImage extends JPanel {
         setPreferredSize(new Dimension((int) (width * scale), (int) (height * scale)));
     }
 
-    public void drawLayer(boolean rootLayer, PhotonFileLayer layer, int margin) {
+    public void drawLayer(PhotonFileLayer layer, int margin) {
         if (layer != null) {
             Graphics2D g = image.createGraphics();
             g.scale(scale, scale);

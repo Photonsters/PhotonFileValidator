@@ -153,7 +153,7 @@ public class BaseForm {
             PhotonFileLayer fileLayer = photonFile.getLayer(0);
             if (fileLayer != null) {
                 showLayerInformation(0, fileLayer);
-                ((PhotonLayerImage) me.layerImage).drawLayer(true, fileLayer, margin);
+                ((PhotonLayerImage) me.layerImage).drawLayer(fileLayer, margin);
                 me.layerImage.repaint();
 
                 ScrollUtil.scrollTo(me.imageScrollPane, ScrollPosition.HorizontalCenter);
@@ -281,7 +281,7 @@ public class BaseForm {
             }
             PhotonFileLayer fileLayer = photonFile.getLayer(layer);
             showLayerInformation(layer, fileLayer);
-            ((PhotonLayerImage) me.layerImage).drawLayer(layer == 0, fileLayer, margin);
+            ((PhotonLayerImage) me.layerImage).drawLayer(fileLayer, margin);
             me.layerImage.repaint();
 
             me.layerSlider.setEnabled(false);

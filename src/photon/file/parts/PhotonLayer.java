@@ -104,7 +104,8 @@ public class PhotonLayer {
                             if (iArray[y][x] == ISLAND) {
                                 if (connected(x, y)) {
                                     makeConnected(x, y);
-                                    checkBackUp(x, y);
+                                    checkUp(x, y);
+                                    //checkFrontDown(x, y);
                                     if (rowIslands[y] == 0) {
                                         break;
                                     }
@@ -117,6 +118,21 @@ public class PhotonLayer {
         }
     }
 
+    private void checkUp(int x, int y) {
+        if (y > 0 && rowIslands[y - 1] > 0 && iArray[y - 1][x] == ISLAND) {
+            makeConnected(x, y - 1);
+            checkUp(x, y - 1);
+        }
+        if (x > 0 && rowIslands[y] > 0 && iArray[y][x - 1] == ISLAND) {
+            makeConnected(x - 1, y);
+            checkBackUp(x - 1, y);
+        }
+        if (x < (width-1) && rowIslands[y] > 0 && iArray[y][x + 1] == ISLAND) {
+            makeConnected(x + 1, y);
+            checkFrontUp(x + 1, y);
+        }
+    }
+
     private void checkBackUp(int x, int y) {
         if (y > 0 && rowIslands[y - 1] > 0 && iArray[y - 1][x] == ISLAND) {
             makeConnected(x, y - 1);
@@ -125,6 +141,17 @@ public class PhotonLayer {
         if (x > 0 && rowIslands[y] > 0 && iArray[y][x - 1] == ISLAND) {
             makeConnected(x - 1, y);
             checkBackUp(x - 1, y);
+        }
+    }
+
+    private void checkFrontUp(int x, int y) {
+        if (y > 0 && rowIslands[y - 1] > 0 && iArray[y - 1][x] == ISLAND) {
+            makeConnected(x, y - 1);
+            checkFrontUp(x, y - 1);
+        }
+        if (x < (width-1) && rowIslands[y] > 0 && iArray[y][x + 1] == ISLAND) {
+            makeConnected(x + 1, y);
+            checkFrontUp(x + 1, y);
         }
     }
 
@@ -170,7 +197,7 @@ public class PhotonLayer {
     public byte[] packLayerImage() throws IOException {
         try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
             for (int y = 0; y < height; y++) {
-                if (pixels[y]==0) {
+                if (pixels[y] == 0) {
                     add(baos, OFF, width);
                 } else {
                     byte current = OFF;
@@ -212,11 +239,11 @@ public class PhotonLayer {
 
     /**
      * Get a layer image for drawing.
-     *
+     * <p/>
      * This will decode the RLE packed layer information and return a list of rows, with color and length information
      *
      * @param packedLayerImage The packed layer image information
-     * @param width The width of the current layer, used to change rows
+     * @param width            The width of the current layer, used to change rows
      * @return A list with the
      */
     public static ArrayList<PhotonRow> getRows(byte[] packedLayerImage, int width) {
@@ -230,7 +257,7 @@ public class PhotonLayer {
         PhotonRow currentRow = new PhotonRow();
         rows.add(currentRow);
         int x = 0;
-        for (int i=0; i<packedLayerImage.length; i++) {
+        for (int i = 0; i < packedLayerImage.length; i++) {
             byte rle = packedLayerImage[i];
             byte colorCode = (byte) ((rle & 0x60) >> 5);
             Color color = colors.get(colorCode);
@@ -238,7 +265,7 @@ public class PhotonLayer {
             int length = rle & 0x1F;
             if (extended) {
                 i++;
-                length = (length<<8) | packedLayerImage[i] & 0x00ff;
+                length = (length << 8) | packedLayerImage[i] & 0x00ff;
             }
             currentRow.lines.add(new PhotonLine(color, length));
             x += length;
