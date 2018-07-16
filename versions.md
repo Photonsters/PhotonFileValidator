@@ -1,9 +1,10 @@
 # Version History and change log
 
-### 1.3 Navigation and file load ()
+### 1.3 Navigation, file load and Fix dialog (Not released)
+ - Added an option to auto fix small pixel related islands
  - Added the option to browse backwards for margin and problem areas
  - Now using native file open dialog, so users can use all attached drives
- - fixed a bug where some overgangs was reported as islands
+ - Fixed a bug where some overhangs was reported as islands
 
 ### 1.2 Slider and new name: Photon File Validator (July 13, 2018)
  - Changed java memory to min 1GB and max 5GB
@@ -11,7 +12,7 @@
  - Renamed the application, as validating much better describes the purpose of the application
  - Created new launchers for macOS and Windows, also created new installers
 
-### 1.1 Added (July 11, 2018)
+### 1.1 Added Zoom and Margin checks (July 11, 2018)
  - Changed memory handling to allow for 6000+ layer files on 4GB machines
  - Added Zoom from 0.5x to 2x in 5 steps where the middle is no zoom 1:1
  - Added margin checks, to avoid printing to close to the border

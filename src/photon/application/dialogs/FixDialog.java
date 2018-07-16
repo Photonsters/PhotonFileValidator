@@ -27,7 +27,6 @@ package photon.application.dialogs;
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
 import com.intellij.uiDesigner.core.Spacer;
-import com.sun.javaws.progress.Progress;
 import photon.application.MainForm;
 import photon.application.utilities.PhotonFixWorker;
 import photon.file.PhotonFile;

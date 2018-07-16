@@ -68,8 +68,10 @@ public class PhotonLoadWorker extends SwingWorker<Integer, String> implements IP
     @Override
     protected void done() {
         mainForm.openBtn.setEnabled(true);
-        mainForm.saveBtn.setEnabled(true);
-        mainForm.showFileInformation();
+        if (mainForm.photonFile!=null) {
+            mainForm.saveBtn.setEnabled(true);
+            mainForm.showFileInformation();
+        }
     }
 
     @Override
@@ -79,11 +81,13 @@ public class PhotonLoadWorker extends SwingWorker<Integer, String> implements IP
             mainForm.photonFile = new PhotonFile();
             mainForm.photonFile.setMargin(mainForm.margin);
             mainForm.photonFile.readFile(file, this);
+            publish("Complete...");
         } catch (Exception e) {
-            publish(e.getMessage());
+            mainForm.photonFile = null;
+            mainForm.marginInfo.setForeground(Color.red);
+            mainForm.marginInfo.setText("Could not read the file, file is corrupted or in an unsupported format.");
             return 0;
         }
-        publish("Complete...");
         return 1;
     }
 

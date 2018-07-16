@@ -24,8 +24,6 @@
 
 package photon.file.parts;
 
-import javafx.scene.control.Cell;
-
 /**
  * by bn on 14/07/2018.
  */

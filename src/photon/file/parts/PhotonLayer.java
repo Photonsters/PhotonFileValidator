@@ -355,8 +355,42 @@ public class PhotonLayer {
 
     public byte[] packImageData() throws Exception {
         try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+            for (int y = 0; y < height; y++) {
+                if (pixels[y] == 0) {
+                    addPhotonRLE(baos, true, width);
+                } else {
+                    byte current = OFF;
+                    int length = 0;
+                    for (int x = 0; x < width; x++) {
+                        byte next = iArray[y][x];
+                        if (next != current) {
+                            if (length > 0) {
+                                addPhotonRLE(baos, current==OFF, length);
+                            }
+                            current = next;
+                            length = 1;
+                        } else {
+                            length++;
+                        }
+                    }
+                    if (length > 0) {
+                        addPhotonRLE(baos, current==OFF, length);
+                    }
+                }
+            }
 
             return baos.toByteArray();
         }
     }
+
+    private void addPhotonRLE(ByteArrayOutputStream baos, boolean off, int length) throws IOException {
+        byte[] data = new byte[1];
+        while (length>0) {
+            int lineLength = Integer.min(length, 125); // max storage length of 0x7D (125) ?? Why not 127?
+            data[0] = (byte) ((off ? 0x00: 0x80) | (lineLength & 0x7f));
+            baos.write(data);
+            length -= lineLength;
+        }
+    }
+
 }

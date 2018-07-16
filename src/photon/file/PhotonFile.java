@@ -221,23 +221,25 @@ public class PhotonFile {
     }
 
     private void findIslands() {
-        islandLayers.clear();
-        islandList = new StringBuilder();
-        islandLayerCount = 0;
-        if (layers != null) {
-            for (int i = 0; i < photonFileHeader.getNumberOfLayers(); i++) {
-                PhotonFileLayer layer = layers.get(i);
-                if (layer.getIsLandsCount() > 0) {
-                    if (islandLayerCount < 11) {
-                        if (islandLayerCount == 10) {
-                            islandList.append(", ...");
-                        } else {
-                            if (islandList.length() > 0) islandList.append(", ");
-                            islandList.append(i);
+        if (islandLayers!=null) {
+            islandLayers.clear();
+            islandList = new StringBuilder();
+            islandLayerCount = 0;
+            if (layers != null) {
+                for (int i = 0; i < photonFileHeader.getNumberOfLayers(); i++) {
+                    PhotonFileLayer layer = layers.get(i);
+                    if (layer.getIsLandsCount() > 0) {
+                        if (islandLayerCount < 11) {
+                            if (islandLayerCount == 10) {
+                                islandList.append(", ...");
+                            } else {
+                                if (islandList.length() > 0) islandList.append(", ");
+                                islandList.append(i);
+                            }
                         }
+                        islandLayerCount++;
+                        islandLayers.add(i);
                     }
-                    islandLayerCount++;
-                    islandLayers.add(i);
                 }
             }
         }
@@ -334,6 +336,8 @@ public class PhotonFile {
             int changed = fixit(progres, layer, fileLayer, 10);
             if (changed==0) {
                 progres.showInfo(", but nothing could be done.");
+            } else {
+                fileLayer.saveLayer(layer);
             }
 
             progres.showInfo("<br>");
@@ -346,7 +350,7 @@ public class PhotonFile {
         int changed = layer.fixlayer();
         if (changed>0) {
             layer.reduce();
-            fileLayer.saveLayer(layer);
+            fileLayer.updateLayerIslands(layer);
             progres.showInfo(", " + changed + " pixels changed");
             if (loops>0) {
                 changed += fixit(progres, layer, fileLayer, loops -1);

@@ -290,9 +290,15 @@ public class PhotonFileLayer {
         photonLayer.unpackLayerImage(packedLayerImage);
     }
 
+    public void updateLayerIslands(PhotonLayer photonLayer) {
+        islandRows = new ArrayList<>();
+        isLandsCount = photonLayer.setIslands(islandRows);
+    }
+
     public void saveLayer(PhotonLayer photonLayer) throws Exception {
         this.packedLayerImage = photonLayer.packLayerImage();
         this.imageData = photonLayer.packImageData();
+        this.dataSize = imageData.length;
         islandRows = new ArrayList<>();
         isLandsCount = photonLayer.setIslands(islandRows);
     }

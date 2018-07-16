@@ -39,7 +39,6 @@ import photon.file.ui.ScrollPosition;
 import photon.file.ui.ScrollUtil;
 
 import javax.swing.*;
-import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.io.File;
 import java.io.FileInputStream;
@@ -91,10 +90,12 @@ public class BaseForm {
                     PhotonLoadWorker loadWorker = new PhotonLoadWorker(me, file);
                     loadWorker.execute();
 
-                    me.saveBtn.setEnabled(true);
-                    me.informationBtn.setEnabled(true);
-                    me.previewLargeBtn.setEnabled(true);
-                    me.previewSmallBtn.setEnabled(true);
+                    if (me.photonFile!=null) {
+                        me.saveBtn.setEnabled(true);
+                        me.informationBtn.setEnabled(true);
+                        me.previewLargeBtn.setEnabled(true);
+                        me.previewSmallBtn.setEnabled(true);
+                    }
                 } catch (Exception ex) {
                     System.out.println(ex.getMessage());
                 }
@@ -159,7 +160,7 @@ public class BaseForm {
     }
 
     public void showFileInformation() {
-        if (loadedFileName!=null && loadedFileName.length()>0) {
+        if (loadedFileName!=null) {
             String information = loadedFileName + " (" + photonFile.getInformation() + ")";
             me.zoomSlider.setValue(0);
             ((PhotonLayerImage) me.layerImage).reScale(1, photonFile.getWidth(), photonFile.getHeight());
