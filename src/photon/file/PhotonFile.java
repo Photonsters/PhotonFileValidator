@@ -24,6 +24,7 @@
 
 package photon.file;
 
+import photon.application.utilities.PhotonCalcWorker;
 import photon.file.parts.*;
 
 import java.io.*;
@@ -67,20 +68,7 @@ public class PhotonFile {
         previewTwo = new PhotonFilePreview(photonFileHeader.getPreviewTwoOffsetAddress(), file);
         iPhotonProgress.showInfo("Reading photon layers information...");
         layers = PhotonFileLayer.readLayers(photonFileHeader, file, margin, iPhotonProgress);
-        islandList = null;
-        islandLayerCount = 0;
-        islandLayers = new ArrayList<>();
-
-        if (margin > 0) {
-            marginLayers = new ArrayList<>();
-            int i = 0;
-            for (PhotonFileLayer layer : layers) {
-                if (layer.doExtendMargin()) {
-                    marginLayers.add(i);
-                }
-                i++;
-            }
-        }
+        resetMarginAndIslandInfo();
 
         return this;
     }
@@ -357,6 +345,28 @@ public class PhotonFile {
             }
         }
         return changed;
+    }
+
+    public void calculate(IPhotonProgress progres) throws Exception {
+        PhotonFileLayer.calculateLayers(photonFileHeader, layers, margin, progres);
+        resetMarginAndIslandInfo();
+    }
+
+    private void resetMarginAndIslandInfo() {
+        islandList = null;
+        islandLayerCount = 0;
+        islandLayers = new ArrayList<>();
+
+        if (margin > 0) {
+            marginLayers = new ArrayList<>();
+            int i = 0;
+            for (PhotonFileLayer layer : layers) {
+                if (layer.doExtendMargin()) {
+                    marginLayers.add(i);
+                }
+                i++;
+            }
+        }
     }
 }
 

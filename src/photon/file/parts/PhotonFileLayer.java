@@ -54,6 +54,7 @@ public class PhotonFileLayer {
 
     private boolean extendsMargin;
     private PhotonFileHeader photonFileHeader;
+    public boolean isCalculated;
 
     private PhotonFileLayer(PhotonInputStream ds) throws Exception {
         layerPositionZ = ds.readFloat();
@@ -132,6 +133,22 @@ public class PhotonFileLayer {
         return unpackedImage;
     }
 
+
+    private void unknownPixels(ArrayList<BitSet> unpackedImage, PhotonLayer photonLayer) {
+        photonLayer.clear();
+
+        for (int y = 0; y < unpackedImage.size(); y++) {
+            BitSet currentRow = unpackedImage.get(y);
+            if (currentRow != null) {
+                for (int x = 0; x < currentRow.length(); x++) {
+                    if (currentRow.get(x)) {
+                        photonLayer.supported(x, y);
+                    }
+                }
+            }
+        }
+    }
+
     private void calculate(ArrayList<BitSet> unpackedImage, ArrayList<BitSet> previousUnpackedImage, PhotonLayer photonLayer) {
         islandRows = new ArrayList<>();
         isLandsCount = 0;
@@ -159,6 +176,7 @@ public class PhotonFileLayer {
         isLandsCount = photonLayer.setIslands(islandRows);
     }
 
+
     public static List<PhotonFileLayer> readLayers(PhotonFileHeader photonFileHeader, byte[] file, int margin, IPhotonProgress iPhotonProgress) throws Exception {
         PhotonLayer photonLayer = new PhotonLayer(photonFileHeader.getResolutionX(), photonFileHeader.getResolutionY());
 
@@ -166,7 +184,7 @@ public class PhotonFileLayer {
 
 
         try (PhotonInputStream ds = new PhotonInputStream(new ByteArrayInputStream(file, photonFileHeader.getLayersDefinitionOffsetAddress(), file.length))) {
-            ArrayList<BitSet> previousUnpackedImage = null;
+//            ArrayList<BitSet> previousUnpackedImage = null;
             for (int i = 0; i < photonFileHeader.getNumberOfLayers(); i++) {
 
                 iPhotonProgress.showInfo("Reading photon file layer " + i + "/" + photonFileHeader.getNumberOfLayers());
@@ -177,19 +195,21 @@ public class PhotonFileLayer {
 
                 ArrayList<BitSet> unpackedImage = layer.unpackImage(photonFileHeader.getResolutionX());
 
-                if (margin > 0) {
-                    layer.extendsMargin = layer.checkMagin(unpackedImage, margin);
-                }
+//                if (margin > 0) {
+//                    layer.extendsMargin = layer.checkMagin(unpackedImage, margin);
+//                }
 
-                layer.calculate(unpackedImage, previousUnpackedImage, photonLayer);
+//                 layer.unknownPixels(unpackedImage, photonLayer);
+
+                // layer.calculate(unpackedImage, previousUnpackedImage, photonLayer);
 
                 layers.add(layer);
-                if (previousUnpackedImage != null) {
-                    previousUnpackedImage.clear();
-                }
-                previousUnpackedImage = unpackedImage;
+//                if (previousUnpackedImage != null) {
+//                    previousUnpackedImage.clear();
+//                }
+//                previousUnpackedImage = unpackedImage;
 
-                layer.packedLayerImage = photonLayer.packLayerImage();
+//                layer.packedLayerImage = photonLayer.packLayerImage();
 
             }
         }
@@ -202,8 +222,40 @@ public class PhotonFileLayer {
         return layers;
     }
 
+    public static void calculateLayers(PhotonFileHeader photonFileHeader, List<PhotonFileLayer> layers, int margin, IPhotonProgress iPhotonProgress) throws Exception {
+        PhotonLayer photonLayer = new PhotonLayer(photonFileHeader.getResolutionX(), photonFileHeader.getResolutionY());
+        ArrayList<BitSet> previousUnpackedImage = null;
+        int i = 0;
+        for (PhotonFileLayer layer : layers) {
+            ArrayList<BitSet> unpackedImage = layer.unpackImage(photonFileHeader.getResolutionX());
+
+            iPhotonProgress.showInfo("Calculating photon file layer " + i + "/" + photonFileHeader.getNumberOfLayers());
+
+            if (margin > 0) {
+                layer.extendsMargin = layer.checkMagin(unpackedImage, margin);
+            }
+
+            layer.unknownPixels(unpackedImage, photonLayer);
+
+            layer.calculate(unpackedImage, previousUnpackedImage, photonLayer);
+
+            if (previousUnpackedImage != null) {
+                previousUnpackedImage.clear();
+            }
+            previousUnpackedImage = unpackedImage;
+
+            layer.packedLayerImage = photonLayer.packLayerImage();
+            layer.isCalculated = true;
+
+            i++;
+        }
+        photonLayer.unLink();
+        System.gc();
+    }
+
+
     public ArrayList<PhotonRow> getRows() {
-        return PhotonLayer.getRows(packedLayerImage, photonFileHeader.getResolutionX());
+        return PhotonLayer.getRows(packedLayerImage, photonFileHeader.getResolutionX(), isCalculated);
     }
 
     public ArrayList<BitSet> getIslandRows() {
@@ -303,4 +355,7 @@ public class PhotonFileLayer {
         isLandsCount = photonLayer.setIslands(islandRows);
     }
 
+    public ArrayList<BitSet> getUnknownRows() {
+        return unpackImage(photonFileHeader.getResolutionX());
+    }
 }

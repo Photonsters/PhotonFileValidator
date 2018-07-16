@@ -30,6 +30,7 @@ import photon.application.dialogs.InformationDialog;
 import photon.application.dialogs.PreviewDialog;
 import photon.application.dialogs.SaveDialog;
 import photon.application.utilities.MainUtils;
+import photon.application.utilities.PhotonCalcWorker;
 import photon.application.utilities.PhotonLoadWorker;
 import photon.file.PhotonFile;
 import photon.file.parts.PhotonFileLayer;
@@ -86,12 +87,6 @@ public class BaseForm {
                     PhotonLoadWorker loadWorker = new PhotonLoadWorker(me, file);
                     loadWorker.execute();
 
-                    if (me.photonFile!=null) {
-                        me.saveBtn.setEnabled(true);
-                        me.informationBtn.setEnabled(true);
-                        me.previewLargeBtn.setEnabled(true);
-                        me.previewSmallBtn.setEnabled(true);
-                    }
                 } catch (Exception ex) {
                     System.out.println(ex.getMessage());
                 }
@@ -303,6 +298,19 @@ public class BaseForm {
             me.layerSlider.setEnabled(false);
             me.layerSlider.setValue(layer);
             me.layerSlider.setEnabled(true);
+        }
+    }
+
+    public void calc() {
+        if (me.photonFile!=null) {
+            me.saveBtn.setEnabled(true);
+            me.informationBtn.setEnabled(true);
+            me.previewLargeBtn.setEnabled(true);
+            me.previewSmallBtn.setEnabled(true);
+
+            PhotonCalcWorker calcWorker = new PhotonCalcWorker(me);
+            calcWorker.execute();
+
         }
     }
 }

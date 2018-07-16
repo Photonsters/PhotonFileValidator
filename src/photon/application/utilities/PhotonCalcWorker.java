@@ -33,29 +33,15 @@ import java.awt.*;
 import java.io.File;
 
 /**
- *  by bn on 09/07/2018.
+ * by bn on 16/07/2018.
  */
-public class PhotonLoadWorker extends SwingWorker<Integer, String> implements IPhotonProgress {
+public class PhotonCalcWorker extends SwingWorker<Integer, String> implements IPhotonProgress {
     private MainForm mainForm;
     private File file;
 
-    public PhotonLoadWorker(MainForm mainForm, File file) {
+    public PhotonCalcWorker(MainForm mainForm) {
         this.mainForm = mainForm;
-        this.file = file;
-
-        mainForm.layerInfo.setForeground(Color.decode("#000099"));
         mainForm.marginInfo.setText("");
-
-        mainForm.openBtn.setEnabled(false);
-        mainForm.saveBtn.setEnabled(false);
-        mainForm.fixBtn.setEnabled(false);
-        mainForm.islandNextBtn.setEnabled(false);
-        mainForm.islandPrevBtn.setEnabled(false);
-        mainForm.marginNextBtn.setEnabled(false);
-        mainForm.marginPrevBtn.setEnabled(false);
-        mainForm.layerSpinner.setEnabled(false);
-        mainForm.zoomSlider.setEnabled(false);
-        mainForm.layerSlider.setEnabled(false);
     }
 
     @Override
@@ -67,26 +53,22 @@ public class PhotonLoadWorker extends SwingWorker<Integer, String> implements IP
 
     @Override
     protected void done() {
-        // mainForm.openBtn.setEnabled(true);
+        mainForm.openBtn.setEnabled(true);
         if (mainForm.photonFile!=null) {
-            mainForm.saveBtn.setEnabled(true);
             mainForm.showFileInformation();
-            mainForm.calc();
         }
     }
 
     @Override
     protected Integer doInBackground() throws Exception {
-        publish("Loading file...");
+        publish("Calculating layers...");
         try {
-            mainForm.photonFile = new PhotonFile();
             mainForm.photonFile.setMargin(mainForm.margin);
-            mainForm.photonFile.readFile(file, this);
-            publish("Complete...");
+            mainForm.photonFile.calculate(this);
+            publish("Calculation Complete...");
         } catch (Exception e) {
-            mainForm.photonFile = null;
             mainForm.marginInfo.setForeground(Color.red);
-            mainForm.marginInfo.setText("Could not read the file, file is corrupted or in an unsupported format.");
+            mainForm.marginInfo.setText("Could not calculate the file.");
             return 0;
         }
         return 1;

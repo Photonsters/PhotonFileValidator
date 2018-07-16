@@ -282,10 +282,14 @@ public class PhotonLayer {
      * @param width            The width of the current layer, used to change rows
      * @return A list with the
      */
-    public static ArrayList<PhotonRow> getRows(byte[] packedLayerImage, int width) {
+    public static ArrayList<PhotonRow> getRows(byte[] packedLayerImage, int width, boolean isCalculated) {
         Hashtable<Byte, Color> colors = new Hashtable<>();
         colors.put(OFF, Color.black);
-        colors.put(SUPPORTED, Color.decode("#008800"));
+        if (isCalculated) {
+            colors.put(SUPPORTED, Color.decode("#008800"));
+        } else {
+            colors.put(SUPPORTED, Color.decode("#000088"));
+        }
         colors.put(CONNECTED, Color.decode("#FFFF00"));
         colors.put(ISLAND, Color.decode("#FF0000"));
         ArrayList<PhotonRow> rows = new ArrayList<>();

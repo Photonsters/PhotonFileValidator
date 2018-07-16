@@ -1,7 +1,7 @@
 # Release procedure
 This is a checklist for creating a release
 
-### Verision Number
+### Version Number
 
 - Update the version number (in src/photon/application/MainForm) of frame title located in the main funtion.
 - Update the version number in makeapp.sh

@@ -85,32 +85,43 @@ public class PhotonLayerImage extends JPanel {
                 g.drawLine(x2, margin, x2, y2);
             }
 
-            if (layer.getIsLandsCount() < 100) {
-                int columnNumber = 0;
-                g.setColor(Color.decode("#550000"));
-                for (BitSet column : layer.getIslandRows()) {
-                    drawCross(g, columnNumber, column);
-                    columnNumber++;
-                }
-
-            }
-
-            ArrayList<PhotonRow> rows = layer.getRows();
-            if (rows != null) {
-                int columnNumber = 0;
-                for (PhotonRow row : rows) {
-                    int i = 0;
-                    for(PhotonLine line : row.lines) {
-                        int end = i + line.length;
-                        if (line.color!=Color.black) {
-                            g.setColor(line.color);
-                            g.drawLine(columnNumber, i, columnNumber, end);
-                        }
-                        i = end;
+            if (layer.isCalculated) {
+                if (layer.getIsLandsCount() < 100) {
+                    int columnNumber = 0;
+                    g.setColor(Color.decode("#550000"));
+                    for (BitSet column : layer.getIslandRows()) {
+                        drawCross(g, columnNumber, column);
+                        columnNumber++;
                     }
+
+                }
+
+                ArrayList<PhotonRow> rows = layer.getRows();
+                if (rows != null) {
+                    int columnNumber = 0;
+                    for (PhotonRow row : rows) {
+                        int i = 0;
+                        for (PhotonLine line : row.lines) {
+                            int end = i + line.length;
+                            if (line.color != Color.black) {
+                                g.setColor(line.color);
+                                g.drawLine(columnNumber, i, columnNumber, end);
+                            }
+                            i = end;
+                        }
+                        columnNumber++;
+                    }
+                }
+
+            } else {
+                g.setColor(Color.decode("#008888"));
+                int columnNumber = 0;
+                for (BitSet column : layer.getUnknownRows()) {
+                    drawDot(g, columnNumber, column);
                     columnNumber++;
                 }
             }
+
 /*
             if (rootLayer) {
                 g.setColor(Color.decode("#008800"));
