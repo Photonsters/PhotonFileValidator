@@ -32,12 +32,12 @@
     <timeoutErr>true</timeoutErr>
   </splash>
   <versionInfo>
-    <fileVersion>1.2.0.0</fileVersion>
-    <txtFileVersion>1.2</txtFileVersion>
+    <fileVersion>1.3.0.0</fileVersion>
+    <txtFileVersion>1.3</txtFileVersion>
     <fileDescription>Photon File Validator</fileDescription>
     <copyright>(C) Copyright by Bonosoft</copyright>
-    <productVersion>1.2.0.0</productVersion>
-    <txtProductVersion>1.2</txtProductVersion>
+    <productVersion>1.3.0.0</productVersion>
+    <txtProductVersion>1.3</txtProductVersion>
     <productName>Photon File Validator</productName>
     <companyName>Bonosoft</companyName>
     <internalName>Photon file validator</internalName>
