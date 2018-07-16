@@ -65,7 +65,6 @@ public class BaseForm {
             @Override
             public boolean accept(File file, String s)
             {
-                // enter code to return TRUE or FALSE here
                 return s.contains(".photon") || s.contains(".cbddlp");
             }
         });
@@ -73,9 +72,6 @@ public class BaseForm {
         String fileName = d.getDirectory() + d.getFile();
         if (fileName!=null && fileName.length()>0) {
             File file = new File(fileName);
-//        int returnVal = me.fc.showOpenDialog(me.openBtn);
-//        if (returnVal == JFileChooser.APPROVE_OPTION) {
-//            File file = me.fc.getSelectedFile();
             if (MainUtils.isPhotonFile(file)) {
                 me.saveBtn.setEnabled(false);
                 me.informationBtn.setEnabled(false);
@@ -99,8 +95,8 @@ public class BaseForm {
                 } catch (Exception ex) {
                     System.out.println(ex.getMessage());
                 }
+                me.frame.setTitle(file.getName());
             }
-            me.frame.setTitle(file.getName());
         }
 
     }
