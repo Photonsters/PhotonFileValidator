@@ -50,23 +50,23 @@ public class PhotonFile {
         return readFile(getBinaryData(file));
     }
 
-    public PhotonFile readFile(File file, IPhotonLoadProgress iPhotonLoadProgress) throws Exception {
-        return readFile(getBinaryData(file), iPhotonLoadProgress);
+    public PhotonFile readFile(File file, IPhotonProgress iPhotonProgress) throws Exception {
+        return readFile(getBinaryData(file), iPhotonProgress);
     }
 
     public PhotonFile readFile(byte[] file) throws Exception {
         return readFile(file, new DummyPhotonLoadProgress());
     }
 
-    public PhotonFile readFile(byte[] file, IPhotonLoadProgress iPhotonLoadProgress) throws Exception {
-        iPhotonLoadProgress.showInfo("Reading photon file header information...");
+    public PhotonFile readFile(byte[] file, IPhotonProgress iPhotonProgress) throws Exception {
+        iPhotonProgress.showInfo("Reading photon file header information...");
         photonFileHeader = new PhotonFileHeader(file);
-        iPhotonLoadProgress.showInfo("Reading photon large preview image information...");
+        iPhotonProgress.showInfo("Reading photon large preview image information...");
         previewOne = new PhotonFilePreview(photonFileHeader.getPreviewOneOffsetAddress(), file);
-        iPhotonLoadProgress.showInfo("Reading photon small preview image information...");
+        iPhotonProgress.showInfo("Reading photon small preview image information...");
         previewTwo = new PhotonFilePreview(photonFileHeader.getPreviewTwoOffsetAddress(), file);
-        iPhotonLoadProgress.showInfo("Reading photon layers information...");
-        layers = PhotonFileLayer.readLayers(photonFileHeader, file, margin, iPhotonLoadProgress);
+        iPhotonProgress.showInfo("Reading photon layers information...");
+        layers = PhotonFileLayer.readLayers(photonFileHeader, file, margin, iPhotonProgress);
         islandList = null;
         islandLayerCount = 0;
         islandLayers = new ArrayList<>();
@@ -188,7 +188,7 @@ public class PhotonFile {
             return "No safty margin set, printing to the border.";
         } else {
             if (marginLayers.size() == 0) {
-                return "The model is within the defined safty margin.";
+                return "The model is within the defined safty margin (" + this.margin + " pixels).";
             } else if (marginLayers.size() == 1) {
                 return "The layer " + marginLayers.get(0) + " contains model parts that extend beyond the margin.";
             }
@@ -215,15 +215,16 @@ public class PhotonFile {
         if (islandLayerCount == 0) {
             return "No layers have islands :-)";
         } else if (islandLayerCount == 1) {
-            return "Don't print this file, layer " + islandList.toString() + " has one or more unsupported islands.";
+            return "Unsupported islands found in layer " + islandList.toString();
         }
-        return "Don't print this file, layers " + islandList.toString() + " have unsupported islands.";
+        return "Unsupported islands found in layers " + islandList.toString();
     }
 
     private void findIslands() {
+        islandLayers.clear();
         islandList = new StringBuilder();
         islandLayerCount = 0;
-        if (layers!=null) {
+        if (layers != null) {
             for (int i = 0; i < photonFileHeader.getNumberOfLayers(); i++) {
                 PhotonFileLayer layer = layers.get(i);
                 if (layer.getIsLandsCount() > 0) {
@@ -315,6 +316,43 @@ public class PhotonFile {
             }
             layer.setLayerOffTimeSeconds(photonFileHeader.getOffTimeSeconds());
         }
+    }
+
+    public void fixLayers(IPhotonProgress progres) throws Exception {
+        PhotonLayer layer = null;
+        for(int layerNo : islandLayers) {
+            progres.showInfo("Checking layer " + layerNo);
+
+            // Unpack the layer data to the layer utility class
+            PhotonFileLayer fileLayer = layers.get(layerNo);
+            if (layer==null) {
+                layer = fileLayer.getLayer();
+            } else {
+                fileLayer.getUpdateLayer(layer);
+            }
+
+            int changed = fixit(progres, layer, fileLayer, 10);
+            if (changed==0) {
+                progres.showInfo(", but nothing could be done.");
+            }
+
+            progres.showInfo("<br>");
+
+        }
+        findIslands();
+    }
+
+    private int fixit(IPhotonProgress progres, PhotonLayer layer, PhotonFileLayer fileLayer, int loops) throws Exception {
+        int changed = layer.fixlayer();
+        if (changed>0) {
+            layer.reduce();
+            fileLayer.saveLayer(layer);
+            progres.showInfo(", " + changed + " pixels changed");
+            if (loops>0) {
+                changed += fixit(progres, layer, fileLayer, loops -1);
+            }
+        }
+        return changed;
     }
 }
 

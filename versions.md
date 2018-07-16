@@ -21,5 +21,5 @@
  - Save the file with new settings for exposure, offtime, and bottom layers
  - View file layers in full pixel perfect size
  - View small and large preview images
- - View information on pixels, and the resin use in ml
+ - View information on pixels, print time calculation, and the resin use in ml
  - View layers with island, and quickly navigate to these

@@ -25,70 +25,54 @@
 package photon.application.utilities;
 
 import photon.application.MainForm;
+import photon.application.dialogs.FixDialog;
 import photon.file.PhotonFile;
 import photon.file.parts.IPhotonProgress;
 
 import javax.swing.*;
-import java.awt.*;
-import java.io.File;
 
 /**
- *  by bn on 09/07/2018.
+ * by bn on 14/07/2018.
  */
-public class PhotonLoadWorker extends SwingWorker<Integer, String> implements IPhotonProgress {
+public class PhotonFixWorker extends SwingWorker<Integer, String> implements IPhotonProgress {
+    private FixDialog fixDialog;
+    private PhotonFile photonFile;
     private MainForm mainForm;
-    private File file;
 
-    public PhotonLoadWorker(MainForm mainForm, File file) {
+    public PhotonFixWorker(FixDialog fixDialog, PhotonFile photonFile, MainForm mainForm) {
+        this.fixDialog = fixDialog;
+        this.photonFile = photonFile;
         this.mainForm = mainForm;
-        this.file = file;
-
-        mainForm.layerInfo.setForeground(Color.decode("#000099"));
-        mainForm.marginInfo.setText("");
-
-        mainForm.openBtn.setEnabled(false);
-        mainForm.saveBtn.setEnabled(false);
-        mainForm.fixBtn.setEnabled(false);
-        mainForm.islandNextBtn.setEnabled(false);
-        mainForm.islandPrevBtn.setEnabled(false);
-        mainForm.marginNextBtn.setEnabled(false);
-        mainForm.marginPrevBtn.setEnabled(false);
-        mainForm.layerSpinner.setEnabled(false);
-        mainForm.zoomSlider.setEnabled(false);
-        mainForm.layerSlider.setEnabled(false);
     }
 
     @Override
     protected void process(java.util.List<String> chunks) {
         for (String str : chunks) {
-            mainForm.layerInfo.setText(str);
+            fixDialog.appendInformation(str);
         }
     }
 
     @Override
     protected void done() {
-        mainForm.openBtn.setEnabled(true);
-        mainForm.saveBtn.setEnabled(true);
+        fixDialog.buttonOK.setEnabled(true);
+        fixDialog.startButton.setEnabled(true);
+        fixDialog.appendInformation("<p>Done.</p>");
         mainForm.showFileInformation();
-    }
-
-    @Override
-    protected Integer doInBackground() throws Exception {
-        publish("Loading file...");
-        try {
-            mainForm.photonFile = new PhotonFile();
-            mainForm.photonFile.setMargin(mainForm.margin);
-            mainForm.photonFile.readFile(file, this);
-        } catch (Exception e) {
-            publish(e.getMessage());
-            return 0;
-        }
-        publish("Complete...");
-        return 1;
     }
 
     @Override
     public void showInfo(String str) {
         publish(str);
+    }
+
+    @Override
+    protected Integer doInBackground() throws Exception {
+        try {
+            photonFile.fixLayers(this);
+        } catch (Exception e) {
+            publish("<br><p>" + e.getMessage()+ "</p>");
+            return 0;
+        }
+        return 1;
     }
 }

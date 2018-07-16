@@ -36,10 +36,10 @@ import java.util.Hashtable;
  * by bn on 02/07/2018.
  */
 public class PhotonLayer {
-    private final static byte OFF = 0x00;
-    private final static byte SUPPORTED = 0x01;
-    private final static byte ISLAND = 0x02;
-    private final static byte CONNECTED = 0x03;
+    public final static byte OFF = 0x00;
+    public final static byte SUPPORTED = 0x01;
+    public final static byte ISLAND = 0x02;
+    public final static byte CONNECTED = 0x03;
 
     private int width;
     private int height;
@@ -105,7 +105,6 @@ public class PhotonLayer {
                                 if (connected(x, y)) {
                                     makeConnected(x, y);
                                     checkUp(x, y);
-                                    //checkFrontDown(x, y);
                                     if (rowIslands[y] == 0) {
                                         break;
                                     }
@@ -224,6 +223,43 @@ public class PhotonLayer {
         }
     }
 
+    public void unpackLayerImage(byte[] packedLayerImage) {
+        clear();
+        int x = 0;
+        int y = 0;
+        for (int i = 0; i < packedLayerImage.length; i++) {
+            byte rle = packedLayerImage[i];
+            byte colorCode = (byte) ((rle & 0x60) >> 5);
+
+            boolean extended = (rle & 0x80) == 0x80;
+            int length = rle & 0x1F;
+            if (extended) {
+                i++;
+                length = (length << 8) | packedLayerImage[i] & 0x00ff;
+            }
+
+            for(int xi = x; xi<(x+length); xi++) {
+                switch (colorCode) {
+                    case SUPPORTED:
+                        supported(xi, y);
+                        break;
+                    case CONNECTED:
+                        unSupported(xi, y);
+                        break;
+                    case ISLAND:
+                        island(xi, y);
+                        break;
+                }
+            }
+            x += length;
+            if (x >= width) {
+                y++;
+                x = 0;
+            }
+        }
+
+    }
+
     private void add(ByteArrayOutputStream baos, byte current, int length) throws IOException {
         if (length < 32) {
             byte[] data = new byte[1];
@@ -279,4 +315,48 @@ public class PhotonLayer {
         return rows;
     }
 
+    public int fixlayer() {
+        PhotonMatix photonMatix = new PhotonMatix();
+        ArrayList<PhotonDot> dots = new ArrayList<>();
+        if (islandCount > 0) {
+            for (int y = 0; y < height; y++) {
+                if (rowIslands[y] > 0) {
+                    for (int x = 0; x < width; x++) {
+                        if (iArray[y][x] == ISLAND) {
+                            photonMatix.clear();
+                            int blanks = photonMatix.set(x, y, iArray, width, height);
+                            if (blanks>0) { // one or more neighbour pixels are OFF
+                                photonMatix.calc();
+                                photonMatix.level();
+                                photonMatix.calc();
+
+                                for(int ry=0; ry<3; ry++) {
+                                    for (int rx = 0; rx < 3; rx++) {
+                                        int iy = y-1+ry;
+                                        int ix = x-1+rx;
+                                        if (iArray[iy][ix] == OFF) {
+                                            if (photonMatix.calcMatrix[1+ry][1+rx]>3) {
+                                                dots.add(new PhotonDot(ix, iy));
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        for(PhotonDot dot : dots) {
+            island(dot.x, dot.y);
+        }
+        return dots.size();
+    }
+
+    public byte[] packImageData() throws Exception {
+        try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+
+            return baos.toByteArray();
+        }
+    }
 }

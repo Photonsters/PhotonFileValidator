@@ -159,7 +159,7 @@ public class PhotonFileLayer {
         isLandsCount = photonLayer.setIslands(islandRows);
     }
 
-    public static List<PhotonFileLayer> readLayers(PhotonFileHeader photonFileHeader, byte[] file, int margin, IPhotonLoadProgress iPhotonLoadProgress) throws Exception {
+    public static List<PhotonFileLayer> readLayers(PhotonFileHeader photonFileHeader, byte[] file, int margin, IPhotonProgress iPhotonProgress) throws Exception {
         PhotonLayer photonLayer = new PhotonLayer(photonFileHeader.getResolutionX(), photonFileHeader.getResolutionY());
 
         List<PhotonFileLayer> layers = new ArrayList<>();
@@ -169,7 +169,7 @@ public class PhotonFileLayer {
             ArrayList<BitSet> previousUnpackedImage = null;
             for (int i = 0; i < photonFileHeader.getNumberOfLayers(); i++) {
 
-                iPhotonLoadProgress.showInfo("Reading photon file layer " + i + "/" + photonFileHeader.getNumberOfLayers());
+                iPhotonProgress.showInfo("Reading photon file layer " + i + "/" + photonFileHeader.getNumberOfLayers());
 
                 PhotonFileLayer layer = new PhotonFileLayer(ds);
                 layer.photonFileHeader = photonFileHeader;
@@ -278,6 +278,23 @@ public class PhotonFileLayer {
 
         }
         return false;
+    }
+
+    public PhotonLayer getLayer() {
+        PhotonLayer photonLayer = new PhotonLayer(photonFileHeader.getResolutionX(), photonFileHeader.getResolutionY());
+        photonLayer.unpackLayerImage(packedLayerImage);
+        return photonLayer;
+    }
+
+    public void getUpdateLayer(PhotonLayer photonLayer) {
+        photonLayer.unpackLayerImage(packedLayerImage);
+    }
+
+    public void saveLayer(PhotonLayer photonLayer) throws Exception {
+        this.packedLayerImage = photonLayer.packLayerImage();
+        this.imageData = photonLayer.packImageData();
+        islandRows = new ArrayList<>();
+        isLandsCount = photonLayer.setIslands(islandRows);
     }
 
 }

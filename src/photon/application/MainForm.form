@@ -11,8 +11,8 @@
       <scrollpane id="5143d" binding="imageScrollPane">
         <constraints>
           <grid row="3" column="0" row-span="1" col-span="1" vsize-policy="7" hsize-policy="7" anchor="0" fill="3" indent="0" use-parent-layout="false">
-            <minimum-size width="600" height="400"/>
-            <preferred-size width="800" height="600"/>
+            <minimum-size width="900" height="400"/>
+            <preferred-size width="900" height="600"/>
             <maximum-size width="2570" height="1450"/>
           </grid>
         </constraints>
@@ -188,14 +188,6 @@
                 <properties/>
                 <border type="none"/>
                 <children>
-                  <component id="cc07c" class="javax.swing.JLabel" binding="marginInfo">
-                    <constraints>
-                      <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="1" use-parent-layout="false"/>
-                    </constraints>
-                    <properties>
-                      <text value=""/>
-                    </properties>
-                  </component>
                   <hspacer id="3933">
                     <constraints>
                       <grid row="0" column="3" row-span="1" col-span="1" vsize-policy="1" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
@@ -203,28 +195,36 @@
                   </hspacer>
                   <component id="31d5" class="javax.swing.JButton" binding="marginNextBtn">
                     <constraints>
-                      <grid row="0" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="1" fill="1" indent="0" use-parent-layout="false">
-                        <minimum-size width="50" height="18"/>
-                        <preferred-size width="50" height="18"/>
-                        <maximum-size width="50" height="18"/>
+                      <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="1" fill="1" indent="0" use-parent-layout="false">
+                        <minimum-size width="40" height="18"/>
+                        <preferred-size width="40" height="18"/>
+                        <maximum-size width="40" height="18"/>
                       </grid>
                     </constraints>
                     <properties>
                       <enabled value="false"/>
-                      <text value="&gt;&gt;"/>
+                      <text value="&gt;"/>
                     </properties>
                   </component>
                   <component id="7bc55" class="javax.swing.JButton" binding="marginPrevBtn">
                     <constraints>
-                      <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="1" fill="1" indent="0" use-parent-layout="false">
-                        <minimum-size width="50" height="18"/>
-                        <preferred-size width="50" height="18"/>
-                        <maximum-size width="50" height="18"/>
+                      <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="1" fill="1" indent="0" use-parent-layout="false">
+                        <minimum-size width="40" height="18"/>
+                        <preferred-size width="40" height="18"/>
+                        <maximum-size width="40" height="18"/>
                       </grid>
                     </constraints>
                     <properties>
                       <enabled value="false"/>
-                      <text value="&lt;&lt;"/>
+                      <text value="&lt;"/>
+                    </properties>
+                  </component>
+                  <component id="cc07c" class="javax.swing.JLabel" binding="marginInfo">
+                    <constraints>
+                      <grid row="0" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="1" use-parent-layout="false"/>
+                    </constraints>
+                    <properties>
+                      <text value=""/>
                     </properties>
                   </component>
                 </children>
@@ -241,14 +241,6 @@
                 <properties/>
                 <border type="none"/>
                 <children>
-                  <component id="84399" class="javax.swing.JLabel" binding="layerInfo">
-                    <constraints>
-                      <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="9" fill="0" indent="1" use-parent-layout="false"/>
-                    </constraints>
-                    <properties>
-                      <text value=""/>
-                    </properties>
-                  </component>
                   <hspacer id="da4f0">
                     <constraints>
                       <grid row="0" column="3" row-span="1" col-span="1" vsize-policy="1" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
@@ -256,33 +248,41 @@
                   </hspacer>
                   <component id="6828f" class="javax.swing.JButton" binding="islandNextBtn">
                     <constraints>
-                      <grid row="0" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="1" fill="1" indent="0" use-parent-layout="false">
-                        <minimum-size width="50" height="18"/>
-                        <preferred-size width="50" height="18"/>
-                        <maximum-size width="50" height="18"/>
+                      <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="1" fill="1" indent="0" use-parent-layout="false">
+                        <minimum-size width="40" height="18"/>
+                        <preferred-size width="40" height="18"/>
+                        <maximum-size width="40" height="18"/>
                       </grid>
                     </constraints>
                     <properties>
                       <enabled value="false"/>
-                      <text value="&gt;&gt;"/>
+                      <text value="&gt;"/>
                     </properties>
                   </component>
                   <component id="e8cad" class="javax.swing.JButton" binding="islandPrevBtn">
                     <constraints>
-                      <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="1" fill="1" indent="0" use-parent-layout="false">
-                        <minimum-size width="50" height="18"/>
-                        <preferred-size width="50" height="18"/>
-                        <maximum-size width="50" height="18"/>
+                      <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="1" fill="1" indent="0" use-parent-layout="false">
+                        <minimum-size width="40" height="18"/>
+                        <preferred-size width="40" height="18"/>
+                        <maximum-size width="40" height="18"/>
                       </grid>
                     </constraints>
                     <properties>
                       <enabled value="false"/>
-                      <text value="&lt;&lt;"/>
+                      <text value="&lt;"/>
+                    </properties>
+                  </component>
+                  <component id="84399" class="javax.swing.JLabel" binding="layerInfo">
+                    <constraints>
+                      <grid row="0" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="9" fill="0" indent="1" use-parent-layout="false"/>
+                    </constraints>
+                    <properties>
+                      <text value=""/>
                     </properties>
                   </component>
                 </children>
               </grid>
-              <grid id="f4f19" layout-manager="GridLayoutManager" row-count="1" column-count="7" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+              <grid id="f4f19" layout-manager="GridLayoutManager" row-count="1" column-count="8" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
                 <margin top="0" left="0" bottom="0" right="0"/>
                 <constraints>
                   <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false">
@@ -308,7 +308,7 @@
                   </component>
                   <hspacer id="b22cf">
                     <constraints>
-                      <grid row="0" column="5" row-span="1" col-span="1" vsize-policy="1" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+                      <grid row="0" column="6" row-span="1" col-span="1" vsize-policy="1" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
                     </constraints>
                   </hspacer>
                   <component id="b0159" class="javax.swing.JButton" binding="saveBtn">
@@ -361,6 +361,19 @@
                     <properties>
                       <enabled value="false"/>
                       <text value="Preview Small"/>
+                    </properties>
+                  </component>
+                  <component id="8bfc2" class="javax.swing.JButton" binding="fixBtn">
+                    <constraints>
+                      <grid row="0" column="5" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="0" fill="1" indent="0" use-parent-layout="false">
+                        <minimum-size width="110" height="20"/>
+                        <preferred-size width="110" height="20"/>
+                        <maximum-size width="110" height="20"/>
+                      </grid>
+                    </constraints>
+                    <properties>
+                      <enabled value="false"/>
+                      <text value="Fix"/>
                     </properties>
                   </component>
                 </children>

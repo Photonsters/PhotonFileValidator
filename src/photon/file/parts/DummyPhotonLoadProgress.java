@@ -27,7 +27,7 @@ package photon.file.parts;
 /**
  * by bn on 05/07/2018.
  */
-public class DummyPhotonLoadProgress implements IPhotonLoadProgress {
+public class DummyPhotonLoadProgress implements IPhotonProgress {
     @Override
     public void showInfo(String str) {
 

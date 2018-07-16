@@ -25,6 +25,7 @@
 package photon.application.base;
 
 import photon.application.MainForm;
+import photon.application.dialogs.FixDialog;
 import photon.application.dialogs.InformationDialog;
 import photon.application.dialogs.PreviewDialog;
 import photon.application.dialogs.SaveDialog;
@@ -113,6 +114,18 @@ public class BaseForm {
         me.saveDialog.setVisible(true);
     }
 
+    protected void showFix() {
+        if (me.fixDialog == null) {
+            me.fixDialog = new FixDialog(me);
+        }
+        me.fixDialog.setInformation(photonFile);
+        me.fixDialog.setSize(new Dimension(500, 240));
+        me.fixDialog.pack();
+        me.fixDialog.setLocationRelativeTo(me.frame);
+        me.fixDialog.setVisible(true);
+    }
+
+
     protected void showPrint() {
         if (me.informationDialog == null) {
             me.informationDialog = new InformationDialog(me.frame);
@@ -179,15 +192,19 @@ public class BaseForm {
                 }
             }
         }
-        me.layerInfo.setForeground(photonFile.getIslandLayerCount() > 0 ? Color.red : Color.decode("#006600"));
-        me.layerInfo.setText(photonFile.getLayerInformation());
-        me.islandNextBtn.setEnabled(photonFile.getIslandLayerCount() > 0);
-        me.islandPrevBtn.setEnabled(photonFile.getIslandLayerCount() > 0);
 
-        me.marginInfo.setForeground(photonFile.getMarginLayers().size() > 0 ? Color.red : Color.decode("#006600"));
+        boolean hasIslands = photonFile.getIslandLayerCount() > 0;
+        me.layerInfo.setForeground(hasIslands ? Color.red : Color.decode("#006600"));
+        me.layerInfo.setText(photonFile.getLayerInformation());
+        me.islandNextBtn.setEnabled(hasIslands);
+        me.islandPrevBtn.setEnabled(hasIslands);
+        me.fixBtn.setEnabled(hasIslands);
+
+        boolean hasMargins = photonFile.getMarginLayers().size() > 0;
+        me.marginInfo.setForeground(hasMargins ? Color.red : Color.decode("#006600"));
         me.marginInfo.setText(photonFile.getMarginInformation());
-        me.marginNextBtn.setEnabled(photonFile.getMarginLayers().size() > 0);
-        me.marginPrevBtn.setEnabled(photonFile.getMarginLayers().size() > 0);
+        me.marginNextBtn.setEnabled(hasMargins);
+        me.marginPrevBtn.setEnabled(hasMargins);
 
         me.frame.setTitle(information);
     }

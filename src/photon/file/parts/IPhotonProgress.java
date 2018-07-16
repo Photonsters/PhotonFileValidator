@@ -27,6 +27,6 @@ package photon.file.parts;
 /**
  * by bn on 05/07/2018.
  */
-public interface IPhotonLoadProgress {
+public interface IPhotonProgress {
     void showInfo(String str);
 }
