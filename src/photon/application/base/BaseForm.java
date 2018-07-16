@@ -159,54 +159,56 @@ public class BaseForm {
     }
 
     public void showFileInformation() {
-        String information = loadedFileName + " (" + photonFile.getInformation() + ")";
-        me.zoomSlider.setValue(0);
-        ((PhotonLayerImage) me.layerImage).reScale(1, photonFile.getWidth(), photonFile.getHeight());
-        if (photonFile.getLayerCount() > 0) {
-            PhotonFileLayer fileLayer = photonFile.getLayer(0);
-            if (fileLayer != null) {
-                showLayerInformation(0, fileLayer);
-                ((PhotonLayerImage) me.layerImage).drawLayer(fileLayer, margin);
-                me.layerImage.repaint();
+        if (loadedFileName!=null && loadedFileName.length()>0) {
+            String information = loadedFileName + " (" + photonFile.getInformation() + ")";
+            me.zoomSlider.setValue(0);
+            ((PhotonLayerImage) me.layerImage).reScale(1, photonFile.getWidth(), photonFile.getHeight());
+            if (photonFile.getLayerCount() > 0) {
+                PhotonFileLayer fileLayer = photonFile.getLayer(0);
+                if (fileLayer != null) {
+                    showLayerInformation(0, fileLayer);
+                    ((PhotonLayerImage) me.layerImage).drawLayer(fileLayer, margin);
+                    me.layerImage.repaint();
 
-                ScrollUtil.scrollTo(me.imageScrollPane, ScrollPosition.HorizontalCenter);
-                ScrollUtil.scrollTo(me.imageScrollPane, ScrollPosition.VerticalCenter);
+                    ScrollUtil.scrollTo(me.imageScrollPane, ScrollPosition.HorizontalCenter);
+                    ScrollUtil.scrollTo(me.imageScrollPane, ScrollPosition.VerticalCenter);
 
-                if (photonFile.getLayerCount() > 0) {
-                    me.layerSlider.setEnabled(false);
-                    me.layerSlider.setValue(0);
-                    me.layerSlider.setMaximum(photonFile.getLayerCount() - 1);
+                    if (photonFile.getLayerCount() > 0) {
+                        me.layerSlider.setEnabled(false);
+                        me.layerSlider.setValue(0);
+                        me.layerSlider.setMaximum(photonFile.getLayerCount() - 1);
 
-                    me.layerSpinner.setEnabled(false);
-                    me.layerSpinner.setValue(0);
-                    SpinnerNumberModel spinnerNumberModel = (SpinnerNumberModel) me.layerSpinner.getModel();
-                    spinnerNumberModel.setMinimum(0);
-                    spinnerNumberModel.setMaximum(photonFile.getLayerCount() - 1);
-                    me.layerSpinner.setEnabled(true);
-                    me.layerSlider.setEnabled(true);
-                    me.zoomSlider.setEnabled(true);
-                } else {
-                    me.layerSlider.setEnabled(false);
-                    me.layerSpinner.setEnabled(false);
-                    me.zoomSlider.setEnabled(false);
+                        me.layerSpinner.setEnabled(false);
+                        me.layerSpinner.setValue(0);
+                        SpinnerNumberModel spinnerNumberModel = (SpinnerNumberModel) me.layerSpinner.getModel();
+                        spinnerNumberModel.setMinimum(0);
+                        spinnerNumberModel.setMaximum(photonFile.getLayerCount() - 1);
+                        me.layerSpinner.setEnabled(true);
+                        me.layerSlider.setEnabled(true);
+                        me.zoomSlider.setEnabled(true);
+                    } else {
+                        me.layerSlider.setEnabled(false);
+                        me.layerSpinner.setEnabled(false);
+                        me.zoomSlider.setEnabled(false);
+                    }
                 }
             }
+
+            boolean hasIslands = photonFile.getIslandLayerCount() > 0;
+            me.layerInfo.setForeground(hasIslands ? Color.red : Color.decode("#006600"));
+            me.layerInfo.setText(photonFile.getLayerInformation());
+            me.islandNextBtn.setEnabled(hasIslands);
+            me.islandPrevBtn.setEnabled(hasIslands);
+            me.fixBtn.setEnabled(hasIslands);
+
+            boolean hasMargins = photonFile.getMarginLayers().size() > 0;
+            me.marginInfo.setForeground(hasMargins ? Color.red : Color.decode("#006600"));
+            me.marginInfo.setText(photonFile.getMarginInformation());
+            me.marginNextBtn.setEnabled(hasMargins);
+            me.marginPrevBtn.setEnabled(hasMargins);
+
+            me.frame.setTitle(information);
         }
-
-        boolean hasIslands = photonFile.getIslandLayerCount() > 0;
-        me.layerInfo.setForeground(hasIslands ? Color.red : Color.decode("#006600"));
-        me.layerInfo.setText(photonFile.getLayerInformation());
-        me.islandNextBtn.setEnabled(hasIslands);
-        me.islandPrevBtn.setEnabled(hasIslands);
-        me.fixBtn.setEnabled(hasIslands);
-
-        boolean hasMargins = photonFile.getMarginLayers().size() > 0;
-        me.marginInfo.setForeground(hasMargins ? Color.red : Color.decode("#006600"));
-        me.marginInfo.setText(photonFile.getMarginInformation());
-        me.marginNextBtn.setEnabled(hasMargins);
-        me.marginPrevBtn.setEnabled(hasMargins);
-
-        me.frame.setTitle(information);
     }
 
 
