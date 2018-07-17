@@ -1,10 +1,11 @@
 # Version History and change log
 
-### 1.3 Navigation, file load and Fix dialog (Not released)
+### 1.3 Navigation, file load and Fix dialog (July 16, 2018)
  - Added an option to auto fix small pixel related islands
  - Added the option to browse backwards for margin and problem areas
  - Now using native file open dialog, so users can use all attached drives
  - Fixed a bug where some overhangs was reported as islands
+ - Separated file load and layer calculation workers
 
 ### 1.2 Slider and new name: Photon File Validator (July 13, 2018)
  - Changed java memory to min 1GB and max 5GB
