@@ -94,6 +94,24 @@ public class PhotonLayer {
         pixels[y]++;
     }
 
+    public void remove(int x, int y, byte type) {
+        iArray[y][x] = OFF;
+        switch (type) {
+            case SUPPORTED:
+                rowUnsupported[y]--;
+                break;
+            case CONNECTED:
+                rowUnsupported[y]--;
+                break;
+            case ISLAND:
+                rowIslands[y]--;
+                islandCount--;
+                break;
+        }
+        pixels[y]--;
+    }
+
+
     public void reduce() {
         // Double reduce to handle single line connections.
         for (int i = 0; i < 2; i++) {
@@ -395,6 +413,10 @@ public class PhotonLayer {
             baos.write(data);
             length -= lineLength;
         }
+    }
+
+    public byte get(int x, int y) {
+        return iArray[y][x];
     }
 
 }

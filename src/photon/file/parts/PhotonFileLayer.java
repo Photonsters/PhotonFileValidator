@@ -184,7 +184,6 @@ public class PhotonFileLayer {
 
 
         try (PhotonInputStream ds = new PhotonInputStream(new ByteArrayInputStream(file, photonFileHeader.getLayersDefinitionOffsetAddress(), file.length))) {
-//            ArrayList<BitSet> previousUnpackedImage = null;
             for (int i = 0; i < photonFileHeader.getNumberOfLayers(); i++) {
 
                 iPhotonProgress.showInfo("Reading photon file layer " + i + "/" + photonFileHeader.getNumberOfLayers());
@@ -192,35 +191,17 @@ public class PhotonFileLayer {
                 PhotonFileLayer layer = new PhotonFileLayer(ds);
                 layer.photonFileHeader = photonFileHeader;
                 layer.imageData = Arrays.copyOfRange(file, layer.dataAddress, layer.dataAddress + layer.dataSize);
-
-                ArrayList<BitSet> unpackedImage = layer.unpackImage(photonFileHeader.getResolutionX());
-
-//                if (margin > 0) {
-//                    layer.extendsMargin = layer.checkMagin(unpackedImage, margin);
-//                }
-
-//                 layer.unknownPixels(unpackedImage, photonLayer);
-
-                // layer.calculate(unpackedImage, previousUnpackedImage, photonLayer);
-
                 layers.add(layer);
-//                if (previousUnpackedImage != null) {
-//                    previousUnpackedImage.clear();
-//                }
-//                previousUnpackedImage = unpackedImage;
-
-//                layer.packedLayerImage = photonLayer.packLayerImage();
-
             }
         }
 
         photonLayer.unLink();
         System.gc();
 
-        // System.out.println("Layer ALL, " + String.format("%10d", ((Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / (1024 * 1024))) + " MB");
-
         return layers;
     }
+
+
 
     public static void calculateLayers(PhotonFileHeader photonFileHeader, List<PhotonFileLayer> layers, int margin, IPhotonProgress iPhotonProgress) throws Exception {
         PhotonLayer photonLayer = new PhotonLayer(photonFileHeader.getResolutionX(), photonFileHeader.getResolutionY());
@@ -253,6 +234,39 @@ public class PhotonFileLayer {
         System.gc();
     }
 
+    public static void calculateLayers(PhotonFileHeader photonFileHeader, List<PhotonFileLayer> layers, int margin, int layerNo) throws Exception {
+        PhotonLayer photonLayer = new PhotonLayer(photonFileHeader.getResolutionX(), photonFileHeader.getResolutionY());
+        ArrayList<BitSet> previousUnpackedImage = null;
+
+        if (layerNo>0) {
+            previousUnpackedImage = layers.get(layerNo-1).unpackImage(photonFileHeader.getResolutionX());
+        }
+
+        for (int i=0; i<2; i++) {
+            PhotonFileLayer layer = layers.get(layerNo + i);
+            ArrayList<BitSet> unpackedImage = layer.unpackImage(photonFileHeader.getResolutionX());
+
+            if (margin > 0) {
+                layer.extendsMargin = layer.checkMagin(unpackedImage, margin);
+            }
+
+            layer.unknownPixels(unpackedImage, photonLayer);
+
+            layer.calculate(unpackedImage, previousUnpackedImage, photonLayer);
+
+            if (previousUnpackedImage != null) {
+                previousUnpackedImage.clear();
+            }
+            previousUnpackedImage = unpackedImage;
+
+            layer.packedLayerImage = photonLayer.packLayerImage();
+            layer.isCalculated = true;
+
+            i++;
+        }
+        photonLayer.unLink();
+        System.gc();
+    }
 
     public ArrayList<PhotonRow> getRows() {
         return PhotonLayer.getRows(packedLayerImage, photonFileHeader.getResolutionX(), isCalculated);

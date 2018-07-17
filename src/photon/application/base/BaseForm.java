@@ -25,10 +25,7 @@
 package photon.application.base;
 
 import photon.application.MainForm;
-import photon.application.dialogs.FixDialog;
-import photon.application.dialogs.InformationDialog;
-import photon.application.dialogs.PreviewDialog;
-import photon.application.dialogs.SaveDialog;
+import photon.application.dialogs.*;
 import photon.application.utilities.MainUtils;
 import photon.application.utilities.PhotonCalcWorker;
 import photon.application.utilities.PhotonLoadWorker;
@@ -58,20 +55,20 @@ public class BaseForm {
     protected String loadedFileName;
     public PhotonFile photonFile;
     public int margin = 0;
+    protected int zoom = 0;
+
 
     protected void openFile() {
         FileDialog d = new FileDialog(me.frame);
-        d.setFilenameFilter(new FilenameFilter()
-        {
+        d.setFilenameFilter(new FilenameFilter() {
             @Override
-            public boolean accept(File file, String s)
-            {
+            public boolean accept(File file, String s) {
                 return s.contains(".photon") || s.contains(".cbddlp");
             }
         });
         d.setVisible(true);
         String fileName = d.getDirectory() + d.getFile();
-        if (fileName!=null && fileName.length()>0) {
+        if (fileName != null && fileName.length() > 0) {
             File file = new File(fileName);
             if (MainUtils.isPhotonFile(file)) {
                 me.saveBtn.setEnabled(false);
@@ -144,14 +141,14 @@ public class BaseForm {
 
     protected void showLayerInformation(int layer, PhotonFileLayer fileLayer) {
         me.layerNo.setForeground(fileLayer.getIsLandsCount() > 0 ? Color.red : Color.black);
-        me.layerNo.setText("Layer " + layer + "/" + (me.photonFile.getLayerCount()-1));
+        me.layerNo.setText("Layer " + layer + "/" + (me.photonFile.getLayerCount() - 1));
         me.layerZ.setText(String.format("Z: %.4f mm", fileLayer.getLayerPositionZ()));
         me.layerExposure.setText(String.format("Exposure: %.1fs", fileLayer.getLayerExposure()));
         me.layerOfftime.setText(String.format("Off Time: %.1fs", fileLayer.getLayerOffTime()));
     }
 
     public void showFileInformation() {
-        if (loadedFileName!=null) {
+        if (loadedFileName != null) {
             String information = loadedFileName + " (" + photonFile.getInformation() + ")";
             me.zoomSlider.setValue(0);
             ((PhotonLayerImage) me.layerImage).reScale(1, photonFile.getWidth(), photonFile.getHeight());
@@ -186,21 +183,25 @@ public class BaseForm {
                 }
             }
 
-            boolean hasIslands = photonFile.getIslandLayerCount() > 0;
-            me.layerInfo.setForeground(hasIslands ? Color.red : Color.decode("#006600"));
-            me.layerInfo.setText(photonFile.getLayerInformation());
-            me.islandNextBtn.setEnabled(hasIslands);
-            me.islandPrevBtn.setEnabled(hasIslands);
-            me.fixBtn.setEnabled(hasIslands);
-
-            boolean hasMargins = photonFile.getMarginLayers().size() > 0;
-            me.marginInfo.setForeground(hasMargins ? Color.red : Color.decode("#006600"));
-            me.marginInfo.setText(photonFile.getMarginInformation());
-            me.marginNextBtn.setEnabled(hasMargins);
-            me.marginPrevBtn.setEnabled(hasMargins);
+            showMarginAndIslandInformation();
 
             me.frame.setTitle(information);
         }
+    }
+
+    public void showMarginAndIslandInformation() {
+        boolean hasIslands = photonFile.getIslandLayerCount() > 0;
+        me.layerInfo.setForeground(hasIslands ? Color.red : Color.decode("#006600"));
+        me.layerInfo.setText(photonFile.getLayerInformation());
+        me.islandNextBtn.setEnabled(hasIslands);
+        me.islandPrevBtn.setEnabled(hasIslands);
+        me.fixBtn.setEnabled(hasIslands);
+
+        boolean hasMargins = photonFile.getMarginLayers().size() > 0;
+        me.marginInfo.setForeground(hasMargins ? Color.red : Color.decode("#006600"));
+        me.marginInfo.setText(photonFile.getMarginInformation());
+        me.marginNextBtn.setEnabled(hasMargins);
+        me.marginPrevBtn.setEnabled(hasMargins);
     }
 
 
@@ -212,25 +213,25 @@ public class BaseForm {
                 file = new File(userDir + File.separatorChar + "photon.properties");
             }
             if (file.exists() && file.isFile()) {
-                    Properties prop = new Properties();
-                    prop.load(new FileInputStream(file));
-                    try {
-                        me.margin = Integer.parseInt(prop.getProperty("margin"));
-                        me.marginInfo.setText("Margin set to: " + me.margin);
-                    } catch (Exception e) {
-                        me.margin = 0;
-                    }
+                Properties prop = new Properties();
+                prop.load(new FileInputStream(file));
+                try {
+                    me.margin = Integer.parseInt(prop.getProperty("margin"));
+                    me.marginInfo.setText("Margin set to: " + me.margin);
+                } catch (Exception e) {
+                    me.margin = 0;
+                }
 
-                    float peel;
-                    try {
-                        peel = Float.parseFloat(prop.getProperty("peel"));
-                    } catch (Exception ex) {
-                        peel = 5.5f;
-                    }
-                    if (me.informationDialog == null) {
-                        me.informationDialog = new InformationDialog(me.frame);
-                    }
-                    me.informationDialog.setPeel(peel);
+                float peel;
+                try {
+                    peel = Float.parseFloat(prop.getProperty("peel"));
+                } catch (Exception ex) {
+                    peel = 5.5f;
+                }
+                if (me.informationDialog == null) {
+                    me.informationDialog = new InformationDialog(me.frame);
+                }
+                me.informationDialog.setPeel(peel);
             }
         } catch (IOException e) {
             me.marginInfo.setText(e.getMessage());
@@ -274,22 +275,16 @@ public class BaseForm {
             }
             if (nextLayer == null) {
                 // current layer is lower than all layers, select the last to allow a new cycle.
-                me.layerSpinner.setValue(layers.get(layers.size()-1));
+                me.layerSpinner.setValue(layers.get(layers.size() - 1));
             } else {
                 me.layerSpinner.setValue(nextLayer);
             }
         }
     }
 
-    protected void changeLayer() {
+    public void changeLayer() {
         if (me.layerSpinner.isEnabled()) {
-            int layer = 0;
-            Object o = me.layerSpinner.getValue();
-            if (o instanceof String) {
-                layer = Integer.parseInt((String) o);
-            } else if (o instanceof Integer) {
-                layer = (Integer) o;
-            }
+            int layer = getLayer();
             PhotonFileLayer fileLayer = photonFile.getLayer(layer);
             showLayerInformation(layer, fileLayer);
             ((PhotonLayerImage) me.layerImage).drawLayer(fileLayer, margin);
@@ -301,8 +296,19 @@ public class BaseForm {
         }
     }
 
+    private int getLayer() {
+        int layer = 0;
+        Object o = me.layerSpinner.getValue();
+        if (o instanceof String) {
+            layer = Integer.parseInt((String) o);
+        } else if (o instanceof Integer) {
+            layer = (Integer) o;
+        }
+        return layer;
+    }
+
     public void calc() {
-        if (me.photonFile!=null) {
+        if (me.photonFile != null) {
             me.saveBtn.setEnabled(true);
             me.informationBtn.setEnabled(true);
             me.previewLargeBtn.setEnabled(true);
@@ -313,4 +319,25 @@ public class BaseForm {
 
         }
     }
+
+    protected void showEdit(int x, int y) {
+        if (me.editDialog == null) {
+            me.editDialog = new EditDialog(me);
+        }
+
+        float zoomFactor = 1f;
+        if (zoom > 0) {
+            zoomFactor = 1f + (zoom / 2f);
+        } else if (zoom < 0){
+            zoomFactor = 1f + (zoom / 4f);
+        }
+
+        me.editDialog.setInformation(photonFile, getLayer(), (int) (x / zoomFactor), (int) (y / zoomFactor));
+        me.editDialog.setSize(new Dimension(800, 600));
+        me.editDialog.setLocationRelativeTo(me.frame);
+        me.editDialog.setVisible(true);
+
+    }
+
+
 }

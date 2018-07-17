@@ -91,7 +91,7 @@ public class PhotonFile {
         int previewOnePos = headerPos + photonFileHeader.getByteSize();
         int previewTwoPos = previewOnePos + previewOne.getByteSize();
         int layerDefinitionPos = previewTwoPos + previewTwo.getByteSize();
-        int dataPosition = layerDefinitionPos + PhotonFileLayer.getByteSize() * photonFileHeader.getNumberOfLayers();
+        int dataPosition = layerDefinitionPos + (PhotonFileLayer.getByteSize() * photonFileHeader.getNumberOfLayers());
 
         PhotonOutputStream os = new PhotonOutputStream(outputStream);
 
@@ -326,6 +326,7 @@ public class PhotonFile {
                 progres.showInfo(", but nothing could be done.");
             } else {
                 fileLayer.saveLayer(layer);
+                calculate(layerNo);
             }
 
             progres.showInfo("<br>");
@@ -349,6 +350,11 @@ public class PhotonFile {
 
     public void calculate(IPhotonProgress progres) throws Exception {
         PhotonFileLayer.calculateLayers(photonFileHeader, layers, margin, progres);
+        resetMarginAndIslandInfo();
+    }
+
+    public void calculate(int layerNo) throws Exception {
+        PhotonFileLayer.calculateLayers(photonFileHeader, layers, margin, layerNo);
         resetMarginAndIslandInfo();
     }
 

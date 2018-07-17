@@ -28,10 +28,7 @@ import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
 import com.intellij.uiDesigner.core.Spacer;
 import photon.application.base.BaseForm;
-import photon.application.dialogs.FixDialog;
-import photon.application.dialogs.InformationDialog;
-import photon.application.dialogs.PreviewDialog;
-import photon.application.dialogs.SaveDialog;
+import photon.application.dialogs.*;
 import photon.application.utilities.MainUtils;
 import photon.application.utilities.PhotonLoadWorker;
 import photon.file.ui.PhotonLayerImage;
@@ -43,10 +40,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
+import java.awt.event.*;
 import java.io.File;
 
 /**
@@ -84,8 +78,8 @@ public class MainForm extends BaseForm implements ActionListener, ItemListener {
     public PreviewDialog previewDialog;
     public SaveDialog saveDialog;
     public FixDialog fixDialog;
+    public EditDialog editDialog;
 
-    private int zoom = 0;
 
     public MainForm() {
 
@@ -207,6 +201,14 @@ public class MainForm extends BaseForm implements ActionListener, ItemListener {
             }
         });
 
+        layerImage.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (photonFile != null) {
+                    showEdit(e.getX(), e.getY());
+                }
+            }
+        });
     }
 
     @Override
@@ -234,7 +236,7 @@ public class MainForm extends BaseForm implements ActionListener, ItemListener {
     }
 
     public static void main(String[] args) {
-        JFrame frame = new JFrame("Photon File Validator 1.3");
+        JFrame frame = new JFrame("Photon File Validator 1.4");
         MainUtils.setIcon(frame);
         MainForm mainForm = new MainForm();
         JPanel panel = mainForm.mainPanel;
