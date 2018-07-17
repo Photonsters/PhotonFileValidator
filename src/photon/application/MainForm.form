@@ -195,7 +195,7 @@
                   </hspacer>
                   <component id="31d5" class="javax.swing.JButton" binding="marginNextBtn">
                     <constraints>
-                      <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="1" fill="1" indent="0" use-parent-layout="false">
+                      <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="1" fill="1" indent="0" use-parent-layout="false">
                         <minimum-size width="35" height="18"/>
                         <preferred-size width="35" height="18"/>
                         <maximum-size width="45" height="18"/>
@@ -208,7 +208,7 @@
                   </component>
                   <component id="7bc55" class="javax.swing.JButton" binding="marginPrevBtn">
                     <constraints>
-                      <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="1" fill="1" indent="0" use-parent-layout="false">
+                      <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="1" fill="1" indent="0" use-parent-layout="false">
                         <minimum-size width="35" height="18"/>
                         <preferred-size width="35" height="18"/>
                         <maximum-size width="45" height="18"/>
@@ -248,7 +248,7 @@
                   </hspacer>
                   <component id="6828f" class="javax.swing.JButton" binding="islandNextBtn">
                     <constraints>
-                      <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="1" fill="1" indent="0" use-parent-layout="false">
+                      <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="1" fill="1" indent="0" use-parent-layout="false">
                         <minimum-size width="35" height="18"/>
                         <preferred-size width="35" height="18"/>
                         <maximum-size width="45" height="18"/>
@@ -261,7 +261,7 @@
                   </component>
                   <component id="e8cad" class="javax.swing.JButton" binding="islandPrevBtn">
                     <constraints>
-                      <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="1" fill="1" indent="0" use-parent-layout="false">
+                      <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="1" fill="1" indent="0" use-parent-layout="false">
                         <minimum-size width="35" height="18"/>
                         <preferred-size width="35" height="18"/>
                         <maximum-size width="45" height="18"/>
