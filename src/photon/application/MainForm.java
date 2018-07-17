@@ -346,11 +346,11 @@ public class MainForm extends BaseForm implements ActionListener, ItemListener {
         marginNextBtn = new JButton();
         marginNextBtn.setEnabled(false);
         marginNextBtn.setText(">");
-        panel4.add(marginNextBtn, new GridConstraints(0, 1, 1, 1, GridConstraints.ANCHOR_NORTH, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, new Dimension(40, 18), new Dimension(40, 18), new Dimension(40, 18), 0, false));
+        panel4.add(marginNextBtn, new GridConstraints(0, 1, 1, 1, GridConstraints.ANCHOR_NORTH, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, new Dimension(35, 18), new Dimension(35, 18), new Dimension(45, 18), 0, false));
         marginPrevBtn = new JButton();
         marginPrevBtn.setEnabled(false);
         marginPrevBtn.setText("<");
-        panel4.add(marginPrevBtn, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_NORTH, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, new Dimension(40, 18), new Dimension(40, 18), new Dimension(40, 18), 0, false));
+        panel4.add(marginPrevBtn, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_NORTH, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, new Dimension(35, 18), new Dimension(35, 18), new Dimension(45, 18), 0, false));
         marginInfo = new JLabel();
         marginInfo.setText("");
         panel4.add(marginInfo, new GridConstraints(0, 2, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 1, false));
@@ -362,11 +362,11 @@ public class MainForm extends BaseForm implements ActionListener, ItemListener {
         islandNextBtn = new JButton();
         islandNextBtn.setEnabled(false);
         islandNextBtn.setText(">");
-        panel5.add(islandNextBtn, new GridConstraints(0, 1, 1, 1, GridConstraints.ANCHOR_NORTH, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, new Dimension(40, 18), new Dimension(40, 18), new Dimension(40, 18), 0, false));
+        panel5.add(islandNextBtn, new GridConstraints(0, 1, 1, 1, GridConstraints.ANCHOR_NORTH, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, new Dimension(35, 18), new Dimension(35, 18), new Dimension(45, 18), 0, false));
         islandPrevBtn = new JButton();
         islandPrevBtn.setEnabled(false);
         islandPrevBtn.setText("<");
-        panel5.add(islandPrevBtn, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_NORTH, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, new Dimension(40, 18), new Dimension(40, 18), new Dimension(40, 18), 0, false));
+        panel5.add(islandPrevBtn, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_NORTH, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, new Dimension(35, 18), new Dimension(35, 18), new Dimension(45, 18), 0, false));
         layerInfo = new JLabel();
         layerInfo.setText("");
         panel5.add(layerInfo, new GridConstraints(0, 2, 1, 1, GridConstraints.ANCHOR_NORTHWEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 1, false));
