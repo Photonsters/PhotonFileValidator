@@ -1,5 +1,17 @@
 # Version History and change log
 
+### 1.5 Render in 3D 
+ - Added a view where some layers are shown in 3D (peel the onion)
+ - Added option to fix layer Z position round error from slicer
+ - Added option to cancel calculation by opening a new file
+ - Updated to the new logo and color
+ - Added option to use "Command / Alt" and Arrows to navigate layer and render
+ - Changed time calculation to use peel time or offtime (whichever is greatest)
+
+### 1.4 Layer Edit (July 17, 2018)
+ - Added option to manually edit layer data.
+ - Fixed null pointer when saved during calculation
+
 ### 1.3 Navigation, file load and Fix dialog (July 16, 2018)
  - Added an option to auto fix small pixel related islands
  - Added the option to browse backwards for margin and problem areas
