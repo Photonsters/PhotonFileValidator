@@ -131,9 +131,9 @@ public class OnionPanel extends JPanel {
                     if (i < (showLayers - 20)) {
                         col = 64 + (i * 100 / showLayers);
                     } else {
-                        col = 244 - (showLayers-i)*4;
+                        col = 204 - (showLayers-i)*2;
                     }
-                    baseElement.setColor(0, col, col);
+                    baseElement.setColor(0, col, col / 2);
                     ///baseElement.setColor(0, 64 + (i * 100 / showLayers), 0);
                 }
                 world.add(baseElement);
@@ -169,7 +169,7 @@ public class OnionPanel extends JPanel {
         }
 
 
-        world.rotate(new RotationBaseMatrix(-1.7, 0, 0));
+        world.rotate(new RotationBaseMatrix(-1.8, 0, 0));
 
         repaint();
     }
