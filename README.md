@@ -1,7 +1,7 @@
 # Photon File Viewer
 A file viewer application for AnyCubic Photon sliced files (*.photon and *.cbddlp). The viewer can show you preview images, print information and all layers with information on overhang and islands issues.
 
-![Main screen](https://user-images.githubusercontent.com/11083514/42667910-e278b732-8645-11e8-8928-e28a5a1b3565.png)
+![Main screen](https://github.com/Photonsters/PhotonFilevalidator/raw/master/doc/screen1.png)
 
 ## Photon files
 
