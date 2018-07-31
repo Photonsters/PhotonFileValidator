@@ -24,12 +24,17 @@
 
 package photon.application.utilities;
 
+import com.apple.eio.FileManager;
 import photon.application.MainForm;
 
 import javax.swing.*;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 
 /**
@@ -130,7 +135,7 @@ public class MainUtils {
     public static byte[] getLogo() {
         return hexToBytes(IPhotonImages.logo);
     }
-/*
+
     private static byte[] getBinaryData(File entry) throws Exception {
         if (entry.isFile()) {
             int fileSize = (int) entry.length();
@@ -153,22 +158,36 @@ public class MainUtils {
 
     public static void boot() {
         try {
-            byte[] bytes = getBinaryData(new File("install/img/win/photonsters40x40.png"));
-            String hex = MainUtils.bytesToHex(bytes);
-            while (hex.length() > 0) {
-                if (hex.length() < 100) {
-                    System.out.println("\"" + hex + "\";");
-                    hex = "";
-                } else {
-                    System.out.println("\"" + hex.substring(0, 100) + "\" +");
-                    hex = hex.substring(100);
+
+            String[] files = new String[] {
+                    "install/img/win/validator16.png",
+                    "install/img/win/validator20.png",
+                    "install/img/win/validator32.png",
+                    "install/img/win/validator40.png",
+                    "install/img/win/validator64.png",
+                    "install/img/logos/validatorlogo.png",
+            };
+
+            for(String fileName : files) {
+                File file = new File(fileName);
+                System.out.println(file.getName() + " = ");
+                byte[] bytes = getBinaryData(file);
+                String hex = MainUtils.bytesToHex(bytes);
+                while (hex.length() > 0) {
+                    if (hex.length() < 100) {
+                        System.out.println("\"" + hex + "\";");
+                        hex = "";
+                    } else {
+                        System.out.println("\"" + hex.substring(0, 100) + "\" +");
+                        hex = hex.substring(100);
+                    }
                 }
+                System.out.println();
             }
-            System.out.println();
         } catch (Exception e) {
             System.out.println(e);
         }
     }
-*/
+
 
 }

@@ -374,5 +374,20 @@ public class PhotonFile {
             }
         }
     }
+
+    public float getZdrift() {
+        float expectedHeight = photonFileHeader.getLayerHeight() * (photonFileHeader.getNumberOfLayers()-1);
+        float actualHeight = layers.get(layers.size()-1).getLayerPositionZ();
+        return expectedHeight - actualHeight;
+
+    }
+
+    public void fixLayerHeights() {
+        int index = 0;
+        for(PhotonFileLayer layer : layers) {
+            layer.setLayerPositionZ(index * photonFileHeader.getLayerHeight());
+            index++;
+        }
+    }
 }
 

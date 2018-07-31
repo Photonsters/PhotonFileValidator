@@ -13,7 +13,7 @@
   <stayAlive>false</stayAlive>
   <restartOnCrash>false</restartOnCrash>
   <manifest></manifest>
-  <icon>D:\Users\bn\Documents\GitHub\PhotonFileViewer\install\img\icons\photonsters.ico</icon>
+  <icon>D:\Users\bn\Documents\GitHub\PhotonFileViewer\install\img\icons\validator.ico</icon>
   <jre>
     <path>jre</path>
     <bundledJre64Bit>true</bundledJre64Bit>
@@ -26,18 +26,18 @@
     <maxHeapSize>5120</maxHeapSize>
   </jre>
   <splash>
-    <file>D:\Users\bn\Documents\GitHub\PhotonFileViewer\install\img\logos\photonsters.bmp</file>
+    <file>D:\Users\bn\Documents\GitHub\PhotonFileViewer\install\img\logos\validator.bmp</file>
     <waitForWindow>true</waitForWindow>
     <timeout>60</timeout>
     <timeoutErr>true</timeoutErr>
   </splash>
   <versionInfo>
-    <fileVersion>1.4.0.0</fileVersion>
-    <txtFileVersion>1.4</txtFileVersion>
+    <fileVersion>1.5.0.0</fileVersion>
+    <txtFileVersion>1.5</txtFileVersion>
     <fileDescription>Photon File Validator</fileDescription>
     <copyright>(C) Copyright by Bonosoft</copyright>
-    <productVersion>1.4.0.0</productVersion>
-    <txtProductVersion>1.4</txtProductVersion>
+    <productVersion>1.5.0.0</productVersion>
+    <txtProductVersion>1.5</txtProductVersion>
     <productName>Photon File Validator</productName>
     <companyName>Bonosoft</companyName>
     <internalName>Photon file validator</internalName>

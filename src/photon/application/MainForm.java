@@ -27,14 +27,19 @@ package photon.application;
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
 import com.intellij.uiDesigner.core.Spacer;
+import photon.application.base.BaseFrame;
+import photon.application.render.OnionMousePanel;
+import photon.application.render.OnionPanel;
 import photon.application.base.BaseForm;
 import photon.application.dialogs.*;
 import photon.application.utilities.MainUtils;
 import photon.application.utilities.PhotonLoadWorker;
 import photon.file.ui.PhotonLayerImage;
+import photon.file.ui.PhotonPreviewImage;
 import photon.file.ui.ScrollPosition;
 import photon.file.ui.ScrollUtil;
 
+import javax.sound.midi.Soundbank;
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -47,7 +52,6 @@ import java.io.File;
  * by bn on 29/06/2018.
  */
 public class MainForm extends BaseForm implements ActionListener, ItemListener {
-    public JFrame frame;
     private JPanel mainPanel;
     public JButton openBtn;
     public JPanel layerImage;
@@ -63,8 +67,6 @@ public class MainForm extends BaseForm implements ActionListener, ItemListener {
     public JButton marginNextBtn;
     public JButton saveBtn;
     public JButton informationBtn;
-    public JButton previewLargeBtn;
-    public JButton previewSmallBtn;
     private JPanel infoPanel;
     private JLabel logoLabel;
     public JSlider zoomSlider;
@@ -72,6 +74,16 @@ public class MainForm extends BaseForm implements ActionListener, ItemListener {
     public JButton marginPrevBtn;
     public JButton islandPrevBtn;
     public JButton fixBtn;
+    public JTabbedPane tabbedPane;
+    public JPanel previewSmallPanel;
+    public JPanel tabPreviewSmall;
+    public JPanel tabPreviewLarge;
+    public JPanel previewLargePanel;
+    public JScrollPane previewLargeScrollPane;
+    public JScrollPane previewSmallScrollPane;
+    private JPanel tab3D;
+    private JPanel layer3D;
+    public JPanel render3D;
 
     public final JFileChooser fc;
     public InformationDialog informationDialog;
@@ -157,20 +169,6 @@ public class MainForm extends BaseForm implements ActionListener, ItemListener {
             }
         });
 
-        previewLargeBtn.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                showPreview(true);
-            }
-        });
-
-        previewSmallBtn.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                showPreview(false);
-            }
-        });
-
         zoomSlider.addChangeListener(new ChangeListener() {
             @Override
             public void stateChanged(ChangeEvent e) {
@@ -209,6 +207,21 @@ public class MainForm extends BaseForm implements ActionListener, ItemListener {
                 }
             }
         });
+
+        tabbedPane.addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                changeLayer();
+            }
+        });
+
+        tabbedPane.addComponentListener(new ComponentAdapter() {
+            @Override
+            public void componentResized(ComponentEvent e) {
+                changeLayer();
+            }
+        });
+
     }
 
     @Override
@@ -236,11 +249,11 @@ public class MainForm extends BaseForm implements ActionListener, ItemListener {
     }
 
     public static void main(String[] args) {
-        JFrame frame = new JFrame("Photon File Validator 1.4");
+        BaseFrame frame = new BaseFrame("Photon File Validator 1.5");
         MainUtils.setIcon(frame);
         MainForm mainForm = new MainForm();
         JPanel panel = mainForm.mainPanel;
-        mainForm.frame = frame;
+        frame.setMainForm(mainForm);
         frame.setContentPane(panel);
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         frame.pack();
@@ -268,6 +281,11 @@ public class MainForm extends BaseForm implements ActionListener, ItemListener {
 
     private void createUIComponents() {
         layerImage = new PhotonLayerImage(2560, 1440);
+        render3D = new OnionPanel();
+        layer3D = new OnionMousePanel((OnionPanel) render3D);
+        previewSmallPanel = new PhotonPreviewImage(2000, 2000);
+        previewLargePanel = new PhotonPreviewImage(500, 500);
+
     }
 
     /**
@@ -281,14 +299,6 @@ public class MainForm extends BaseForm implements ActionListener, ItemListener {
         createUIComponents();
         mainPanel = new JPanel();
         mainPanel.setLayout(new GridLayoutManager(5, 1, new Insets(5, 5, 5, 5), -1, -1));
-        imageScrollPane = new JScrollPane();
-        imageScrollPane.setHorizontalScrollBarPolicy(32);
-        imageScrollPane.setVerticalScrollBarPolicy(22);
-        mainPanel.add(imageScrollPane, new GridConstraints(3, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, new Dimension(900, 400), new Dimension(900, 600), new Dimension(2570, 1450), 0, false));
-        layerImage.setBackground(new Color(-1));
-        layerImage.setEnabled(true);
-        imageScrollPane.setViewportView(layerImage);
-        layerImage.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(new Color(-16777216)), null));
         final JPanel panel1 = new JPanel();
         panel1.setLayout(new GridLayoutManager(1, 7, new Insets(0, 0, 0, 0), -1, -1));
         mainPanel.add(panel1, new GridConstraints(2, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
@@ -371,13 +381,13 @@ public class MainForm extends BaseForm implements ActionListener, ItemListener {
         layerInfo.setText("");
         panel5.add(layerInfo, new GridConstraints(0, 2, 1, 1, GridConstraints.ANCHOR_NORTHWEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 1, false));
         final JPanel panel6 = new JPanel();
-        panel6.setLayout(new GridLayoutManager(1, 8, new Insets(0, 0, 0, 0), -1, -1));
+        panel6.setLayout(new GridLayoutManager(1, 5, new Insets(0, 0, 0, 0), -1, -1));
         infoPanel.add(panel6, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, new Dimension(-1, 30), new Dimension(-1, 30), new Dimension(-1, 30), 0, false));
         openBtn = new JButton();
         openBtn.setText("Open File");
         panel6.add(openBtn, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, new Dimension(110, 20), new Dimension(110, 20), new Dimension(110, 20), 0, false));
         final Spacer spacer4 = new Spacer();
-        panel6.add(spacer4, new GridConstraints(0, 6, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, 1, null, null, null, 0, false));
+        panel6.add(spacer4, new GridConstraints(0, 4, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, 1, null, null, null, 0, false));
         saveBtn = new JButton();
         saveBtn.setEnabled(false);
         saveBtn.setText("Save");
@@ -386,22 +396,49 @@ public class MainForm extends BaseForm implements ActionListener, ItemListener {
         informationBtn.setEnabled(false);
         informationBtn.setText("Information");
         panel6.add(informationBtn, new GridConstraints(0, 2, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, new Dimension(110, 20), new Dimension(110, 20), new Dimension(110, 20), 0, false));
-        previewLargeBtn = new JButton();
-        previewLargeBtn.setEnabled(false);
-        previewLargeBtn.setText("Preview Large");
-        panel6.add(previewLargeBtn, new GridConstraints(0, 3, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, new Dimension(130, 20), new Dimension(130, 20), new Dimension(130, 20), 0, false));
-        previewSmallBtn = new JButton();
-        previewSmallBtn.setEnabled(false);
-        previewSmallBtn.setText("Preview Small");
-        panel6.add(previewSmallBtn, new GridConstraints(0, 4, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, new Dimension(130, 20), new Dimension(130, 20), new Dimension(130, 20), 0, false));
         fixBtn = new JButton();
         fixBtn.setEnabled(false);
         fixBtn.setText("Fix");
-        panel6.add(fixBtn, new GridConstraints(0, 5, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, new Dimension(110, 20), new Dimension(110, 20), new Dimension(110, 20), 0, false));
+        panel6.add(fixBtn, new GridConstraints(0, 3, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, new Dimension(110, 20), new Dimension(110, 20), new Dimension(110, 20), 0, false));
         layerSlider = new JSlider();
         layerSlider.setEnabled(false);
         layerSlider.setValue(0);
         mainPanel.add(layerSlider, new GridConstraints(4, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        tabbedPane = new JTabbedPane();
+        mainPanel.add(tabbedPane, new GridConstraints(3, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, null, new Dimension(200, 200), null, 0, false));
+        final JPanel panel7 = new JPanel();
+        panel7.setLayout(new GridLayoutManager(1, 1, new Insets(0, 0, 0, 0), -1, -1));
+        tabbedPane.addTab("Print Layer", panel7);
+        imageScrollPane = new JScrollPane();
+        imageScrollPane.setHorizontalScrollBarPolicy(32);
+        imageScrollPane.setVerticalScrollBarPolicy(22);
+        panel7.add(imageScrollPane, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, new Dimension(900, 400), new Dimension(900, 600), new Dimension(2570, 1450), 0, false));
+        layerImage.setBackground(new Color(-1));
+        layerImage.setEnabled(true);
+        imageScrollPane.setViewportView(layerImage);
+        layerImage.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(new Color(-16777216)), null));
+        tab3D = new JPanel();
+        tab3D.setLayout(new GridLayoutManager(1, 1, new Insets(0, 0, 0, 0), -1, -1));
+        tabbedPane.addTab("Peel the Onion", tab3D);
+        layer3D.setLayout(new GridLayoutManager(1, 1, new Insets(0, 0, 0, 0), -1, -1));
+        tab3D.add(layer3D, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
+        layer3D.add(render3D, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
+        tabPreviewLarge = new JPanel();
+        tabPreviewLarge.setLayout(new GridLayoutManager(1, 1, new Insets(0, 0, 0, 0), -1, -1));
+        tabbedPane.addTab("Preview Large", tabPreviewLarge);
+        tabbedPane.setEnabledAt(2, false);
+        previewLargeScrollPane = new JScrollPane();
+        previewLargeScrollPane.setHorizontalScrollBarPolicy(32);
+        previewLargeScrollPane.setVerticalScrollBarPolicy(22);
+        tabPreviewLarge.add(previewLargeScrollPane, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
+        previewLargeScrollPane.setViewportView(previewLargePanel);
+        tabPreviewSmall = new JPanel();
+        tabPreviewSmall.setLayout(new GridLayoutManager(1, 1, new Insets(0, 0, 0, 0), -1, -1));
+        tabbedPane.addTab("Preview Small", tabPreviewSmall);
+        tabbedPane.setEnabledAt(3, false);
+        previewSmallScrollPane = new JScrollPane();
+        tabPreviewSmall.add(previewSmallScrollPane, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
+        previewSmallScrollPane.setViewportView(previewSmallPanel);
     }
 
     /**

@@ -24,8 +24,10 @@
 
 package photon.application.base;
 
+import photon.application.render.OnionPanel;
 import photon.application.MainForm;
 import photon.application.dialogs.*;
+import photon.application.render.storage.RotationBaseMatrix;
 import photon.application.utilities.MainUtils;
 import photon.application.utilities.PhotonCalcWorker;
 import photon.application.utilities.PhotonLoadWorker;
@@ -33,11 +35,14 @@ import photon.file.PhotonFile;
 import photon.file.parts.PhotonFileLayer;
 import photon.file.parts.PhotonFilePreview;
 import photon.file.ui.PhotonLayerImage;
+import photon.file.ui.PhotonPreviewImage;
 import photon.file.ui.ScrollPosition;
 import photon.file.ui.ScrollUtil;
 
 import javax.swing.*;
+import javax.swing.border.Border;
 import java.awt.*;
+import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FilenameFilter;
@@ -49,6 +54,7 @@ import java.util.Properties;
  * by bn on 09/07/2018.
  */
 public class BaseForm {
+    public JFrame frame;
     protected MainForm me;
 
     protected String loadedPath;
@@ -57,6 +63,7 @@ public class BaseForm {
     public int margin = 0;
     protected int zoom = 0;
 
+    private PhotonCalcWorker calcWorker;
 
     protected void openFile() {
         FileDialog d = new FileDialog(me.frame);
@@ -71,10 +78,17 @@ public class BaseForm {
         if (fileName != null && fileName.length() > 0) {
             File file = new File(fileName);
             if (MainUtils.isPhotonFile(file)) {
+                if (calcWorker!=null) {
+                    if (!calcWorker.isDone()) {
+                        calcWorker.cancel(true);
+                    }
+                    calcWorker = null;
+                }
+
                 me.saveBtn.setEnabled(false);
                 me.informationBtn.setEnabled(false);
-                me.previewLargeBtn.setEnabled(false);
-                me.previewSmallBtn.setEnabled(false);
+                me.tabPreviewLarge.setEnabled(false);
+                me.tabPreviewSmall.setEnabled(false);
                 try {
                     if (photonFile != null) {
                         photonFile.unLink();
@@ -98,7 +112,7 @@ public class BaseForm {
             me.saveDialog = new SaveDialog(me);
         }
         me.saveDialog.setInformation(photonFile, loadedPath, loadedFileName);
-        me.saveDialog.setSize(new Dimension(500, 240));
+        me.saveDialog.setSize(new Dimension(500, 260));
         me.saveDialog.setLocationRelativeTo(me.frame);
         me.saveDialog.setVisible(true);
     }
@@ -155,9 +169,18 @@ public class BaseForm {
             if (photonFile.getLayerCount() > 0) {
                 PhotonFileLayer fileLayer = photonFile.getLayer(0);
                 if (fileLayer != null) {
+                    Border border = BorderFactory.createEmptyBorder(0, 0, 0, 0);
+
                     showLayerInformation(0, fileLayer);
-                    ((PhotonLayerImage) me.layerImage).drawLayer(fileLayer, margin);
-                    me.layerImage.repaint();
+                    if (me.tabbedPane.getSelectedIndex()==0) {
+                        ((PhotonLayerImage) me.layerImage).drawLayer(fileLayer, margin);
+                        me.layerImage.repaint();
+                    }
+                    me.imageScrollPane.setBorder(border);
+
+                    if (me.tabbedPane.getSelectedIndex()==1) {
+                        ((OnionPanel) me.render3D).drawLayer(0, fileLayer, photonFile, me.render3D.getHeight());
+                    }
 
                     ScrollUtil.scrollTo(me.imageScrollPane, ScrollPosition.HorizontalCenter);
                     ScrollUtil.scrollTo(me.imageScrollPane, ScrollPosition.VerticalCenter);
@@ -180,6 +203,26 @@ public class BaseForm {
                         me.layerSpinner.setEnabled(false);
                         me.zoomSlider.setEnabled(false);
                     }
+
+
+                    PhotonFilePreview preview = me.photonFile.getPreviewOne();
+                    ((PhotonPreviewImage) me.previewLargePanel).reInit(preview.getResolutionX(), preview.getResolutionY());
+                    ((PhotonPreviewImage) me.previewLargePanel).drawImage(preview);
+                    me.tabbedPane.setEnabledAt(2, true);
+                    me.previewLargeScrollPane.setBorder(border);
+                    me.previewLargeScrollPane.setBackground(Color.decode("#ececec"));
+
+                    ScrollUtil.scrollTo(me.previewLargeScrollPane, ScrollPosition.HorizontalCenter);
+                    ScrollUtil.scrollTo(me.previewLargeScrollPane, ScrollPosition.VerticalCenter);
+
+                    preview = me.photonFile.getPreviewTwo();
+                    ((PhotonPreviewImage) me.previewSmallPanel).reInit(preview.getResolutionX(), preview.getResolutionY());
+                    ((PhotonPreviewImage) me.previewSmallPanel).drawImage(preview);
+                    me.tabbedPane.setEnabledAt(3, true);
+                    me.previewSmallScrollPane.setBorder(border);
+                    me.previewSmallScrollPane.setBackground(Color.decode("#ececec"));
+
+                    me.layerSpinner.requestFocus();
                 }
             }
 
@@ -287,8 +330,15 @@ public class BaseForm {
             int layer = getLayer();
             PhotonFileLayer fileLayer = photonFile.getLayer(layer);
             showLayerInformation(layer, fileLayer);
-            ((PhotonLayerImage) me.layerImage).drawLayer(fileLayer, margin);
-            me.layerImage.repaint();
+
+            if (me.tabbedPane.getSelectedIndex()==0) {
+                ((PhotonLayerImage) me.layerImage).drawLayer(fileLayer, margin);
+                me.layerImage.repaint();
+            }
+
+            if (me.tabbedPane.getSelectedIndex()==1) {
+                ((OnionPanel) me.render3D).drawLayer(layer, fileLayer, photonFile, me.render3D.getHeight());
+            }
 
             me.layerSlider.setEnabled(false);
             me.layerSlider.setValue(layer);
@@ -309,14 +359,8 @@ public class BaseForm {
 
     public void calc() {
         if (me.photonFile != null) {
-            me.saveBtn.setEnabled(true);
-            me.informationBtn.setEnabled(true);
-            me.previewLargeBtn.setEnabled(true);
-            me.previewSmallBtn.setEnabled(true);
-
-            PhotonCalcWorker calcWorker = new PhotonCalcWorker(me);
+            calcWorker = new PhotonCalcWorker(me);
             calcWorker.execute();
-
         }
     }
 
@@ -340,4 +384,42 @@ public class BaseForm {
     }
 
 
+    public void handleKeyEvent(KeyEvent key) {
+        if (me.tabbedPane.getSelectedIndex()==0) {
+            switch (key.getKeyCode()) {
+                case KeyEvent.VK_DOWN:
+                    ScrollUtil.scroll(me.imageScrollPane, ScrollPosition.Bottom);
+                    break;
+                case KeyEvent.VK_UP:
+                    ScrollUtil.scroll(me.imageScrollPane, ScrollPosition.Top);
+                    break;
+                case KeyEvent.VK_LEFT:
+                    ScrollUtil.scroll(me.imageScrollPane, ScrollPosition.Left);
+                    break;
+                case KeyEvent.VK_RIGHT:
+                    ScrollUtil.scroll(me.imageScrollPane, ScrollPosition.Right);
+                    break;
+            }
+        } else if (me.tabbedPane.getSelectedIndex()==1) {
+            RotationBaseMatrix rotationMatrix = null;
+            switch (key.getKeyCode()) {
+                case KeyEvent.VK_DOWN:
+                    rotationMatrix = new RotationBaseMatrix(-0.1, 0, 0);
+                    break;
+                case KeyEvent.VK_UP:
+                    rotationMatrix = new RotationBaseMatrix(0.1, 0, 0);
+                    break;
+                case KeyEvent.VK_LEFT:
+                    rotationMatrix = new RotationBaseMatrix(0, -0.1, 0);
+                    break;
+                case KeyEvent.VK_RIGHT:
+                    rotationMatrix = new RotationBaseMatrix(0, 0.1, 0);
+                    break;
+            }
+            if (rotationMatrix!=null) {
+                ((OnionPanel) me.render3D).rotate(rotationMatrix);
+            }
+        }
+        // key.consume();
+    }
 }

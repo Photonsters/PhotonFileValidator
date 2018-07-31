@@ -288,6 +288,10 @@ public class PhotonFileLayer {
         return layerPositionZ;
     }
 
+    public void setLayerPositionZ(float layerPositionZ) {
+        this.layerPositionZ = layerPositionZ;
+    }
+
     public float getLayerExposure() {
         return layerExposure;
     }
@@ -307,7 +311,9 @@ public class PhotonFileLayer {
     public void unLink() {
         imageData = null;
         packedLayerImage = null;
-        islandRows.clear();
+        if (islandRows!=null) {
+            islandRows.clear();
+        }
         photonFileHeader = null;
     }
 

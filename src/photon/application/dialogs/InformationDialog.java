@@ -82,8 +82,8 @@ public class InformationDialog extends JDialog {
             printVolume.setText(String.format("%,.1f ml", cm3));
 
             float peelTime = peel;
-            float baseTime = photonFileHeader.getBottomLayers() * (photonFileHeader.getBottomExposureTimeSeconds() + peelTime + photonFileHeader.getOffTimeSeconds());
-            float topTime = (photonFileHeader.getNumberOfLayers() - photonFileHeader.getBottomLayers()) * (photonFileHeader.getExposureTimeSeconds() + peelTime + photonFileHeader.getOffTimeSeconds());
+            float baseTime = photonFileHeader.getBottomLayers() * (photonFileHeader.getBottomExposureTimeSeconds() + Float.max(peelTime, photonFileHeader.getOffTimeSeconds()));
+            float topTime = (photonFileHeader.getNumberOfLayers() - photonFileHeader.getBottomLayers()) * (photonFileHeader.getExposureTimeSeconds() + Float.max(peelTime, photonFileHeader.getOffTimeSeconds()));
             long totalSeconds = (long) (baseTime + topTime);
             printTime.setText(getDuration(totalSeconds));
 

@@ -315,23 +315,25 @@ public class PhotonLayer {
         PhotonRow currentRow = new PhotonRow();
         rows.add(currentRow);
         int x = 0;
-        for (int i = 0; i < packedLayerImage.length; i++) {
-            byte rle = packedLayerImage[i];
-            byte colorCode = (byte) ((rle & 0x60) >> 5);
-            Color color = colors.get(colorCode);
-            boolean extended = (rle & 0x80) == 0x80;
-            int length = rle & 0x1F;
-            if (extended) {
-                i++;
-                length = (length << 8) | packedLayerImage[i] & 0x00ff;
-            }
-            currentRow.lines.add(new PhotonLine(color, length));
-            x += length;
+        if (packedLayerImage!=null) { // when user tries to show a layer before its calculated
+            for (int i = 0; i < packedLayerImage.length; i++) {
+                byte rle = packedLayerImage[i];
+                byte colorCode = (byte) ((rle & 0x60) >> 5);
+                Color color = colors.get(colorCode);
+                boolean extended = (rle & 0x80) == 0x80;
+                int length = rle & 0x1F;
+                if (extended) {
+                    i++;
+                    length = (length << 8) | packedLayerImage[i] & 0x00ff;
+                }
+                currentRow.lines.add(new PhotonLine(color, length));
+                x += length;
 
-            if (x >= resolutionX) {
-                currentRow = new PhotonRow();
-                rows.add(currentRow);
-                x = 0;
+                if (x >= resolutionX) {
+                    currentRow = new PhotonRow();
+                    rows.add(currentRow);
+                    x = 0;
+                }
             }
         }
         return rows;

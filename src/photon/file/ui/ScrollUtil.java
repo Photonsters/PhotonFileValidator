@@ -66,4 +66,42 @@ public class ScrollUtil {
                 break;
         }
     }
+
+    public static void scroll(JScrollPane c, ScrollPosition scrollPosition) {
+        switch (scrollPosition) {
+            case Top:
+                int val = c.getVerticalScrollBar().getValue();
+                if (val>18) {
+                    c.getVerticalScrollBar().setValue(val - 18);
+                } else {
+                    c.getVerticalScrollBar().setValue(0);
+                }
+                break;
+            case Bottom:
+                val = c.getVerticalScrollBar().getValue();
+                if (val < (c.getVerticalScrollBar().getMaximum() - 18)) {
+                    c.getVerticalScrollBar().setValue(val + 18);
+                } else {
+                    c.getVerticalScrollBar().setValue(c.getVerticalScrollBar().getMaximum());
+                }
+                break;
+
+            case Left:
+                val = c.getHorizontalScrollBar().getValue();
+                if (val>18) {
+                    c.getHorizontalScrollBar().setValue(val - 18);
+                } else {
+                    c.getHorizontalScrollBar().setValue(0);
+                }
+                break;
+            case Right:
+                val = c.getHorizontalScrollBar().getValue();
+                if (val< (c.getHorizontalScrollBar().getMaximum() - 18)) {
+                    c.getHorizontalScrollBar().setValue(val + 18);
+                } else {
+                    c.getHorizontalScrollBar().setValue(c.getHorizontalScrollBar().getMaximum());
+                }
+                break;
+        }
+    }
 }

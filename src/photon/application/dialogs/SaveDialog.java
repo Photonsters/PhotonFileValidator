@@ -27,6 +27,7 @@ package photon.application.dialogs;
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
 import com.intellij.uiDesigner.core.Spacer;
+import com.sun.javafx.binding.StringFormatter;
 import photon.application.MainForm;
 import photon.file.PhotonFile;
 import photon.file.parts.PhotonFileHeader;
@@ -47,6 +48,7 @@ public class SaveDialog extends JDialog {
     private JTextField textBottomLayers;
     private JTextField textBottomExposure;
     private JTextField textOffTime;
+    private JCheckBox fixZcheck;
 
     private MainForm mainForm;
     private PhotonFile photonFile;
@@ -93,6 +95,9 @@ public class SaveDialog extends JDialog {
             header.setExposureBottomTimeSeconds(getFloat(textBottomExposure.getText()));
             header.setBottomLayers(Integer.parseInt(textBottomLayers.getText()));
             photonFile.adjustLayerSettings();
+            if (fixZcheck.isSelected()) {
+                photonFile.fixLayerHeights();
+            }
             photonFile.saveFile(file);
             mainForm.setFileName(file);
             mainForm.showFileInformation();
@@ -125,6 +130,14 @@ public class SaveDialog extends JDialog {
         textOffTime.setText(String.format("%.1f", photonFile.getPhotonFileHeader().getOffTimeSeconds()));
         textBottomLayers.setText(String.format("%d", photonFile.getPhotonFileHeader().getBottomLayers()));
         textBottomExposure.setText(String.format("%.1f", photonFile.getPhotonFileHeader().getBottomExposureTimeSeconds()));
+
+        fixZcheck.setSelected(false);
+        float drift = photonFile.getZdrift();
+        if (drift > 0.001f) {
+            fixZcheck.setEnabled(true);
+            fixZcheck.setText(String.format("Total Z error is %f mm", drift));
+        }
+
     }
 
     private String makeFileName(String path, String name, String ext) {
@@ -175,13 +188,13 @@ public class SaveDialog extends JDialog {
         buttonCancel.setText("Cancel");
         panel2.add(buttonCancel, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         final JPanel panel3 = new JPanel();
-        panel3.setLayout(new GridLayoutManager(6, 2, new Insets(0, 0, 0, 0), -1, -1));
+        panel3.setLayout(new GridLayoutManager(7, 2, new Insets(0, 0, 0, 0), -1, -1));
         contentPane.add(panel3, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
         final JLabel label1 = new JLabel();
         label1.setText("Name");
         panel3.add(label1, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         final Spacer spacer2 = new Spacer();
-        panel3.add(spacer2, new GridConstraints(5, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_VERTICAL, 1, GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
+        panel3.add(spacer2, new GridConstraints(6, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_VERTICAL, 1, GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
         textName = new JTextField();
         panel3.add(textName, new GridConstraints(0, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
         final JLabel label2 = new JLabel();
@@ -204,6 +217,13 @@ public class SaveDialog extends JDialog {
         panel3.add(label5, new GridConstraints(4, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         textBottomLayers = new JTextField();
         panel3.add(textBottomLayers, new GridConstraints(4, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, new Dimension(150, -1), new Dimension(150, -1), new Dimension(150, -1), 0, false));
+        final JLabel label6 = new JLabel();
+        label6.setText("Fix Z settings");
+        panel3.add(label6, new GridConstraints(5, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        fixZcheck = new JCheckBox();
+        fixZcheck.setEnabled(false);
+        fixZcheck.setText("Noting to fix");
+        panel3.add(fixZcheck, new GridConstraints(5, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
     }
 
     /**

@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "Photon File Validator"
-#define MyAppVersion "1.4"
+#define MyAppVersion "1.5"
 #define MyAppPublisher "Bonosoft"
 #define MyAppURL "https://github.com/Photonsters/PhotonFileValidator"
 #define MyAppExeName "photonfilevalidator.exe"
@@ -23,7 +23,7 @@ DefaultDirName={pf}\{#MyAppName}
 DisableProgramGroupPage=yes
 OutputDir=D:\Users\bn\Documents\GitHub\PhotonFileViewer\release
 OutputBaseFilename=win-jre-photonfilevalidator-{#MyAppVersion}
-SetupIconFile=D:\Users\bn\Documents\GitHub\PhotonFileViewer\install\img\icons\photonsters.ico
+SetupIconFile=D:\Users\bn\Documents\GitHub\PhotonFileViewer\install\img\icons\validator.ico
 Compression=lzma
 SolidCompression=yes
 

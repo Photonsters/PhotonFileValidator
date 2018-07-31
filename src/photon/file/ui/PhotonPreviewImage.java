@@ -54,7 +54,6 @@ public class PhotonPreviewImage extends JPanel {
     public void drawImage(PhotonFilePreview preview) {
 
         image.getRaster().setDataElements( 0, 0, preview.getResolutionX(), preview.getResolutionY(), preview.getImageData());
-
     }
 
 }

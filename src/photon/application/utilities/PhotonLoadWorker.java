@@ -56,6 +56,8 @@ public class PhotonLoadWorker extends SwingWorker<Integer, String> implements IP
         mainForm.layerSpinner.setEnabled(false);
         mainForm.zoomSlider.setEnabled(false);
         mainForm.layerSlider.setEnabled(false);
+        mainForm.tabPreviewLarge.setEnabled(false);
+        mainForm.tabPreviewSmall.setEnabled(false);
     }
 
     @Override
@@ -69,7 +71,10 @@ public class PhotonLoadWorker extends SwingWorker<Integer, String> implements IP
     protected void done() {
         // mainForm.openBtn.setEnabled(true);
         if (mainForm.photonFile!=null) {
+            mainForm.openBtn.setEnabled(true);
             mainForm.saveBtn.setEnabled(true);
+            mainForm.tabPreviewLarge.setEnabled(true);
+            mainForm.tabPreviewSmall.setEnabled(true);
             mainForm.showFileInformation();
             mainForm.calc();
         }
