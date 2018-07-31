@@ -1,6 +1,6 @@
 # Version History and change log
 
-### 1.5 Render in 3D 
+### 1.5 Render in 3D (July 31, 2018)
  - Added a view where some layers are shown in 3D (peel the onion)
  - Added option to fix layer Z position round error from slicer
  - Added option to cancel calculation by opening a new file
