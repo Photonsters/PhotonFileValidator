@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "Photon File Validator"
-#define MyAppVersion "1.5"
+#define MyAppVersion "2.0"
 #define MyAppPublisher "Bonosoft"
 #define MyAppURL "https://github.com/Photonsters/PhotonFileValidator"
 #define MyAppExeName "photonfilevalidator.exe"
