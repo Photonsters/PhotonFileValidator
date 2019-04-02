@@ -8,7 +8,7 @@
     <properties/>
     <border type="none"/>
     <children>
-      <grid id="9ebbe" layout-manager="GridLayoutManager" row-count="1" column-count="7" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+      <grid id="9ebbe" layout-manager="GridLayoutManager" row-count="1" column-count="8" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
         <margin top="0" left="0" bottom="0" right="0"/>
         <constraints>
           <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
@@ -74,7 +74,7 @@
           </component>
           <component id="cb72" class="javax.swing.JSpinner" binding="layerSpinner">
             <constraints>
-              <grid row="0" column="6" row-span="1" col-span="1" vsize-policy="2" hsize-policy="0" anchor="8" fill="1" indent="1" use-parent-layout="false">
+              <grid row="0" column="7" row-span="1" col-span="1" vsize-policy="2" hsize-policy="0" anchor="8" fill="1" indent="1" use-parent-layout="false">
                 <minimum-size width="80" height="-1"/>
                 <preferred-size width="80" height="-1"/>
                 <maximum-size width="80" height="-1"/>
@@ -86,7 +86,7 @@
           </component>
           <component id="ff0d3" class="javax.swing.JSlider" binding="zoomSlider">
             <constraints>
-              <grid row="0" column="5" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="1" indent="0" use-parent-layout="false">
+              <grid row="0" column="6" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="1" indent="0" use-parent-layout="false">
                 <minimum-size width="100" height="-1"/>
                 <preferred-size width="100" height="-1"/>
                 <maximum-size width="100" height="-1"/>
@@ -103,6 +103,15 @@
               <snapToTicks value="true"/>
               <value value="0"/>
               <valueIsAdjusting value="true"/>
+            </properties>
+          </component>
+          <component id="4dce3" class="javax.swing.JButton" binding="playButton" default-binding="true">
+            <constraints>
+              <grid row="0" column="5" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties>
+              <enabled value="false"/>
+              <text value="Play"/>
             </properties>
           </component>
         </children>
@@ -205,9 +214,9 @@
                 <margin top="0" left="0" bottom="0" right="0"/>
                 <constraints>
                   <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="1" fill="1" indent="0" use-parent-layout="false">
-                    <minimum-size width="-1" height="30"/>
-                    <preferred-size width="-1" height="30"/>
-                    <maximum-size width="-1" height="30"/>
+                    <minimum-size width="-1" height="20"/>
+                    <preferred-size width="-1" height="20"/>
+                    <maximum-size width="-1" height="20"/>
                   </grid>
                 </constraints>
                 <properties/>
@@ -249,12 +258,13 @@
                       <grid row="0" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="9" fill="0" indent="1" use-parent-layout="false"/>
                     </constraints>
                     <properties>
-                      <text value=""/>
+                      <foreground color="-10066330"/>
+                      <text value="Hint: Click to edit, Shift-Click to view anti-aliase layers"/>
                     </properties>
                   </component>
                 </children>
               </grid>
-              <grid id="f4f19" layout-manager="GridLayoutManager" row-count="1" column-count="5" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+              <grid id="f4f19" layout-manager="GridLayoutManager" row-count="1" column-count="6" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
                 <margin top="0" left="0" bottom="0" right="0"/>
                 <constraints>
                   <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false">
@@ -280,7 +290,7 @@
                   </component>
                   <hspacer id="b22cf">
                     <constraints>
-                      <grid row="0" column="4" row-span="1" col-span="1" vsize-policy="1" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+                      <grid row="0" column="5" row-span="1" col-span="1" vsize-policy="1" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
                     </constraints>
                   </hspacer>
                   <component id="b0159" class="javax.swing.JButton" binding="saveBtn">
@@ -320,6 +330,19 @@
                     <properties>
                       <enabled value="false"/>
                       <text value="Fix"/>
+                    </properties>
+                  </component>
+                  <component id="a88d6" class="javax.swing.JButton" binding="convertBtn">
+                    <constraints>
+                      <grid row="0" column="4" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="0" fill="1" indent="0" use-parent-layout="false">
+                        <minimum-size width="110" height="20"/>
+                        <preferred-size width="110" height="20"/>
+                        <maximum-size width="110" height="20"/>
+                      </grid>
+                    </constraints>
+                    <properties>
+                      <enabled value="false"/>
+                      <text value="Convert"/>
                     </properties>
                   </component>
                 </children>

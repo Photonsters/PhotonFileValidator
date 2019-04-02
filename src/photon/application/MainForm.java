@@ -85,19 +85,32 @@ public class MainForm extends BaseForm implements ActionListener, ItemListener {
     private JPanel layer3D;
     public JPanel render3D;
 
+    public JButton playButton;
+    public JButton convertBtn;
+    public boolean playing;
+
     public final JFileChooser fc;
     public InformationDialog informationDialog;
     public PreviewDialog previewDialog;
     public SaveDialog saveDialog;
     public FixDialog fixDialog;
     public EditDialog editDialog;
-
+    public AntiAliaseDialog antiAliaseDialog;
+    public PlayDialog playDialog;
+    public ConvertDialog convertDialog;
 
     public MainForm() {
 
         $$$setupUI$$$();
 
         me = this;
+
+        playButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                play();
+            }
+        });
 
         openBtn.addActionListener(new ActionListener() {
             @Override
@@ -169,6 +182,13 @@ public class MainForm extends BaseForm implements ActionListener, ItemListener {
             }
         });
 
+        convertBtn.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                showConvert();
+            }
+        });
+
         zoomSlider.addChangeListener(new ChangeListener() {
             @Override
             public void stateChanged(ChangeEvent e) {
@@ -203,7 +223,11 @@ public class MainForm extends BaseForm implements ActionListener, ItemListener {
             @Override
             public void mouseClicked(MouseEvent e) {
                 if (photonFile != null) {
-                    showEdit(e.getX(), e.getY());
+                    if (e.isShiftDown()) {
+                        showAA(e.getX(), e.getY());
+                    } else {
+                        showEdit(e.getX(), e.getY());
+                    }
                 }
             }
         });
@@ -249,7 +273,7 @@ public class MainForm extends BaseForm implements ActionListener, ItemListener {
     }
 
     public static void main(String[] args) {
-        BaseFrame frame = new BaseFrame("Photon File Validator 1.5");
+        BaseFrame frame = new BaseFrame("Photon File Validator 2.0");
         MainUtils.setIcon(frame);
         MainForm mainForm = new MainForm();
         JPanel panel = mainForm.mainPanel;
@@ -300,7 +324,7 @@ public class MainForm extends BaseForm implements ActionListener, ItemListener {
         mainPanel = new JPanel();
         mainPanel.setLayout(new GridLayoutManager(5, 1, new Insets(5, 5, 5, 5), -1, -1));
         final JPanel panel1 = new JPanel();
-        panel1.setLayout(new GridLayoutManager(1, 7, new Insets(0, 0, 0, 0), -1, -1));
+        panel1.setLayout(new GridLayoutManager(1, 8, new Insets(0, 0, 0, 0), -1, -1));
         mainPanel.add(panel1, new GridConstraints(2, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
         layerNo = new JLabel();
         layerNo.setText("Layer 0/0");
@@ -321,7 +345,7 @@ public class MainForm extends BaseForm implements ActionListener, ItemListener {
         panel1.add(layerOfftime, new GridConstraints(0, 3, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, new Dimension(150, -1), new Dimension(150, -1), new Dimension(150, -1), 0, false));
         layerSpinner = new JSpinner();
         layerSpinner.setEnabled(false);
-        panel1.add(layerSpinner, new GridConstraints(0, 6, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_CAN_GROW, new Dimension(80, -1), new Dimension(80, -1), new Dimension(80, -1), 1, false));
+        panel1.add(layerSpinner, new GridConstraints(0, 7, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_CAN_GROW, new Dimension(80, -1), new Dimension(80, -1), new Dimension(80, -1), 1, false));
         zoomSlider = new JSlider();
         zoomSlider.setEnabled(false);
         zoomSlider.setMajorTickSpacing(1);
@@ -333,7 +357,11 @@ public class MainForm extends BaseForm implements ActionListener, ItemListener {
         zoomSlider.setSnapToTicks(true);
         zoomSlider.setValue(0);
         zoomSlider.setValueIsAdjusting(true);
-        panel1.add(zoomSlider, new GridConstraints(0, 5, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, new Dimension(100, -1), new Dimension(100, -1), new Dimension(100, -1), 0, false));
+        panel1.add(zoomSlider, new GridConstraints(0, 6, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, new Dimension(100, -1), new Dimension(100, -1), new Dimension(100, -1), 0, false));
+        playButton = new JButton();
+        playButton.setEnabled(false);
+        playButton.setText("Play");
+        panel1.add(playButton, new GridConstraints(0, 5, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         final JPanel panel2 = new JPanel();
         panel2.setLayout(new GridLayoutManager(1, 2, new Insets(0, 0, 0, 0), -1, -1));
         mainPanel.add(panel2, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
@@ -366,7 +394,7 @@ public class MainForm extends BaseForm implements ActionListener, ItemListener {
         panel4.add(marginInfo, new GridConstraints(0, 2, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 1, false));
         final JPanel panel5 = new JPanel();
         panel5.setLayout(new GridLayoutManager(1, 4, new Insets(0, 0, 0, 0), -1, -1));
-        infoPanel.add(panel5, new GridConstraints(2, 0, 1, 1, GridConstraints.ANCHOR_NORTH, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, new Dimension(-1, 30), new Dimension(-1, 30), new Dimension(-1, 30), 0, false));
+        infoPanel.add(panel5, new GridConstraints(2, 0, 1, 1, GridConstraints.ANCHOR_NORTH, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, new Dimension(-1, 20), new Dimension(-1, 20), new Dimension(-1, 20), 0, false));
         final Spacer spacer3 = new Spacer();
         panel5.add(spacer3, new GridConstraints(0, 3, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, 1, null, null, null, 0, false));
         islandNextBtn = new JButton();
@@ -378,16 +406,17 @@ public class MainForm extends BaseForm implements ActionListener, ItemListener {
         islandPrevBtn.setText("<");
         panel5.add(islandPrevBtn, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_NORTH, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, new Dimension(35, 18), new Dimension(45, 18), new Dimension(45, 18), 0, false));
         layerInfo = new JLabel();
-        layerInfo.setText("");
+        layerInfo.setForeground(new Color(-10066330));
+        layerInfo.setText("Hint: Click to edit, Shift-Click to view anti-aliase layers");
         panel5.add(layerInfo, new GridConstraints(0, 2, 1, 1, GridConstraints.ANCHOR_NORTHWEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 1, false));
         final JPanel panel6 = new JPanel();
-        panel6.setLayout(new GridLayoutManager(1, 5, new Insets(0, 0, 0, 0), -1, -1));
+        panel6.setLayout(new GridLayoutManager(1, 6, new Insets(0, 0, 0, 0), -1, -1));
         infoPanel.add(panel6, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, new Dimension(-1, 30), new Dimension(-1, 30), new Dimension(-1, 30), 0, false));
         openBtn = new JButton();
         openBtn.setText("Open File");
         panel6.add(openBtn, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, new Dimension(110, 20), new Dimension(110, 20), new Dimension(110, 20), 0, false));
         final Spacer spacer4 = new Spacer();
-        panel6.add(spacer4, new GridConstraints(0, 4, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, 1, null, null, null, 0, false));
+        panel6.add(spacer4, new GridConstraints(0, 5, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, 1, null, null, null, 0, false));
         saveBtn = new JButton();
         saveBtn.setEnabled(false);
         saveBtn.setText("Save");
@@ -400,6 +429,10 @@ public class MainForm extends BaseForm implements ActionListener, ItemListener {
         fixBtn.setEnabled(false);
         fixBtn.setText("Fix");
         panel6.add(fixBtn, new GridConstraints(0, 3, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, new Dimension(110, 20), new Dimension(110, 20), new Dimension(110, 20), 0, false));
+        convertBtn = new JButton();
+        convertBtn.setEnabled(false);
+        convertBtn.setText("Convert");
+        panel6.add(convertBtn, new GridConstraints(0, 4, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, new Dimension(110, 20), new Dimension(110, 20), new Dimension(110, 20), 0, false));
         layerSlider = new JSlider();
         layerSlider.setEnabled(false);
         layerSlider.setValue(0);
@@ -445,4 +478,5 @@ public class MainForm extends BaseForm implements ActionListener, ItemListener {
      * @noinspection ALL
      */
     public JComponent $$$getRootComponent$$$() { return mainPanel; }
+
 }

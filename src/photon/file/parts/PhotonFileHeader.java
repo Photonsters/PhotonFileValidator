@@ -31,7 +31,7 @@ import java.io.ByteArrayInputStream;
  */
 public class PhotonFileHeader {
     private int header1;
-    private int header2;
+    private int version;
     private float bedXmm;
     private float bedYmm;
     private float bedZmm;
@@ -52,14 +52,25 @@ public class PhotonFileHeader {
 
     private int previewTwoOffsetAddress;
 
-    private int unknown4;
+    public int printTimeSeconds;
     private PhotonProjectType projectType;
+
+    private int printParametersOffsetAddress;
+    private int printParametersSize;
+    private int antiAliasingLevel;
+
+    private short lightPWM;
+    private short bottomLightPWM;
+
+    private int unknown4;
+    private int unknown5;
+    private int unknown6;
 
     public PhotonFileHeader(byte[] file) throws Exception {
         PhotonInputStream ds = new PhotonInputStream(new ByteArrayInputStream(file));
 
         header1 = ds.readInt();
-        header2 = ds.readInt();
+        version = ds.readInt();
 
         bedXmm = ds.readFloat();
         bedYmm = ds.readFloat();
@@ -85,20 +96,36 @@ public class PhotonFileHeader {
         numberOfLayers = ds.readInt();
 
         previewTwoOffsetAddress = ds.readInt();
-        unknown4 = ds.readInt();
+        printTimeSeconds = ds.readInt();
 
         projectType = PhotonProjectType.find(ds.readInt());
 
-        // padding 6 ints (4bytes)
+        printParametersOffsetAddress = ds.readInt();
+        printParametersSize = ds.readInt();
+        antiAliasingLevel = ds.readInt();
+
+        lightPWM = ds.readShort();
+        bottomLightPWM = ds.readShort();
+
+        unknown4 = ds.readInt();
+        unknown5 = ds.readInt();
+        if (version>1) {
+            unknown6 = ds.readInt();
+        }
     }
 
-    public void save(PhotonOutputStream os, int previewOnePos, int previewTwoPos, int layerDefinitionPos) throws Exception {
+    public int getByteSize() {
+        return 4+4 + 4+4+4 + 4+4+4 + 4+4+4 + 4+4 + 4+4 + 4+4 + 4 + 4+4 + 4 + 4+4+4 +2+2 +4+4+ (version>1?4:0);
+    }
+
+    public void save(PhotonOutputStream os, int previewOnePos, int previewTwoPos, int layerDefinitionPos, int parametersPos) throws Exception {
         previewOneOffsetAddress = previewOnePos;
         previewTwoOffsetAddress = previewTwoPos;
         layersDefinitionOffsetAddress = layerDefinitionPos;
+        printParametersOffsetAddress = parametersPos;
 
         os.writeInt(header1);
-        os.writeInt(header2);
+        os.writeInt(version);
 
         os.writeFloat(bedXmm);
         os.writeFloat(bedYmm);
@@ -124,21 +151,24 @@ public class PhotonFileHeader {
         os.writeInt(numberOfLayers);
 
         os.writeInt(previewTwoOffsetAddress);
-        os.writeInt(unknown4);
+        os.writeInt(printTimeSeconds);
 
         os.writeInt(projectType.projectID);
 
-        os.writeInt(0);
-        os.writeInt(0);
-        os.writeInt(0);
-        os.writeInt(0);
-        os.writeInt(0);
-        os.writeInt(0);
+        os.writeInt(printParametersOffsetAddress);
+        os.writeInt(printParametersSize);
+        os.writeInt(antiAliasingLevel);
+
+        os.writeShort(lightPWM);
+        os.writeShort(bottomLightPWM);
+
+        os.writeInt(unknown4);
+        os.writeInt(unknown5);
+        if (version>1) {
+            os.writeInt(unknown6);
+        }
     }
 
-    public int getByteSize() {
-        return 4+4 + 4+4+4 + 4+4+4 + 4+4+4 + 4+4 + 4+4 + 4+4 + 4 + 4+4 + 4 + 4+4+4+4+4+4;
-    }
 
     public int getPreviewOneOffsetAddress() {
         return previewOneOffsetAddress;
@@ -217,5 +247,32 @@ public class PhotonFileHeader {
 
     public void setBottomLayers(int bottomLayers) {
         this.bottomLayers = bottomLayers;
+    }
+
+    public int getVersion() {
+        return version;
+    }
+
+    public int getPrintParametersOffsetAddress() {
+        return printParametersOffsetAddress;
+    }
+
+    public int getPrintParametersSize() {
+        return printParametersSize;
+    }
+
+    public int getAntiAliasingLevel() {
+        return antiAliasingLevel;
+    }
+
+    public void setAntiAliasingLevel(int antiAliasingLevel) {
+        this.antiAliasingLevel = antiAliasingLevel;
+    }
+
+    public void makeVersion(int i) {
+        version = i;
+        antiAliasingLevel = 1;
+        lightPWM = 255;
+        bottomLightPWM = 255;
     }
 }

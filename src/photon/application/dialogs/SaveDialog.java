@@ -31,6 +31,7 @@ import com.sun.javafx.binding.StringFormatter;
 import photon.application.MainForm;
 import photon.file.PhotonFile;
 import photon.file.parts.PhotonFileHeader;
+import photon.file.parts.PhotonFilePrintParameters;
 
 import javax.swing.*;
 import java.awt.*;
@@ -49,6 +50,21 @@ public class SaveDialog extends JDialog {
     private JTextField textBottomExposure;
     private JTextField textOffTime;
     private JCheckBox fixZcheck;
+    private JCheckBox version2FormatCheckBox;
+    private JTextField bottomLiftDistance;
+    private JTextField bottomLiftSpeed;
+    private JTextField liftingDistance;
+    private JTextField liftingSpeed;
+    private JTextField retractSpeed;
+    private JTextField bottomLightOffDelay;
+    private JTextField lightOffDelay;
+    private JLabel botomLiftDistanceLabel;
+    private JLabel bottomLiftSpeedLabel;
+    private JLabel liftingDistanceLabel;
+    private JLabel liftingSpeedLabel;
+    private JLabel retractSpeedLabel;
+    private JLabel bottomLightOffDelayLabel;
+    private JLabel lightOffDelayLabel;
 
     private MainForm mainForm;
     private PhotonFile photonFile;
@@ -84,6 +100,31 @@ public class SaveDialog extends JDialog {
         }, KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
 
         setTitle("Save");
+        version2FormatCheckBox.addItemListener(new ItemListener() {
+
+            public void itemStateChanged(ItemEvent e) {
+                version2Click();
+            }
+        });
+    }
+
+    private void version2Click() {
+        botomLiftDistanceLabel.setEnabled(version2FormatCheckBox.isSelected());
+        bottomLiftSpeedLabel.setEnabled(version2FormatCheckBox.isSelected());
+        liftingDistanceLabel.setEnabled(version2FormatCheckBox.isSelected());
+        liftingSpeedLabel.setEnabled(version2FormatCheckBox.isSelected());
+        retractSpeedLabel.setEnabled(version2FormatCheckBox.isSelected());
+        bottomLightOffDelayLabel.setEnabled(version2FormatCheckBox.isSelected());
+        lightOffDelayLabel.setEnabled(version2FormatCheckBox.isSelected());
+
+        bottomLiftDistance.setEnabled(version2FormatCheckBox.isSelected());
+        bottomLiftSpeed.setEnabled(version2FormatCheckBox.isSelected());
+        liftingDistance.setEnabled(version2FormatCheckBox.isSelected());
+        liftingSpeed.setEnabled(version2FormatCheckBox.isSelected());
+        retractSpeed.setEnabled(version2FormatCheckBox.isSelected());
+        bottomLightOffDelay.setEnabled(version2FormatCheckBox.isSelected());
+        lightOffDelay.setEnabled(version2FormatCheckBox.isSelected());
+
     }
 
     private void onOK() {
@@ -94,6 +135,21 @@ public class SaveDialog extends JDialog {
             header.setOffTimeSeconds(getFloat(textOffTime.getText()));
             header.setExposureBottomTimeSeconds(getFloat(textBottomExposure.getText()));
             header.setBottomLayers(Integer.parseInt(textBottomLayers.getText()));
+
+            if (version2FormatCheckBox.isSelected()) {
+                if (header.getVersion() == 1) {
+                    photonFile.changeToVersion2();
+                }
+                PhotonFilePrintParameters parameters = photonFile.getPhotonFileParameters();
+                parameters.bottomLiftDistance = getFloat(bottomLiftDistance.getText());
+                parameters.bottomLiftSpeed = getFloat(bottomLiftSpeed.getText());
+                parameters.liftingDistance = getFloat(liftingDistance.getText());
+                parameters.liftingSpeed = getFloat(liftingSpeed.getText());
+                parameters.retractSpeed = getFloat(retractSpeed.getText());
+                parameters.bottomLightOffDelay = getFloat(bottomLightOffDelay.getText());
+                parameters.lightOffDelay = getFloat(lightOffDelay.getText());
+            }
+
             photonFile.adjustLayerSettings();
             if (fixZcheck.isSelected()) {
                 photonFile.fixLayerHeights();
@@ -136,6 +192,26 @@ public class SaveDialog extends JDialog {
         if (drift > 0.001f) {
             fixZcheck.setEnabled(true);
             fixZcheck.setText(String.format("Total Z error is %f mm", drift));
+        }
+
+        if (photonFile.getPhotonFileHeader().getVersion() == 1) {
+            bottomLiftDistance.setText("5.0");
+            bottomLiftSpeed.setText("300.0");
+            liftingDistance.setText("5.0");
+            liftingSpeed.setText("300.0");
+            retractSpeed.setText("300.0");
+            bottomLightOffDelay.setText("0.0");
+            lightOffDelay.setText("0.0");
+        } else {
+            version2FormatCheckBox.setSelected(true);
+            version2FormatCheckBox.setEnabled(false);
+            bottomLiftDistance.setText(String.format("%.1f", photonFile.getPhotonFileParameters().bottomLiftDistance));
+            bottomLiftSpeed.setText(String.format("%.1f", photonFile.getPhotonFileParameters().bottomLiftSpeed));
+            liftingDistance.setText(String.format("%.1f", photonFile.getPhotonFileParameters().liftingDistance));
+            liftingSpeed.setText(String.format("%.1f", photonFile.getPhotonFileParameters().liftingSpeed));
+            retractSpeed.setText(String.format("%.1f", photonFile.getPhotonFileParameters().retractSpeed));
+            bottomLightOffDelay.setText(String.format("%.1f", photonFile.getPhotonFileParameters().bottomLightOffDelay));
+            lightOffDelay.setText(String.format("%.1f", photonFile.getPhotonFileParameters().lightOffDelay));
         }
 
     }
@@ -188,13 +264,13 @@ public class SaveDialog extends JDialog {
         buttonCancel.setText("Cancel");
         panel2.add(buttonCancel, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         final JPanel panel3 = new JPanel();
-        panel3.setLayout(new GridLayoutManager(7, 2, new Insets(0, 0, 0, 0), -1, -1));
+        panel3.setLayout(new GridLayoutManager(9, 4, new Insets(0, 0, 0, 0), -1, -1));
         contentPane.add(panel3, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
         final JLabel label1 = new JLabel();
         label1.setText("Name");
         panel3.add(label1, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         final Spacer spacer2 = new Spacer();
-        panel3.add(spacer2, new GridConstraints(6, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_VERTICAL, 1, GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
+        panel3.add(spacer2, new GridConstraints(8, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_VERTICAL, 1, GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
         textName = new JTextField();
         panel3.add(textName, new GridConstraints(0, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
         final JLabel label2 = new JLabel();
@@ -224,10 +300,64 @@ public class SaveDialog extends JDialog {
         fixZcheck.setEnabled(false);
         fixZcheck.setText("Noting to fix");
         panel3.add(fixZcheck, new GridConstraints(5, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        botomLiftDistanceLabel = new JLabel();
+        botomLiftDistanceLabel.setEnabled(false);
+        botomLiftDistanceLabel.setText("Bottom Lift Distance");
+        panel3.add(botomLiftDistanceLabel, new GridConstraints(1, 2, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        bottomLiftSpeedLabel = new JLabel();
+        bottomLiftSpeedLabel.setEnabled(false);
+        bottomLiftSpeedLabel.setText("Bottom Lift Speed");
+        panel3.add(bottomLiftSpeedLabel, new GridConstraints(2, 2, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        liftingDistanceLabel = new JLabel();
+        liftingDistanceLabel.setEnabled(false);
+        liftingDistanceLabel.setText("Lifting Distance");
+        panel3.add(liftingDistanceLabel, new GridConstraints(3, 2, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        liftingSpeedLabel = new JLabel();
+        liftingSpeedLabel.setEnabled(false);
+        liftingSpeedLabel.setText("Lifting Speed");
+        panel3.add(liftingSpeedLabel, new GridConstraints(4, 2, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        retractSpeedLabel = new JLabel();
+        retractSpeedLabel.setEnabled(false);
+        retractSpeedLabel.setText("Retract Speed");
+        panel3.add(retractSpeedLabel, new GridConstraints(5, 2, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        bottomLightOffDelayLabel = new JLabel();
+        bottomLightOffDelayLabel.setEnabled(false);
+        bottomLightOffDelayLabel.setText("Bottom Light Off Delay");
+        panel3.add(bottomLightOffDelayLabel, new GridConstraints(6, 2, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        lightOffDelayLabel = new JLabel();
+        lightOffDelayLabel.setEnabled(false);
+        lightOffDelayLabel.setText("Light Off Delay");
+        panel3.add(lightOffDelayLabel, new GridConstraints(7, 2, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        version2FormatCheckBox = new JCheckBox();
+        version2FormatCheckBox.setSelected(false);
+        version2FormatCheckBox.setText("Version 2 format");
+        panel3.add(version2FormatCheckBox, new GridConstraints(0, 2, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        bottomLiftDistance = new JTextField();
+        bottomLiftDistance.setEnabled(false);
+        panel3.add(bottomLiftDistance, new GridConstraints(1, 3, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, new Dimension(150, -1), new Dimension(150, -1), new Dimension(150, -1), 0, false));
+        bottomLiftSpeed = new JTextField();
+        bottomLiftSpeed.setEnabled(false);
+        panel3.add(bottomLiftSpeed, new GridConstraints(2, 3, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, new Dimension(150, -1), new Dimension(150, -1), new Dimension(150, -1), 0, false));
+        liftingDistance = new JTextField();
+        liftingDistance.setEnabled(false);
+        panel3.add(liftingDistance, new GridConstraints(3, 3, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, new Dimension(150, -1), new Dimension(150, -1), new Dimension(150, -1), 0, false));
+        liftingSpeed = new JTextField();
+        liftingSpeed.setEnabled(false);
+        panel3.add(liftingSpeed, new GridConstraints(4, 3, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, new Dimension(150, -1), new Dimension(150, -1), new Dimension(150, -1), 0, false));
+        retractSpeed = new JTextField();
+        retractSpeed.setEnabled(false);
+        panel3.add(retractSpeed, new GridConstraints(5, 3, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, new Dimension(150, -1), new Dimension(150, -1), new Dimension(150, -1), 0, false));
+        bottomLightOffDelay = new JTextField();
+        bottomLightOffDelay.setEnabled(false);
+        panel3.add(bottomLightOffDelay, new GridConstraints(6, 3, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, new Dimension(150, -1), new Dimension(150, -1), new Dimension(150, -1), 0, false));
+        lightOffDelay = new JTextField();
+        lightOffDelay.setEnabled(false);
+        panel3.add(lightOffDelay, new GridConstraints(7, 3, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, new Dimension(150, -1), new Dimension(150, -1), new Dimension(150, -1), 0, false));
     }
 
     /**
      * @noinspection ALL
      */
     public JComponent $$$getRootComponent$$$() { return contentPane; }
+
 }

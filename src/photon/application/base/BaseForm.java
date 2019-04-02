@@ -31,6 +31,7 @@ import photon.application.render.storage.RotationBaseMatrix;
 import photon.application.utilities.MainUtils;
 import photon.application.utilities.PhotonCalcWorker;
 import photon.application.utilities.PhotonLoadWorker;
+import photon.application.utilities.PhotonPlayWorker;
 import photon.file.PhotonFile;
 import photon.file.parts.PhotonFileLayer;
 import photon.file.parts.PhotonFilePreview;
@@ -112,7 +113,7 @@ public class BaseForm {
             me.saveDialog = new SaveDialog(me);
         }
         me.saveDialog.setInformation(photonFile, loadedPath, loadedFileName);
-        me.saveDialog.setSize(new Dimension(500, 260));
+        me.saveDialog.setSize(new Dimension(800, 360));
         me.saveDialog.setLocationRelativeTo(me.frame);
         me.saveDialog.setVisible(true);
     }
@@ -134,9 +135,21 @@ public class BaseForm {
             me.informationDialog = new InformationDialog(me.frame);
         }
         me.informationDialog.setInformation(photonFile);
-        me.informationDialog.setSize(new Dimension(300, 360));
+        me.informationDialog.setSize(new Dimension(650, 320));
         me.informationDialog.setLocationRelativeTo(me.frame);
         me.informationDialog.setVisible(true);
+        me.showFileInformation();
+
+    }
+
+    protected void showConvert() {
+        if (me.convertDialog == null) {
+            me.convertDialog = new ConvertDialog(me);
+        }
+        me.convertDialog.setInformation(photonFile);
+        me.convertDialog.setSize(new Dimension(650, 430));
+        me.convertDialog.setLocationRelativeTo(me.frame);
+        me.convertDialog.setVisible(true);
 
     }
 
@@ -153,9 +166,17 @@ public class BaseForm {
 
     }
 
-    protected void showLayerInformation(int layer, PhotonFileLayer fileLayer) {
+    public void showLayerInformation(int layer, PhotonFileLayer fileLayer) {
         me.layerNo.setForeground(fileLayer.getIsLandsCount() > 0 ? Color.red : Color.black);
-        me.layerNo.setText("Layer " + layer + "/" + (me.photonFile.getLayerCount() - 1));
+        me.layerNo.setText("Layer " + layer + "/" + (me.photonFile.getLayerCount() - 1) + (me.photonFile.hasAA()?" AA("+me.photonFile.getPhotonFileHeader().getAntiAliasingLevel()+")" : ""));
+        me.layerZ.setText(String.format("Z: %.4f mm", fileLayer.getLayerPositionZ()));
+        me.layerExposure.setText(String.format("Exposure: %.1fs", fileLayer.getLayerExposure()));
+        me.layerOfftime.setText(String.format("Off Time: %.1fs", fileLayer.getLayerOffTime()));
+    }
+
+    public void playLayerInformation(int layer, int aaLevel, PhotonFileLayer fileLayer) {
+        me.layerNo.setForeground(fileLayer.getIsLandsCount() > 0 ? Color.red : Color.black);
+        me.layerNo.setText("Layer " + layer + "/" + (me.photonFile.getLayerCount() - 1) + (me.photonFile.hasAA()?" AA("+aaLevel+"/"+me.photonFile.getPhotonFileHeader().getAntiAliasingLevel()+")" : ""));
         me.layerZ.setText(String.format("Z: %.4f mm", fileLayer.getLayerPositionZ()));
         me.layerExposure.setText(String.format("Exposure: %.1fs", fileLayer.getLayerExposure()));
         me.layerOfftime.setText(String.format("Off Time: %.1fs", fileLayer.getLayerOffTime()));
@@ -325,6 +346,14 @@ public class BaseForm {
         }
     }
 
+    public void viewLayerInfo() {
+        if (me.layerSpinner.isEnabled()) {
+            int layer = getLayer();
+            PhotonFileLayer fileLayer = photonFile.getLayer(layer);
+            showLayerInformation(layer, fileLayer);
+        }
+    }
+
     public void changeLayer() {
         if (me.layerSpinner.isEnabled()) {
             int layer = getLayer();
@@ -383,6 +412,25 @@ public class BaseForm {
 
     }
 
+    protected void showAA(int x, int y) {
+        if (me.antiAliaseDialog == null) {
+            me.antiAliaseDialog = new AntiAliaseDialog(me);
+        }
+
+        float zoomFactor = 1f;
+        if (zoom > 0) {
+            zoomFactor = 1f + (zoom / 2f);
+        } else if (zoom < 0){
+            zoomFactor = 1f + (zoom / 4f);
+        }
+
+        me.antiAliaseDialog.setInformation(photonFile, getLayer(), (int) (x / zoomFactor), (int) (y / zoomFactor));
+        me.antiAliaseDialog.setSize(new Dimension(800, 600));
+        me.antiAliaseDialog.setLocationRelativeTo(me.frame);
+        me.antiAliaseDialog.setVisible(true);
+
+    }
+
 
     public void handleKeyEvent(KeyEvent key) {
         if (me.tabbedPane.getSelectedIndex()==0) {
@@ -422,4 +470,19 @@ public class BaseForm {
         }
         // key.consume();
     }
+
+    public void play() {
+        if (me.playing) {
+            me.playButton.setEnabled(false);
+            me.playing = false;
+        } else {
+            if (me.playDialog == null) {
+                me.playDialog = new PlayDialog(me);
+            }
+            me.playDialog.setSize(new Dimension(400, 150));
+            me.playDialog.setLocationRelativeTo(me.frame);
+            me.playDialog.setVisible(true);
+        }
+    }
+
 }

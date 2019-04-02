@@ -46,6 +46,7 @@ public class EditDialog extends JDialog {
     private JButton buttonCancel;
     private JLabel infoText;
     private JPanel editArea;
+    private JButton editModeBtn;
 
     private EditDialog me;
     private MainForm mainForm;
@@ -57,7 +58,8 @@ public class EditDialog extends JDialog {
     private int layerY;
     private HashSet<PhotonDot> dots;
 
-    public PhotonDot pressedDot;
+    private PhotonDot pressedDot;
+    private boolean editModeSwap = true;
 
 
     public EditDialog(MainForm mainForm) {
@@ -77,6 +79,14 @@ public class EditDialog extends JDialog {
 
         buttonCancel.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {onCancel();}
+        });
+
+        editModeBtn.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                editModeSwap = !editModeSwap;
+                editModeBtn.setText(editModeSwap ? "Uses Swap" : "Uses ON/OFF");
+            }
         });
 
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
@@ -103,6 +113,15 @@ public class EditDialog extends JDialog {
             public void mouseReleased(MouseEvent e) {
                 PhotonDot releasedDot = getPosition(e);
                 if (pressedDot != null && releasedDot != null) {
+                    boolean onOff = false;
+                    if (!editModeSwap) {
+                        byte original = layer.get(layerY + pressedDot.y, layerX + pressedDot.x);
+                        onOff = original != PhotonLayer.OFF;
+                        if (dots.contains(new PhotonDot(layerY + pressedDot.y, layerX + pressedDot.x))) {
+                            onOff = !onOff;
+                        }
+                    }
+
                     int x1 = Integer.min(pressedDot.x, releasedDot.x);
                     int x2 = Integer.max(pressedDot.x, releasedDot.x);
                     int y1 = Integer.min(pressedDot.y, releasedDot.y);
@@ -110,12 +129,35 @@ public class EditDialog extends JDialog {
 
                     for (int x = x1; x <= x2; x++) {
                         for (int y = y1; y <= y2; y++) {
-                            me.handleClick(x, y);
+                            if (editModeSwap) {
+                                me.handleClick(x, y);
+                            } else {
+                                me.handleClick(x, y, onOff);
+                            }
                         }
                     }
                 }
             }
         });
+    }
+
+    private void handleClick(int x, int y, boolean onOff) {
+        byte original = layer.get(layerY + y, layerX + x);
+        boolean isOriginalOn = original != PhotonLayer.OFF;
+
+        PhotonDot dot = new PhotonDot(layerY + y, layerX + x);
+
+        if (dots.contains(dot)) {
+            dots.remove(dot);
+        }
+        if ((onOff && !isOriginalOn) || (!onOff && isOriginalOn)) {
+            dots.add(dot);
+        }
+
+        Color color = onOff ? Color.darkGray : Color.cyan;
+        ;
+        ((PhotonEditPanel) editArea).drawDot(x, y, layer, color);
+        editArea.repaint();
     }
 
     private void handleClick(int x, int y) {
@@ -209,7 +251,7 @@ public class EditDialog extends JDialog {
         editArea = new PhotonEditPanel(780, 480);
     }
 
-    public static PhotonDot getPosition(MouseEvent e) {
+    private static PhotonDot getPosition(MouseEvent e) {
         if (e.getX() > 15 && e.getY() > 15) {
             int x = (e.getX() - 15) / 10;
             int y = (e.getY() - 15) / 10;
@@ -247,11 +289,14 @@ public class EditDialog extends JDialog {
         buttonCancel.setText("Cancel");
         panel2.add(buttonCancel, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         final JPanel panel3 = new JPanel();
-        panel3.setLayout(new GridLayoutManager(1, 1, new Insets(0, 0, 0, 0), -1, -1));
+        panel3.setLayout(new GridLayoutManager(1, 2, new Insets(0, 0, 0, 0), -1, -1));
         contentPane.add(panel3, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, new Dimension(-1, 30), new Dimension(-1, 30), new Dimension(-1, 30), 0, false));
         infoText = new JLabel();
         infoText.setText("");
-        panel3.add(infoText, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        panel3.add(infoText, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        editModeBtn = new JButton();
+        editModeBtn.setText("Using Swap");
+        panel3.add(editModeBtn, new GridConstraints(0, 1, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         final JPanel panel4 = new JPanel();
         panel4.setLayout(new GridLayoutManager(1, 1, new Insets(0, 0, 0, 0), -1, -1));
         contentPane.add(panel4, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
@@ -264,4 +309,5 @@ public class EditDialog extends JDialog {
      * @noinspection ALL
      */
     public JComponent $$$getRootComponent$$$() { return contentPane; }
+
 }
