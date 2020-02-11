@@ -28,7 +28,6 @@ import java.awt.*;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Hashtable;
 
@@ -50,6 +49,11 @@ public class PhotonLayer {
     private int[] rowIslands;
     private int[] rowUnsupported;
     private int[] rowSupported;
+    
+    private byte[] emptyRow;
+    private int[] emptyCol;
+    
+    private static byte[] scratchPad;
 
     public PhotonLayer(int width, int height) {
         this.width = width;
@@ -61,18 +65,22 @@ public class PhotonLayer {
         rowUnsupported = new int[height];
         rowSupported = new int[height];
 
+        emptyRow = new byte[width];
+        emptyCol = new int[height];
+        
+        if (scratchPad == null || scratchPad.length < width * height) {
+        	scratchPad = new byte[width * height];
+        }
     }
 
     public void clear() {
         for (int y = 0; y < height; y++) {
-            for (int x = 0; x < width; x++) {
-                iArray[y][x] = OFF;
-            }
+        	System.arraycopy(emptyRow, 0, iArray[y], 0, width);
         }
-        Arrays.fill(pixels, 0);
-        Arrays.fill(rowIslands, 0);
-        Arrays.fill(rowUnsupported, 0);
-        Arrays.fill(rowSupported, 0);
+        System.arraycopy(emptyCol, 0, pixels, 0, height);
+        System.arraycopy(emptyCol, 0, rowIslands, 0, height);
+        System.arraycopy(emptyCol, 0, rowUnsupported, 0, height);
+        System.arraycopy(emptyCol, 0, rowSupported, 0, height);
     }
 
     public void supported(int x, int y) {
@@ -209,43 +217,46 @@ public class PhotonLayer {
         rowIslands = null;
         rowUnsupported = null;
         rowSupported = null;
+        emptyRow = null;
+        emptyCol = null;
     }
 
     public byte[] packLayerImage() throws IOException {
-        try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
-            for (int y = 0; y < height; y++) {
-                if (pixels[y] == 0) {
-                    add(baos, OFF, width);
-                } else {
-                    byte current = OFF;
-                    int length = 0;
-                    for (int x = 0; x < width; x++) {
-                        byte next = iArray[y][x];
-                        if (next != current) {
-                            if (length > 0) {
-                                add(baos, current, length);
-                            }
-                            current = next;
-                            length = 1;
-                        } else {
-                            length++;
+    	int ptr = 0;
+        for (int y = 0; y < height; y++) {
+            if (pixels[y] == 0) {
+                ptr = add(ptr, OFF, width);
+            } else {
+                byte current = OFF;
+                int length = 0;
+                for (int x = 0; x < width; x++) {
+                    byte next = iArray[y][x];
+                    if (next != current) {
+                        if (length > 0) {
+                            ptr = add(ptr, current, length);
                         }
-                    }
-                    if (length > 0) {
-                        add(baos, current, length);
+                        current = next;
+                        length = 1;
+                    } else {
+                        length++;
                     }
                 }
+                if (length > 0) {
+                    ptr = add(ptr, current, length);
+                }
             }
-
-            return baos.toByteArray();
         }
+        byte[] img = new byte[ptr];
+        System.arraycopy(scratchPad, 0, img, 0, ptr);
+        return img;
     }
 
     public void unpackLayerImage(byte[] packedLayerImage) {
         clear();
         int x = 0;
         int y = 0;
-        for (int i = 0; i < packedLayerImage.length; i++) {
+        int imageLength = packedLayerImage.length;
+        for (int i = 0; i < imageLength; i++) {
             byte rle = packedLayerImage[i];
             byte colorCode = (byte) ((rle & 0x60) >> 5);
 
@@ -256,7 +267,8 @@ public class PhotonLayer {
                 length = (length << 8) | packedLayerImage[i] & 0x00ff;
             }
 
-            for(int xi = x; xi<(x+length); xi++) {
+            int xl = x + length;
+            for(int xi = x; xi<xl; xi++) {
                 switch (colorCode) {
                     case SUPPORTED:
                         supported(xi, y);
@@ -277,18 +289,16 @@ public class PhotonLayer {
         }
 
     }
-
-    private void add(ByteArrayOutputStream baos, byte current, int length) throws IOException {
+    
+    
+    private int add(int ptr, byte current, int length) {
         if (length < 32) {
-            byte[] data = new byte[1];
-            data[0] = (byte) ((current << 5) | (length & 0x1f));
-            baos.write(data);
+            scratchPad[ptr++] = (byte) ((current << 5) | (length & 0x1f));
         } else {
-            byte[] data = new byte[2];
-            data[0] = (byte) (0x80 | (current << 5) | (length >> 8 & 0x00FF));
-            data[1] = (byte) (length & 0x00FF);
-            baos.write(data);
+            scratchPad[ptr++] = (byte) (0x80 | (current << 5) | (length >> 8 & 0x00FF));
+            scratchPad[ptr++] = (byte) (length & 0x00FF);
         }
+        return ptr;
     }
 
     /**
