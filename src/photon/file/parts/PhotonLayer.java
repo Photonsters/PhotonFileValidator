@@ -25,9 +25,9 @@
 package photon.file.parts;
 
 import java.awt.*;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Hashtable;
 
@@ -267,20 +267,26 @@ public class PhotonLayer {
                 length = (length << 8) | packedLayerImage[i] & 0x00ff;
             }
 
-            int xl = x + length;
-            for(int xi = x; xi<xl; xi++) {
-                switch (colorCode) {
-                    case SUPPORTED:
-                        supported(xi, y);
-                        break;
-                    case CONNECTED:
-                        unSupported(xi, y);
-                        break;
-                    case ISLAND:
-                        island(xi, y);
-                        break;
-                }
+            Arrays.fill(iArray[y], x, x + length, colorCode);
+
+            switch (colorCode) {
+            case SUPPORTED:
+                rowSupported[y]+=length;
+                pixels[y]+=length;
+                break;
+            case CONNECTED:
+                rowUnsupported[y]+=length;
+                pixels[y]+=length;
+                break;
+            case ISLAND:
+                rowIslands[y]+= length;
+                islandCount+=length;
+                pixels[y]+=length;
+                break;
+
             }
+            
+
             x += length;
             if (x >= width) {
                 y++;
@@ -387,44 +393,47 @@ public class PhotonLayer {
         return dots.size();
     }
 
-    public byte[] packImageData() throws Exception {
-        try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
-            for (int y = 0; y < height; y++) {
-                if (pixels[y] == 0) {
-                    addPhotonRLE(baos, true, width);
-                } else {
-                    byte current = OFF;
-                    int length = 0;
-                    for (int x = 0; x < width; x++) {
-                        byte next = iArray[y][x];
-                        if (next != current) {
-                            if (length > 0) {
-                                addPhotonRLE(baos, current==OFF, length);
-                            }
-                            current = next;
-                            length = 1;
-                        } else {
-                            length++;
+    public byte[] packImageData() {
+    	
+    	int ptr = 0;
+    
+        for (int y = 0; y < height; y++) {
+            if (pixels[y] == 0) {
+                ptr = addPhotonRLE(ptr, true, width);
+            } else {
+                byte current = OFF;
+                int length = 0;
+                for (int x = 0; x < width; x++) {
+                    byte next = iArray[y][x];
+                    if (next != current) {
+                        if (length > 0) {
+                            ptr = addPhotonRLE(ptr, current==OFF, length);
                         }
-                    }
-                    if (length > 0) {
-                        addPhotonRLE(baos, current==OFF, length);
+                        current = next;
+                        length = 1;
+                    } else {
+                        length++;
                     }
                 }
+                if (length > 0) {
+                    ptr = addPhotonRLE(ptr, current==OFF, length);
+                }
             }
-
-            return baos.toByteArray();
         }
+        byte[] img = new byte[ptr];
+        System.arraycopy(scratchPad, 0, img, 0, ptr);
+        return img;
     }
 
-    private void addPhotonRLE(ByteArrayOutputStream baos, boolean off, int length) throws IOException {
-        byte[] data = new byte[1];
-        while (length>0) {
-            int lineLength = Integer.min(length, 125); // max storage length of 0x7D (125) ?? Why not 127?
-            data[0] = (byte) ((off ? 0x00: 0x80) | (lineLength & 0x7f));
-            baos.write(data);
+    private int addPhotonRLE(int ptr, boolean off, int length) {
+    	
+        while (length > 0) {
+            int lineLength = length < 125 ? length : 125; // max storage length of 0x7D (125) ?? Why not 127?
+            scratchPad[ptr++] = (byte) ((off ? 0x00: 0x80) | (lineLength & 0x7f));
             length -= lineLength;
         }
+        
+        return ptr;
     }
 
     public byte get(int x, int y) {
