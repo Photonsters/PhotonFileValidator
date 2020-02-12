@@ -108,8 +108,12 @@ public class PhotonFile {
         int machineInfoPos = 0;
         if (photonFileHeader.getVersion() > 1) {
             parametersPos = layerDefinitionPos;
-            machineInfoPos = parametersPos + photonFilePrintParameters.getByteSize();
-            layerDefinitionPos = machineInfoPos + photonFileMachineInfo.getByteSize();
+            if (photonFileMachineInfo.getByteSize() > 0) {
+	            machineInfoPos = parametersPos + photonFilePrintParameters.getByteSize();
+	            layerDefinitionPos = machineInfoPos + photonFileMachineInfo.getByteSize();
+            } else {
+            	layerDefinitionPos = parametersPos + photonFilePrintParameters.getByteSize();
+            }
         }
 
         int dataPosition = layerDefinitionPos + (PhotonFileLayer.getByteSize() * photonFileHeader.getNumberOfLayers() * antiAliasLevel);

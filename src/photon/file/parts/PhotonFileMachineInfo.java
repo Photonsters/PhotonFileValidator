@@ -35,7 +35,7 @@ public class PhotonFileMachineInfo {
     
     private int machineNameAddress;
     private int machineNameSize;
-    private byte[] machineName;
+    private byte[] machineName = {};
 
     private int u8, u9, u10, u11, u12, u13, u14, u15, u16, u17;
     
@@ -44,57 +44,62 @@ public class PhotonFileMachineInfo {
     public PhotonFileMachineInfo(int address, int byteSize, byte[] file) throws Exception {
     	
     	this.infoByteSize = byteSize;
-        byte[] data = Arrays.copyOfRange(file, address, address + byteSize);
-        
-        try (PhotonInputStream ds = new PhotonInputStream(new ByteArrayInputStream(data))) {
-        	u1 = ds.readInt();
-        	u2 = ds.readInt();
-        	u3 = ds.readInt();
-        	u4 = ds.readInt();
-        	u5 = ds.readInt();
-        	u6 = ds.readInt();
-        	u7 = ds.readInt();
-        	
-        	machineNameAddress = ds.readInt();
-        	machineNameSize = ds.readInt();
-        	
-        	u8 = ds.readInt();
-        	u9 = ds.readInt();
-        	u10 = ds.readInt();
-        	u11 = ds.readInt();
-        	u12 = ds.readInt();
-        	u13 = ds.readInt();
-        	u14 = ds.readInt();
-        	u15 = ds.readInt();
-        	u16 = ds.readInt();
-        	u17 = ds.readInt();
-        	
-        }
-
-        machineName = Arrays.copyOfRange(file, machineNameAddress, machineNameAddress + machineNameSize);
+    	
+    	if (byteSize > 0) {
+	        byte[] data = Arrays.copyOfRange(file, address, address + byteSize);
+	        
+	        try (PhotonInputStream ds = new PhotonInputStream(new ByteArrayInputStream(data))) {
+	        	u1 = ds.readInt();
+	        	u2 = ds.readInt();
+	        	u3 = ds.readInt();
+	        	u4 = ds.readInt();
+	        	u5 = ds.readInt();
+	        	u6 = ds.readInt();
+	        	u7 = ds.readInt();
+	        	
+	        	machineNameAddress = ds.readInt();
+	        	machineNameSize = ds.readInt();
+	        	
+	        	u8 = ds.readInt();
+	        	u9 = ds.readInt();
+	        	u10 = ds.readInt();
+	        	u11 = ds.readInt();
+	        	u12 = ds.readInt();
+	        	u13 = ds.readInt();
+	        	u14 = ds.readInt();
+	        	u15 = ds.readInt();
+	        	u16 = ds.readInt();
+	        	u17 = ds.readInt();
+	        	
+	        }
+	
+	        machineName = Arrays.copyOfRange(file, machineNameAddress, machineNameAddress + machineNameSize);
+    	}
     }
 
     public void save(PhotonOutputStream os, int startAddress) throws Exception {
-    	os.writeInt(u1);
-    	os.writeInt(u2);
-    	os.writeInt(u3);
-    	os.writeInt(u4);
-    	os.writeInt(u5);
-    	os.writeInt(u6);
-    	os.writeInt(u7);
-    	os.writeInt(startAddress + infoByteSize);
-    	os.writeInt(machineName.length);
-    	os.writeInt(u8);
-    	os.writeInt(u9);
-    	os.writeInt(u10);
-    	os.writeInt(u11);
-    	os.writeInt(u12);
-    	os.writeInt(u13);
-    	os.writeInt(u14);
-    	os.writeInt(u15);
-    	os.writeInt(u16);
-    	os.writeInt(u17);
-    	os.write(machineName);
+    	if (infoByteSize > 0) {
+	    	os.writeInt(u1);
+	    	os.writeInt(u2);
+	    	os.writeInt(u3);
+	    	os.writeInt(u4);
+	    	os.writeInt(u5);
+	    	os.writeInt(u6);
+	    	os.writeInt(u7);
+	    	os.writeInt(startAddress + infoByteSize);
+	    	os.writeInt(machineName.length);
+	    	os.writeInt(u8);
+	    	os.writeInt(u9);
+	    	os.writeInt(u10);
+	    	os.writeInt(u11);
+	    	os.writeInt(u12);
+	    	os.writeInt(u13);
+	    	os.writeInt(u14);
+	    	os.writeInt(u15);
+	    	os.writeInt(u16);
+	    	os.writeInt(u17);
+	    	os.write(machineName);
+    	}
     }
 
     public int getByteSize() {
