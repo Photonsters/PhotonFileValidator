@@ -1706,3 +1706,4 @@ jre8/java-windows/lib/security/policy/limited/US_export_policy.jar
 jre8/java-windows/lib/security/policy/unlimited/local_policy.jar
 jre8/java-windows/lib/security/policy/unlimited/US_export_policy.jar
 release/osx-jre-photonfilevalidator-1.2.dmg
+/target/

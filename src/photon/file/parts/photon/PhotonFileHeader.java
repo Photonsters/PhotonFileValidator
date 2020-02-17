@@ -68,8 +68,8 @@ public class PhotonFileHeader implements IFileHeader {
     private short bottomLightPWM;
 
     private int unknown4;
-    private int unknown5;
-    private int unknown6;
+    private int machineInfoOffsetAddress;
+    private int machineInfoSize;
 
 
     public PhotonFilePrintParameters photonFilePrintParameters;
@@ -117,9 +117,9 @@ public class PhotonFileHeader implements IFileHeader {
         bottomLightPWM = ds.readShort();
 
         unknown4 = ds.readInt();
-        unknown5 = ds.readInt();
+        machineInfoOffsetAddress = ds.readInt();
         if (version>1) {
-            unknown6 = ds.readInt();
+            machineInfoSize = ds.readInt();
         }
     }
 
@@ -127,11 +127,12 @@ public class PhotonFileHeader implements IFileHeader {
         return 4+4 + 4+4+4 + 4+4+4 + 4+4+4 + 4+4 + 4+4 + 4+4 + 4 + 4+4 + 4 + 4+4+4 +2+2 +4+4+ (version>1?4:0);
     }
 
-    public void save(PhotonOutputStream os, int previewOnePos, int previewTwoPos, int layerDefinitionPos, int parametersPos) throws Exception {
+    public void save(PhotonOutputStream os, int previewOnePos, int previewTwoPos, int layerDefinitionPos, int parametersPos, int machineInfoPos) throws Exception {
         previewOneOffsetAddress = previewOnePos;
         previewTwoOffsetAddress = previewTwoPos;
         layersDefinitionOffsetAddress = layerDefinitionPos;
         printParametersOffsetAddress = parametersPos;
+        machineInfoOffsetAddress = machineInfoPos;
 
         os.writeInt(header1);
         os.writeInt(version);
@@ -172,9 +173,9 @@ public class PhotonFileHeader implements IFileHeader {
         os.writeShort(bottomLightPWM);
 
         os.writeInt(unknown4);
-        os.writeInt(unknown5);
+        os.writeInt(machineInfoOffsetAddress);
         if (version>1) {
-            os.writeInt(unknown6);
+            os.writeInt(machineInfoSize);
         }
     }
 
@@ -270,6 +271,14 @@ public class PhotonFileHeader implements IFileHeader {
         return printParametersSize;
     }
 
+    public int getMachineInfoOffsetAddress() {
+    	return machineInfoOffsetAddress;
+    }
+    
+    public int getMachineInfoSize() {
+    	return machineInfoSize;
+    }
+    
     public int getAntiAliasingLevel() {
         return antiAliasingLevel;
     }

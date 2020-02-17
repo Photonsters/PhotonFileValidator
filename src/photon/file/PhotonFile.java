@@ -103,9 +103,15 @@ public class PhotonFile {
         int layerDefinitionPos = previewTwoPos + previewTwo.getByteSize();
 
         int parametersPos = 0;
+        int machineInfoPos = 0;
         if (iFileHeader.getVersion() > 1) {
             parametersPos = layerDefinitionPos;
-            layerDefinitionPos = parametersPos + ((PhotonFileHeader)iFileHeader).photonFilePrintParameters.getByteSize();
+            if (((PhotonFileHeader)iFileHeader).photonFileMachineInfo.getByteSize() > 0) {
+	            machineInfoPos = parametersPos + ((PhotonFileHeader)iFileHeader).photonFileMachineInfo.getByteSize();
+                layerDefinitionPos = parametersPos + ((PhotonFileHeader)iFileHeader).photonFilePrintParameters.getByteSize();
+            } else {
+                layerDefinitionPos = parametersPos + ((PhotonFileHeader)iFileHeader).photonFilePrintParameters.getByteSize();
+            }
         }
 
         int dataPosition = layerDefinitionPos + (PhotonFileLayer.getByteSize() * iFileHeader.getNumberOfLayers() * antiAliasLevel);
@@ -113,12 +119,13 @@ public class PhotonFile {
 
         PhotonOutputStream os = new PhotonOutputStream(outputStream);
 
-        ((PhotonFileHeader)iFileHeader).save(os, previewOnePos, previewTwoPos, layerDefinitionPos, parametersPos);
+        ((PhotonFileHeader)iFileHeader).save(os, previewOnePos, previewTwoPos, layerDefinitionPos, parametersPos, machineInfoPos);
         previewOne.save(os, previewOnePos);
         previewTwo.save(os, previewTwoPos);
 
-        if (getVersion() > 1) {
+        if (iFileHeader.getVersion() > 1) {
             ((PhotonFileHeader)iFileHeader).photonFilePrintParameters.save(os);
+            ((PhotonFileHeader)iFileHeader).photonFileMachineInfo.save(os, machineInfoPos);
         }
 
         // Optimize order for speed read on photon
