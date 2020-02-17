@@ -27,10 +27,10 @@ package photon.application.dialogs;
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
 import com.intellij.uiDesigner.core.Spacer;
-import com.sun.javafx.binding.StringFormatter;
 import photon.application.MainForm;
 import photon.file.PhotonFile;
-import photon.file.parts.PhotonFileHeader;
+import photon.file.parts.IFileHeader;
+import photon.file.parts.photon.PhotonFileHeader;
 import photon.file.parts.PhotonFilePrintParameters;
 
 import javax.swing.*;
@@ -130,17 +130,17 @@ public class SaveDialog extends JDialog {
     private void onOK() {
         File file = new File(path + File.separatorChar + textName.getText());
         try {
-            PhotonFileHeader header = photonFile.getPhotonFileHeader();
+            IFileHeader header = photonFile.getPhotonFileHeader();
             header.setExposureTimeSeconds(getFloat(textExposure.getText()));
             header.setOffTimeSeconds(getFloat(textOffTime.getText()));
             header.setExposureBottomTimeSeconds(getFloat(textBottomExposure.getText()));
             header.setBottomLayers(Integer.parseInt(textBottomLayers.getText()));
 
             if (version2FormatCheckBox.isSelected()) {
-                if (header.getVersion() == 1) {
+                if (photonFile.getVersion() == 1) {
                     photonFile.changeToVersion2();
                 }
-                PhotonFilePrintParameters parameters = photonFile.getPhotonFileParameters();
+                PhotonFilePrintParameters parameters = ((PhotonFileHeader) photonFile.getPhotonFileHeader()).photonFilePrintParameters;
                 parameters.bottomLiftDistance = getFloat(bottomLiftDistance.getText());
                 parameters.bottomLiftSpeed = getFloat(bottomLiftSpeed.getText());
                 parameters.liftingDistance = getFloat(liftingDistance.getText());
@@ -194,7 +194,7 @@ public class SaveDialog extends JDialog {
             fixZcheck.setText(String.format("Total Z error is %f mm", drift));
         }
 
-        if (photonFile.getPhotonFileHeader().getVersion() == 1) {
+        if (photonFile.getVersion() == 1) {
             bottomLiftDistance.setText("5.0");
             bottomLiftSpeed.setText("300.0");
             liftingDistance.setText("5.0");
@@ -205,13 +205,15 @@ public class SaveDialog extends JDialog {
         } else {
             version2FormatCheckBox.setSelected(true);
             version2FormatCheckBox.setEnabled(false);
-            bottomLiftDistance.setText(String.format("%.1f", photonFile.getPhotonFileParameters().bottomLiftDistance));
-            bottomLiftSpeed.setText(String.format("%.1f", photonFile.getPhotonFileParameters().bottomLiftSpeed));
-            liftingDistance.setText(String.format("%.1f", photonFile.getPhotonFileParameters().liftingDistance));
-            liftingSpeed.setText(String.format("%.1f", photonFile.getPhotonFileParameters().liftingSpeed));
-            retractSpeed.setText(String.format("%.1f", photonFile.getPhotonFileParameters().retractSpeed));
-            bottomLightOffDelay.setText(String.format("%.1f", photonFile.getPhotonFileParameters().bottomLightOffDelay));
-            lightOffDelay.setText(String.format("%.1f", photonFile.getPhotonFileParameters().lightOffDelay));
+            PhotonFilePrintParameters parameters = ((PhotonFileHeader) photonFile.getPhotonFileHeader()).photonFilePrintParameters;
+
+            bottomLiftDistance.setText(String.format("%.1f", parameters.bottomLiftDistance));
+            bottomLiftSpeed.setText(String.format("%.1f", parameters.bottomLiftSpeed));
+            liftingDistance.setText(String.format("%.1f", parameters.liftingDistance));
+            liftingSpeed.setText(String.format("%.1f", parameters.liftingSpeed));
+            retractSpeed.setText(String.format("%.1f", parameters.retractSpeed));
+            bottomLightOffDelay.setText(String.format("%.1f", parameters.bottomLightOffDelay));
+            lightOffDelay.setText(String.format("%.1f", parameters.lightOffDelay));
         }
 
     }

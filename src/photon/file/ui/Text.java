@@ -22,14 +22,17 @@
  * SOFTWARE.
  */
 
-package photon.file.parts;
+package photon.file.ui;
 
-/**
- * by bn on 05/07/2018.
- */
-public class DummyPhotonLoadProgress implements IPhotonProgress {
-    @Override
-    public void showInfo(String str) {
+public class Text {
 
+    public static String formatSeconds(float time) {
+        if (time % 1 == 0) {
+            return String.format("%.0fs", time);
+        } else {
+            return String.format("%.1fs", time);
+        }
     }
+
+
 }

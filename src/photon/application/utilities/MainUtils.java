@@ -108,7 +108,7 @@ public class MainUtils {
         f.setIconImages(icons);
     }
 
-    public static boolean isPhotonFile(File file) {return file.exists() && file.isFile() && (file.getName().toLowerCase().endsWith("photon") || (file.getName().toLowerCase().endsWith("cbddlp")));}
+    public static boolean isPhotonFile(File file) {return file.exists() && file.isFile() && (file.getName().toLowerCase().endsWith("photon") || (file.getName().toLowerCase().endsWith("cbddlp")) || (file.getName().toLowerCase().endsWith("photons")));}
 
     private final static char[] hexArray = "0123456789ABCDEF".toCharArray();
 

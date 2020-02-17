@@ -37,23 +37,30 @@ public class PhotonPreviewImage extends JPanel {
     private BufferedImage image;
 
     public PhotonPreviewImage(int width, int height) {
-        image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
-        setPreferredSize(new Dimension(width, height));
+        if (width>0 && height>0) {
+            image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+            setPreferredSize(new Dimension(width, height));
+        }
     }
 
     @Override
     protected void paintComponent(Graphics g) {
-        g.drawImage(image, 0,0, null);
+        if (image!=null) {
+            g.drawImage(image, 0, 0, null);
+        }
     }
 
     public void reInit(int width, int height) {
-        image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
-        setPreferredSize(new Dimension(width, height));
+        if (width>0 && height>0) {
+            image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+            setPreferredSize(new Dimension(width, height));
+        }
     }
 
     public void drawImage(PhotonFilePreview preview) {
-
-        image.getRaster().setDataElements( 0, 0, preview.getResolutionX(), preview.getResolutionY(), preview.getImageData());
+        if (image!=null && preview.getResolutionX()>0 && preview.getResolutionY()>0) {
+            image.getRaster().setDataElements(0, 0, preview.getResolutionX(), preview.getResolutionY(), preview.getImageData());
+        }
     }
 
 }

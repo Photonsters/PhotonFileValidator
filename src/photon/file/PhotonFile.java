@@ -24,8 +24,9 @@
 
 package photon.file;
 
-import photon.application.utilities.PhotonCalcWorker;
 import photon.file.parts.*;
+import photon.file.parts.photon.PhotonFileHeader;
+import photon.file.parts.photons.PhotonsFileHeader;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -35,8 +36,7 @@ import java.util.List;
  * by bn on 30/06/2018.
  */
 public class PhotonFile {
-    private PhotonFileHeader photonFileHeader;
-    private PhotonFilePrintParameters photonFilePrintParameters;
+    private IFileHeader iFileHeader;
     private PhotonFilePreview previewOne;
     private PhotonFilePreview previewTwo;
     private List<PhotonFileLayer> layers;
@@ -48,28 +48,37 @@ public class PhotonFile {
     private int margin;
     private ArrayList<Integer> marginLayers;
 
-    public PhotonFile readFile(File file) throws Exception {
-        return readFile(getBinaryData(file));
-    }
 
     public PhotonFile readFile(File file, IPhotonProgress iPhotonProgress) throws Exception {
+        if (file.getName().toLowerCase().endsWith(".photons")) {
+            return readPhotonsFile(getBinaryData(file), iPhotonProgress);
+        }
         return readFile(getBinaryData(file), iPhotonProgress);
     }
 
-    public PhotonFile readFile(byte[] file) throws Exception {
-        return readFile(file, new DummyPhotonLoadProgress());
+    private PhotonFile readPhotonsFile(byte[] file, IPhotonProgress iPhotonProgress) throws Exception {
+        iPhotonProgress.showInfo("Reading Photon S file header information...");
+
+        PhotonsFileHeader photonsFileHeader = new PhotonsFileHeader(file);
+        iFileHeader = photonsFileHeader;
+
+
+
+        return this;
     }
 
-    public PhotonFile readFile(byte[] file, IPhotonProgress iPhotonProgress) throws Exception {
-        iPhotonProgress.showInfo("Reading photon file header information...");
-        photonFileHeader = new PhotonFileHeader(file);
+    private PhotonFile readFile(byte[] file, IPhotonProgress iPhotonProgress) throws Exception {
+        iPhotonProgress.showInfo("Reading Photon file header information...");
+        PhotonFileHeader photonFileHeader = new PhotonFileHeader(file);
+        iFileHeader = photonFileHeader;
+
         iPhotonProgress.showInfo("Reading photon large preview image information...");
         previewOne = new PhotonFilePreview(photonFileHeader.getPreviewOneOffsetAddress(), file);
         iPhotonProgress.showInfo("Reading photon small preview image information...");
         previewTwo = new PhotonFilePreview(photonFileHeader.getPreviewTwoOffsetAddress(), file);
         if (photonFileHeader.getVersion() > 1) {
             iPhotonProgress.showInfo("Reading Print parameters information...");
-            photonFilePrintParameters = new PhotonFilePrintParameters(photonFileHeader.getPrintParametersOffsetAddress(), file);
+            photonFileHeader.readParameters(file);
         }
         iPhotonProgress.showInfo("Reading photon layers information...");
         layers = PhotonFileLayer.readLayers(photonFileHeader, file, margin, iPhotonProgress);
@@ -85,44 +94,35 @@ public class PhotonFile {
         fileOutputStream.close();
     }
 
-    public byte[] saveFile() throws Exception {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        writeFile(baos);
-        return baos.toByteArray();
-    }
-
     private void writeFile(OutputStream outputStream) throws Exception {
-        int antiAliasLevel = 1;
-        if (photonFileHeader.getVersion() > 1) {
-            antiAliasLevel = photonFileHeader.getAntiAliasingLevel();
-        }
+        int antiAliasLevel = iFileHeader.getAALevels();
 
         int headerPos = 0;
-        int previewOnePos = headerPos + photonFileHeader.getByteSize();
+        int previewOnePos = headerPos + iFileHeader.getByteSize();
         int previewTwoPos = previewOnePos + previewOne.getByteSize();
         int layerDefinitionPos = previewTwoPos + previewTwo.getByteSize();
 
         int parametersPos = 0;
-        if (photonFileHeader.getVersion() > 1) {
+        if (iFileHeader.getVersion() > 1) {
             parametersPos = layerDefinitionPos;
-            layerDefinitionPos = parametersPos + photonFilePrintParameters.getByteSize();
+            layerDefinitionPos = parametersPos + ((PhotonFileHeader)iFileHeader).photonFilePrintParameters.getByteSize();
         }
 
-        int dataPosition = layerDefinitionPos + (PhotonFileLayer.getByteSize() * photonFileHeader.getNumberOfLayers() * antiAliasLevel);
+        int dataPosition = layerDefinitionPos + (PhotonFileLayer.getByteSize() * iFileHeader.getNumberOfLayers() * antiAliasLevel);
 
 
         PhotonOutputStream os = new PhotonOutputStream(outputStream);
 
-        photonFileHeader.save(os, previewOnePos, previewTwoPos, layerDefinitionPos, parametersPos);
+        ((PhotonFileHeader)iFileHeader).save(os, previewOnePos, previewTwoPos, layerDefinitionPos, parametersPos);
         previewOne.save(os, previewOnePos);
         previewTwo.save(os, previewTwoPos);
 
-        if (photonFileHeader.getVersion() > 1) {
-            photonFilePrintParameters.save(os);
+        if (getVersion() > 1) {
+            ((PhotonFileHeader)iFileHeader).photonFilePrintParameters.save(os);
         }
 
         // Optimize order for speed read on photon
-        for (int i = 0; i < photonFileHeader.getNumberOfLayers(); i++) {
+        for (int i = 0; i < iFileHeader.getNumberOfLayers(); i++) {
             PhotonFileLayer layer = layers.get(i);
             dataPosition = layer.savePos(dataPosition);
             if (antiAliasLevel > 1) {
@@ -133,20 +133,20 @@ public class PhotonFile {
         }
 
         // Order for backward compatibility with photon/cbddlp version 1
-        for (int i = 0; i < photonFileHeader.getNumberOfLayers(); i++) {
+        for (int i = 0; i < iFileHeader.getNumberOfLayers(); i++) {
             layers.get(i).save(os);
         }
 
         if (antiAliasLevel > 1) {
             for (int a = 0; a < (antiAliasLevel - 1); a++) {
-                for (int i = 0; i < photonFileHeader.getNumberOfLayers(); i++) {
+                for (int i = 0; i < iFileHeader.getNumberOfLayers(); i++) {
                     layers.get(i).getAntiAlias(a).save(os);
                 }
             }
         }
 
         // Optimize order for speed read on photon
-        for (int i = 0; i < photonFileHeader.getNumberOfLayers(); i++) {
+        for (int i = 0; i < iFileHeader.getNumberOfLayers(); i++) {
             PhotonFileLayer layer = layers.get(i);
             layer.saveData(os);
             if (antiAliasLevel > 1) {
@@ -179,21 +179,10 @@ public class PhotonFile {
     }
 
     public String getInformation() {
-        if (photonFileHeader == null) return "";
-        return String.format("T: %.3f", photonFileHeader.getLayerHeight()) +
-                ", E: " + formatSeconds(photonFileHeader.getNormalExposure()) +
-                ", O: " + formatSeconds(photonFileHeader.getOffTime()) +
-                ", BE: " + formatSeconds(photonFileHeader.getBottomExposureTimeSeconds()) +
-                String.format(", BL: %d", photonFileHeader.getBottomLayers());
+        if (iFileHeader == null) return "";
+        return iFileHeader.getInformation();
     }
 
-    public String formatSeconds(float time) {
-        if (time % 1 == 0) {
-            return String.format("%.0fs", time);
-        } else {
-            return String.format("%.1fs", time);
-        }
-    }
 
     public int getIslandLayerCount() {
         if (islandList == null) {
@@ -263,7 +252,7 @@ public class PhotonFile {
             islandList = new StringBuilder();
             islandLayerCount = 0;
             if (layers != null) {
-                for (int i = 0; i < photonFileHeader.getNumberOfLayers(); i++) {
+                for (int i = 0; i < iFileHeader.getNumberOfLayers(); i++) {
                     PhotonFileLayer layer = layers.get(i);
                     if (layer.getIsLandsCount() > 0) {
                         if (islandLayerCount < 11) {
@@ -283,15 +272,15 @@ public class PhotonFile {
     }
 
     public int getWidth() {
-        return photonFileHeader.getResolutionY();
+        return iFileHeader.getResolutionY();
     }
 
     public int getHeight() {
-        return photonFileHeader.getResolutionX();
+        return iFileHeader.getResolutionX();
     }
 
     public int getLayerCount() {
-        return photonFileHeader.getNumberOfLayers();
+        return iFileHeader.getNumberOfLayers();
     }
 
     public PhotonFileLayer getLayer(int i) {
@@ -311,8 +300,8 @@ public class PhotonFile {
         return total;
     }
 
-    public PhotonFileHeader getPhotonFileHeader() {
-        return photonFileHeader;
+    public IFileHeader getPhotonFileHeader() {
+        return iFileHeader;
     }
 
     public PhotonFilePreview getPreviewOne() {
@@ -335,8 +324,8 @@ public class PhotonFile {
         if (marginLayers != null) {
             marginLayers.clear();
         }
-        photonFileHeader.unLink();
-        photonFileHeader = null;
+        iFileHeader.unLink();
+        iFileHeader = null;
         previewOne.unLink();
         previewOne = null;
         previewTwo.unLink();
@@ -348,12 +337,12 @@ public class PhotonFile {
     public void adjustLayerSettings() {
         for (int i = 0; i < layers.size(); i++) {
             PhotonFileLayer layer = layers.get(i);
-            if (i < photonFileHeader.getBottomLayers()) {
-                layer.setLayerExposure(photonFileHeader.getBottomExposureTimeSeconds());
+            if (i < iFileHeader.getBottomLayers()) {
+                layer.setLayerExposure(iFileHeader.getBottomExposureTimeSeconds());
             } else {
-                layer.setLayerExposure(photonFileHeader.getNormalExposure());
+                layer.setLayerExposure(iFileHeader.getNormalExposure());
             }
-            layer.setLayerOffTimeSeconds(photonFileHeader.getOffTimeSeconds());
+            layer.setLayerOffTimeSeconds(iFileHeader.getOffTimeSeconds());
         }
     }
 
@@ -398,16 +387,16 @@ public class PhotonFile {
     }
 
     public void calculateAaLayers(IPhotonProgress progres, PhotonAaMatrix photonAaMatrix) throws Exception {
-        PhotonFileLayer.calculateAALayers(photonFileHeader, layers, photonAaMatrix, progres);
+        PhotonFileLayer.calculateAALayers((PhotonFileHeader) iFileHeader, layers, photonAaMatrix, progres);
     }
 
     public void calculate(IPhotonProgress progres) throws Exception {
-        PhotonFileLayer.calculateLayers(photonFileHeader, layers, margin, progres);
+        PhotonFileLayer.calculateLayers((PhotonFileHeader)iFileHeader, layers, margin, progres);
         resetMarginAndIslandInfo();
     }
 
     public void calculate(int layerNo) throws Exception {
-        PhotonFileLayer.calculateLayers(photonFileHeader, layers, margin, layerNo);
+        PhotonFileLayer.calculateLayers((PhotonFileHeader)iFileHeader, layers, margin, layerNo);
         resetMarginAndIslandInfo();
     }
 
@@ -429,7 +418,7 @@ public class PhotonFile {
     }
 
     public float getZdrift() {
-        float expectedHeight = photonFileHeader.getLayerHeight() * (photonFileHeader.getNumberOfLayers() - 1);
+        float expectedHeight = iFileHeader.getLayerHeight() * (iFileHeader.getNumberOfLayers() - 1);
         float actualHeight = layers.get(layers.size() - 1).getLayerPositionZ();
         return expectedHeight - actualHeight;
 
@@ -438,64 +427,31 @@ public class PhotonFile {
     public void fixLayerHeights() {
         int index = 0;
         for (PhotonFileLayer layer : layers) {
-            layer.setLayerPositionZ(index * photonFileHeader.getLayerHeight());
+            layer.setLayerPositionZ(index * iFileHeader.getLayerHeight());
             index++;
         }
     }
 
+    public int getVersion() {
+        return iFileHeader.getVersion();
+    }
+
     public boolean hasAA() {
-        return (photonFileHeader.getVersion()>1 && photonFileHeader.getAntiAliasingLevel()>1);
+        return iFileHeader.hasAA();
     }
 
     public int getAALevels() {
-
-        if (photonFileHeader.getVersion()>1) {
-            return photonFileHeader.getAntiAliasingLevel();
-        }
-        return 1;
-    }
-
-    public PhotonFilePrintParameters getPhotonFileParameters() {
-        return photonFilePrintParameters;
+        return iFileHeader.getAALevels();
     }
 
     public void changeToVersion2() {
-        photonFileHeader.makeVersion(2);
-        photonFilePrintParameters = new PhotonFilePrintParameters(photonFileHeader.getBottomLayers());
+        iFileHeader.setFileVersion(2);
     }
 
     // only call this when recalculating AA levels
     public void setAALevels(int levels) {
-        if (photonFileHeader.getVersion()>1) {
-            if (levels < photonFileHeader.getAntiAliasingLevel()) {
-                reduceAaLevels(levels);
-            }
-            if (levels > photonFileHeader.getAntiAliasingLevel()) {
-                increaseAaLevels(levels);
-            }
-        }
+        iFileHeader.setAALevels(levels, layers);
     }
-
-    private void increaseAaLevels(int levels) {
-        // insert base layer to the correct count, as we are to recalc the AA anyway
-        for(PhotonFileLayer photonFileLayer : layers) {
-            while (photonFileLayer.getAntiAlias().size()<(levels-1)) {
-                photonFileLayer.getAntiAlias().add(new PhotonFileLayer(photonFileLayer, photonFileHeader));
-            }
-        }
-        photonFileHeader.setAntiAliasingLevel(levels);
-    }
-
-    private void reduceAaLevels(int levels) {
-        // delete any layers to the correct count, as we are to recalc the AA anyway
-        for(PhotonFileLayer photonFileLayer : layers) {
-            while (photonFileLayer.getAntiAlias().size()>(levels-1)) {
-                photonFileLayer.getAntiAlias().remove(0);
-            }
-        }
-        photonFileHeader.setAntiAliasingLevel(levels);
-    }
-
 
 }
 

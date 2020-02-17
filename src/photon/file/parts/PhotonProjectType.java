@@ -46,4 +46,8 @@ public enum PhotonProjectType {
         }
         return lcdMirror;
     }
+
+    public int getProjectID() {
+        return projectID;
+    }
 }

@@ -130,7 +130,7 @@ public class AntiAliaseDialog extends JDialog {
         layerX = indexX - 1;
         layerY = indexY - 1;
 
-        aaLevel.setMaximum(mainForm.photonFile.getPhotonFileHeader().getAntiAliasingLevel());
+        aaLevel.setMaximum(mainForm.photonFile.getPhotonFileHeader().getAALevels());
 
         if (aaLevel.getValue() == 0) {
             aaLevelName.setText("Combined AA");

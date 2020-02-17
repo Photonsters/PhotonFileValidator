@@ -28,7 +28,8 @@ import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
 import com.intellij.uiDesigner.core.Spacer;
 import photon.file.PhotonFile;
-import photon.file.parts.PhotonFileHeader;
+import photon.file.parts.IFileHeader;
+import photon.file.parts.photon.PhotonFileHeader;
 import photon.file.parts.PhotonFilePrintParameters;
 
 import javax.swing.*;
@@ -69,7 +70,7 @@ public class InformationDialog extends JDialog {
 
     public void setInformation(PhotonFile photonFile) {
         if (photonFile != null) {
-            PhotonFileHeader photonFileHeader = photonFile.getPhotonFileHeader();
+            IFileHeader photonFileHeader = photonFile.getPhotonFileHeader();
 
             buildAreaX.setText(String.format("%8.2f mm", photonFileHeader.getBuildAreaX()));
             buildAreaY.setText(String.format("%8.2f mm", photonFileHeader.getBuildAreaY()));
@@ -94,13 +95,13 @@ public class InformationDialog extends JDialog {
             printTime.setText(getDuration(totalSeconds));
 
 
-            fileHeader.setText("File version " + photonFile.getPhotonFileHeader().getVersion());
-            if (photonFile.getPhotonFileHeader().getVersion() > 1) {
-                PhotonFilePrintParameters parameters = photonFile.getPhotonFileParameters();
+            fileHeader.setText("File version " + photonFile.getVersion());
+            if (photonFile.getVersion() > 1) {
+                PhotonFilePrintParameters parameters = ((PhotonFileHeader) photonFile.getPhotonFileHeader()).photonFilePrintParameters;
                 fileCost.setText(String.format("%8.4f $", parameters.costDollars));
                 fileWeight.setText(String.format("%8.2f g", parameters.weightG));
                 fileVolumne.setText(String.format("%,.1f ml", parameters.volumeMl));
-                fileTime.setText(getDuration(photonFile.getPhotonFileHeader().printTimeSeconds));
+                fileTime.setText(getDuration(photonFile.getPhotonFileHeader().getPrintTimeSeconds()));
             } else {
                 fileCost.setText("");
                 fileWeight.setText("");

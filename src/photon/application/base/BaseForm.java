@@ -71,7 +71,7 @@ public class BaseForm {
         d.setFilenameFilter(new FilenameFilter() {
             @Override
             public boolean accept(File file, String s) {
-                return s.contains(".photon") || s.contains(".cbddlp");
+                return s.contains(".photon") || s.contains(".cbddlp") || s.contains(".photons");
             }
         });
         d.setVisible(true);
@@ -168,7 +168,7 @@ public class BaseForm {
 
     public void showLayerInformation(int layer, PhotonFileLayer fileLayer) {
         me.layerNo.setForeground(fileLayer.getIsLandsCount() > 0 ? Color.red : Color.black);
-        me.layerNo.setText("Layer " + layer + "/" + (me.photonFile.getLayerCount() - 1) + (me.photonFile.hasAA()?" AA("+me.photonFile.getPhotonFileHeader().getAntiAliasingLevel()+")" : ""));
+        me.layerNo.setText("Layer " + layer + "/" + (me.photonFile.getLayerCount() - 1) + (me.photonFile.hasAA()?" AA("+me.photonFile.getPhotonFileHeader().getAALevels()+")" : ""));
         me.layerZ.setText(String.format("Z: %.4f mm", fileLayer.getLayerPositionZ()));
         me.layerExposure.setText(String.format("Exposure: %.1fs", fileLayer.getLayerExposure()));
         me.layerOfftime.setText(String.format("Off Time: %.1fs", fileLayer.getLayerOffTime()));
@@ -176,7 +176,7 @@ public class BaseForm {
 
     public void playLayerInformation(int layer, int aaLevel, PhotonFileLayer fileLayer) {
         me.layerNo.setForeground(fileLayer.getIsLandsCount() > 0 ? Color.red : Color.black);
-        me.layerNo.setText("Layer " + layer + "/" + (me.photonFile.getLayerCount() - 1) + (me.photonFile.hasAA()?" AA("+aaLevel+"/"+me.photonFile.getPhotonFileHeader().getAntiAliasingLevel()+")" : ""));
+        me.layerNo.setText("Layer " + layer + "/" + (me.photonFile.getLayerCount() - 1) + (me.photonFile.hasAA()?" AA("+aaLevel+"/"+me.photonFile.getPhotonFileHeader().getAALevels()+")" : ""));
         me.layerZ.setText(String.format("Z: %.4f mm", fileLayer.getLayerPositionZ()));
         me.layerExposure.setText(String.format("Exposure: %.1fs", fileLayer.getLayerExposure()));
         me.layerOfftime.setText(String.format("Off Time: %.1fs", fileLayer.getLayerOffTime()));

@@ -81,7 +81,7 @@ public class PhotonLoadWorker extends SwingWorker<Integer, String> implements IP
             mainForm.showFileInformation();
             mainForm.calc();
             mainForm.playButton.setEnabled(true);
-            if (mainForm.photonFile.getPhotonFileHeader().getVersion()>1) {
+            if (mainForm.photonFile.getVersion()>1) {
                 mainForm.convertBtn.setEnabled(true);
             }
         }

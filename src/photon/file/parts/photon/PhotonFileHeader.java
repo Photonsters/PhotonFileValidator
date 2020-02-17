@@ -22,14 +22,19 @@
  * SOFTWARE.
  */
 
-package photon.file.parts;
+package photon.file.parts.photon;
+
+import photon.file.parts.*;
+import photon.file.ui.Text;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.util.List;
 
 /**
  *  by bn on 30/06/2018.
  */
-public class PhotonFileHeader {
+public class PhotonFileHeader implements IFileHeader {
     private int header1;
     private int version;
     private float bedXmm;
@@ -52,7 +57,7 @@ public class PhotonFileHeader {
 
     private int previewTwoOffsetAddress;
 
-    public int printTimeSeconds;
+    private int printTimeSeconds;
     private PhotonProjectType projectType;
 
     private int printParametersOffsetAddress;
@@ -65,6 +70,10 @@ public class PhotonFileHeader {
     private int unknown4;
     private int unknown5;
     private int unknown6;
+
+
+    public PhotonFilePrintParameters photonFilePrintParameters;
+
 
     public PhotonFileHeader(byte[] file) throws Exception {
         PhotonInputStream ds = new PhotonInputStream(new ByteArrayInputStream(file));
@@ -153,7 +162,7 @@ public class PhotonFileHeader {
         os.writeInt(previewTwoOffsetAddress);
         os.writeInt(printTimeSeconds);
 
-        os.writeInt(projectType.projectID);
+        os.writeInt(projectType.getProjectID());
 
         os.writeInt(printParametersOffsetAddress);
         os.writeInt(printParametersSize);
@@ -269,10 +278,71 @@ public class PhotonFileHeader {
         this.antiAliasingLevel = antiAliasingLevel;
     }
 
-    public void makeVersion(int i) {
+    public void setFileVersion(int i) {
         version = i;
         antiAliasingLevel = 1;
         lightPWM = 255;
         bottomLightPWM = 255;
+
+        photonFilePrintParameters = new PhotonFilePrintParameters(getBottomLayers());
+    }
+
+    public String getInformation() {
+        return String.format("T: %.3f", layerHeightMilimeter) +
+                ", E: " + Text.formatSeconds(exposureTimeSeconds) +
+                ", O: " + Text.formatSeconds(offTimeSeconds) +
+                ", BE: " + Text.formatSeconds(exposureBottomTimeSeconds) +
+                String.format(", BL: %d", bottomLayers);
+    }
+
+    public boolean hasAA() {
+        return (getVersion()>1 && getAntiAliasingLevel()>1);
+    }
+
+    public int getAALevels() {
+        if (getVersion()>1) {
+            return getAntiAliasingLevel();
+        }
+        return 1;
+    }
+
+    public void setAALevels(int levels, List<PhotonFileLayer> layers) {
+        if (getVersion()>1) {
+            if (levels < getAntiAliasingLevel()) {
+                reduceAaLevels(levels, layers);
+            }
+            if (levels > getAntiAliasingLevel()) {
+                increaseAaLevels(levels, layers);
+            }
+        }
+    }
+
+    private void increaseAaLevels(int levels, List<PhotonFileLayer> layers) {
+        // insert base layer to the correct count, as we are to recalc the AA anyway
+        for(PhotonFileLayer photonFileLayer : layers) {
+            while (photonFileLayer.getAntiAlias().size()<(levels-1)) {
+                photonFileLayer.getAntiAlias().add(new PhotonFileLayer(photonFileLayer, this));
+            }
+        }
+        setAntiAliasingLevel(levels);
+    }
+
+    private void reduceAaLevels(int levels, List<PhotonFileLayer> layers) {
+        // delete any layers to the correct count, as we are to recalc the AA anyway
+        for(PhotonFileLayer photonFileLayer : layers) {
+            while (photonFileLayer.getAntiAlias().size()>(levels-1)) {
+                photonFileLayer.getAntiAlias().remove(0);
+            }
+        }
+        setAntiAliasingLevel(levels);
+    }
+
+
+    public int getPrintTimeSeconds() {
+        return printTimeSeconds;
+    }
+
+    public void readParameters(byte[] file) throws Exception {
+        photonFilePrintParameters = new PhotonFilePrintParameters(getPrintParametersOffsetAddress(), file);
     }
 }

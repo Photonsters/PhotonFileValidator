@@ -24,7 +24,7 @@
 
 package photon.file.parts;
 
-import photon.file.PhotonFile;
+import photon.file.parts.photon.PhotonFileHeader;
 
 import java.io.ByteArrayInputStream;
 import java.util.*;

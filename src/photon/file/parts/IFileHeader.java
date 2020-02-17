@@ -22,14 +22,46 @@
  * SOFTWARE.
  */
 
-package photon.api.server;
+package photon.file.parts;
 
-/**
- * Created by bn on 29/07/2018.
- */
-public class ApiServer {
+import java.util.List;
 
-    public ApiServer() {
+public interface IFileHeader {
 
-    }
+    String getInformation();
+    int getNumberOfLayers();
+
+    int getResolutionY();
+    int getResolutionX();
+
+    float getBuildAreaX();
+    float getBuildAreaY();
+
+    int getBottomLayers();
+    void setBottomLayers(int bottomLayers);
+
+    float getLayerHeight();
+
+    float getExposureTimeSeconds();
+
+    float getBottomExposureTimeSeconds();
+    void setExposureBottomTimeSeconds(float exposureBottomTimeSeconds);
+
+    void setExposureTimeSeconds(float exposureTimeSeconds);
+    float getNormalExposure();
+
+    float getOffTimeSeconds();
+    void setOffTimeSeconds(float offTimeSeconds);
+
+    int getPrintTimeSeconds();
+
+    boolean hasAA();
+    int getAALevels();
+    void setAALevels(int levels, List<PhotonFileLayer> layers);
+
+    int getVersion();
+    void setFileVersion(int i);
+
+    int getByteSize();
+    void unLink();
 }
