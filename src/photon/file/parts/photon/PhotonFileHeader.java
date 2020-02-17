@@ -73,6 +73,7 @@ public class PhotonFileHeader implements IFileHeader {
 
 
     public PhotonFilePrintParameters photonFilePrintParameters;
+    public PhotonFileMachineInfo photonFileMachineInfo;
 
 
     public PhotonFileHeader(byte[] file) throws Exception {
@@ -353,5 +354,6 @@ public class PhotonFileHeader implements IFileHeader {
 
     public void readParameters(byte[] file) throws Exception {
         photonFilePrintParameters = new PhotonFilePrintParameters(getPrintParametersOffsetAddress(), file);
+        photonFileMachineInfo = new PhotonFileMachineInfo(getMachineInfoOffsetAddress(), getMachineInfoSize(), file);
     }
 }
