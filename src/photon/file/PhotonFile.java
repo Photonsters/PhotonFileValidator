@@ -37,6 +37,7 @@ import java.util.List;
 public class PhotonFile {
     private PhotonFileHeader photonFileHeader;
     private PhotonFilePrintParameters photonFilePrintParameters;
+    private PhotonFileMachineInfo photonFileMachineInfo;
     private PhotonFilePreview previewOne;
     private PhotonFilePreview previewTwo;
     private List<PhotonFileLayer> layers;
@@ -70,6 +71,7 @@ public class PhotonFile {
         if (photonFileHeader.getVersion() > 1) {
             iPhotonProgress.showInfo("Reading Print parameters information...");
             photonFilePrintParameters = new PhotonFilePrintParameters(photonFileHeader.getPrintParametersOffsetAddress(), file);
+            photonFileMachineInfo = new PhotonFileMachineInfo(photonFileHeader.getMachineInfoOffsetAddress(), photonFileHeader.getMachineInfoSize(), file);
         }
         iPhotonProgress.showInfo("Reading photon layers information...");
         layers = PhotonFileLayer.readLayers(photonFileHeader, file, margin, iPhotonProgress);
@@ -103,9 +105,15 @@ public class PhotonFile {
         int layerDefinitionPos = previewTwoPos + previewTwo.getByteSize();
 
         int parametersPos = 0;
+        int machineInfoPos = 0;
         if (photonFileHeader.getVersion() > 1) {
             parametersPos = layerDefinitionPos;
-            layerDefinitionPos = parametersPos + photonFilePrintParameters.getByteSize();
+            if (photonFileMachineInfo.getByteSize() > 0) {
+	            machineInfoPos = parametersPos + photonFilePrintParameters.getByteSize();
+	            layerDefinitionPos = machineInfoPos + photonFileMachineInfo.getByteSize();
+            } else {
+            	layerDefinitionPos = parametersPos + photonFilePrintParameters.getByteSize();
+            }
         }
 
         int dataPosition = layerDefinitionPos + (PhotonFileLayer.getByteSize() * photonFileHeader.getNumberOfLayers() * antiAliasLevel);
@@ -113,12 +121,13 @@ public class PhotonFile {
 
         PhotonOutputStream os = new PhotonOutputStream(outputStream);
 
-        photonFileHeader.save(os, previewOnePos, previewTwoPos, layerDefinitionPos, parametersPos);
+        photonFileHeader.save(os, previewOnePos, previewTwoPos, layerDefinitionPos, parametersPos, machineInfoPos);
         previewOne.save(os, previewOnePos);
         previewTwo.save(os, previewTwoPos);
 
         if (photonFileHeader.getVersion() > 1) {
             photonFilePrintParameters.save(os);
+            photonFileMachineInfo.save(os, machineInfoPos);
         }
 
         // Optimize order for speed read on photon

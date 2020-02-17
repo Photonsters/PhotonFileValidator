@@ -112,11 +112,11 @@ public class PhotonFileLayer {
         return 4 + 4 + 4 + 4 + 4 + 4 + 4 + 4 + 4;
     }
 
-    public ArrayList<BitSet> unpackImage(int resolutionX) {
+    public ArrayList<BitSet> unpackImage(int resolutionX, int resolutionY) {
         pixels = 0;
         resolutionX = resolutionX - 1;
-        ArrayList<BitSet> unpackedImage = new ArrayList<>();
-        BitSet currentRow = new BitSet();
+        ArrayList<BitSet> unpackedImage = new ArrayList<>(resolutionY);
+        BitSet currentRow = new BitSet(resolutionX);
         unpackedImage.add(currentRow);
         int x = 0;
         for (byte rle : imageData) {
@@ -263,7 +263,7 @@ public class PhotonFileLayer {
 
         int i = 0;
         for (PhotonFileLayer layer : layers) {
-            ArrayList<BitSet> unpackedImage = layer.unpackImage(photonFileHeader.getResolutionX());
+            ArrayList<BitSet> unpackedImage = layer.unpackImage(photonFileHeader.getResolutionX(), photonFileHeader.getResolutionY());
 
             iPhotonProgress.showInfo("Calculating AA for photon file layer " + i + "/" + photonFileHeader.getNumberOfLayers());
 
@@ -317,12 +317,12 @@ public class PhotonFileLayer {
         ArrayList<BitSet> previousUnpackedImage = null;
         int i = 0;
         for (PhotonFileLayer layer : layers) {
-            ArrayList<BitSet> unpackedImage = layer.unpackImage(photonFileHeader.getResolutionX());
+            ArrayList<BitSet> unpackedImage = layer.unpackImage(photonFileHeader.getResolutionX(), photonFileHeader.getResolutionY());
 
             iPhotonProgress.showInfo("Calculating photon file layer " + i + "/" + photonFileHeader.getNumberOfLayers());
 
             if (margin > 0) {
-                layer.extendsMargin = layer.checkMagin(unpackedImage, margin);
+                layer.extendsMargin = layer.checkMargin(unpackedImage, margin);
             }
 
             layer.unknownPixels(unpackedImage, photonLayer);
@@ -339,7 +339,7 @@ public class PhotonFileLayer {
 
             if (photonFileHeader.getVersion() > 1) {
                 for (PhotonFileLayer aaFileLayer : layer.antiAliasLayers) {
-                    ArrayList<BitSet> aaUnpackedImage = aaFileLayer.unpackImage(photonFileHeader.getResolutionX());
+                    ArrayList<BitSet> aaUnpackedImage = aaFileLayer.unpackImage(photonFileHeader.getResolutionX(), photonFileHeader.getResolutionY());
                     PhotonLayer aaPhotonLayer = new PhotonLayer(photonFileHeader.getResolutionX(), photonFileHeader.getResolutionY());
                     aaFileLayer.unknownPixels(aaUnpackedImage, aaPhotonLayer);
                     aaFileLayer.packedLayerImage = aaPhotonLayer.packLayerImage();
@@ -358,15 +358,15 @@ public class PhotonFileLayer {
         ArrayList<BitSet> previousUnpackedImage = null;
 
         if (layerNo > 0) {
-            previousUnpackedImage = layers.get(layerNo - 1).unpackImage(photonFileHeader.getResolutionX());
+            previousUnpackedImage = layers.get(layerNo - 1).unpackImage(photonFileHeader.getResolutionX(), photonFileHeader.getResolutionY());
         }
 
         for (int i = 0; i < 2; i++) {
             PhotonFileLayer layer = layers.get(layerNo + i);
-            ArrayList<BitSet> unpackedImage = layer.unpackImage(photonFileHeader.getResolutionX());
+            ArrayList<BitSet> unpackedImage = layer.unpackImage(photonFileHeader.getResolutionX(), photonFileHeader.getResolutionY());
 
             if (margin > 0) {
-                layer.extendsMargin = layer.checkMagin(unpackedImage, margin);
+                layer.extendsMargin = layer.checkMargin(unpackedImage, margin);
             }
 
             layer.unknownPixels(unpackedImage, photonLayer);
@@ -440,7 +440,7 @@ public class PhotonFileLayer {
         return extendsMargin;
     }
 
-    private boolean checkMagin(ArrayList<BitSet> unpackedImage, int margin) {
+    private boolean checkMargin(ArrayList<BitSet> unpackedImage, int margin) {
         if (unpackedImage.size() > margin) {
             // check top margin rows
             for (int i = 0; i < margin; i++) {
@@ -495,7 +495,7 @@ public class PhotonFileLayer {
     }
 
     public ArrayList<BitSet> getUnknownRows() {
-        return unpackImage(photonFileHeader.getResolutionX());
+        return unpackImage(photonFileHeader.getResolutionX(), photonFileHeader.getResolutionY());
     }
 
     public PhotonFileLayer getAntiAlias(int a) {

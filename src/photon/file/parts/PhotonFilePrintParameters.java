@@ -100,7 +100,7 @@ public class PhotonFilePrintParameters {
         os.writeInt(p4);
     }
 
-        public int getByteSize() {
+    public int getByteSize() {
         return 4+4 +4+4+4 +4+4+4 +4+4+4 +4+4+4+4;
     }
 }
