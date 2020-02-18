@@ -24,9 +24,6 @@
 
 package photon.application.dialogs;
 
-import com.intellij.uiDesigner.core.GridConstraints;
-import com.intellij.uiDesigner.core.GridLayoutManager;
-import com.intellij.uiDesigner.core.Spacer;
 import photon.application.MainForm;
 import photon.file.PhotonFile;
 import photon.file.parts.PhotonDot;
@@ -37,7 +34,6 @@ import photon.file.ui.PhotonEditPanel;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
-import java.security.PublicKey;
 import java.util.HashSet;
 
 public class EditDialog extends JDialog {
@@ -61,6 +57,8 @@ public class EditDialog extends JDialog {
     private PhotonDot pressedDot;
     private boolean editModeSwap = true;
 
+    private boolean mirrored;
+    private PhotonDot cursorDot;
 
     public EditDialog(MainForm mainForm) {
         super(mainForm.frame);
@@ -139,6 +137,31 @@ public class EditDialog extends JDialog {
                 }
             }
         });
+
+        editArea.addMouseMotionListener(new MouseMotionAdapter() {
+            @Override
+            public void mouseMoved(MouseEvent e) {
+
+                PhotonDot lastCursorDot = cursorDot;
+
+                cursorDot = getPosition(e);
+                if (lastCursorDot != null && !lastCursorDot.equals(cursorDot)) {
+                    Color color = getColor(lastCursorDot);
+                    ((PhotonEditPanel) editArea).drawDot(lastCursorDot.x, lastCursorDot.y, layer, color);
+                    editArea.repaint();
+                }
+                if (cursorDot != null && !cursorDot.equals(lastCursorDot)) {
+                    Color original = getColor(cursorDot);
+                    Color color = original.brighter();
+                    if (original.equals(Color.black)) {
+                        color = Color.lightGray;
+                    }
+                    ((PhotonEditPanel) editArea).drawDot(cursorDot.x, cursorDot.y, layer, color);
+                    editArea.repaint();
+                }
+
+            }
+        });
     }
 
     private void handleClick(int x, int y, boolean onOff) {
@@ -195,6 +218,33 @@ public class EditDialog extends JDialog {
         }
     }
 
+    private Color getColor(PhotonDot dst) {
+        byte original = layer.get(layerY + dst.y, layerX + dst.x);
+        boolean result = original != PhotonLayer.OFF;
+
+        PhotonDot dot = new PhotonDot(layerY + dst.y, layerX + dst.x);
+        if (!dots.contains(dot)) {
+
+            switch (original) {
+                case PhotonLayer.SUPPORTED:
+                    return Color.decode("#008800");
+
+                case PhotonLayer.CONNECTED:
+                    return Color.decode("#FFFF00");
+
+                case PhotonLayer.ISLAND:
+                    return Color.decode("#FF0000");
+
+                default:
+                    return Color.black;
+
+            }
+
+        } else {
+            return result ? Color.black : Color.cyan;
+        }
+    }
+
     private void onOK() {
         if (dots.size() > 0) {
             for (PhotonDot dot : dots) {
@@ -228,6 +278,8 @@ public class EditDialog extends JDialog {
         this.photonFile = photonFile;
         this.fileLayer = photonFile.getLayer(layerNo);
         this.layer = fileLayer.getLayer();
+        mirrored = photonFile.getPhotonFileHeader().isMirrored();
+
         int indexX = (mouseX < 38) ? 1 : mouseX - 38;
         int indexY = (mouseY < 23) ? 1 : mouseY - 23;
 
@@ -237,6 +289,12 @@ public class EditDialog extends JDialog {
         if (indexY + 44 >= photonFile.getHeight()) {
             indexY = photonFile.getHeight() - 44;
         }
+
+        if (mirrored) {
+            indexY = photonFile.getHeight() - indexY - 44;
+        }
+
+        ((PhotonEditPanel) editArea).setMirrored(mirrored);
 
         layerX = indexX - 1;
         layerY = indexY - 1;
@@ -251,10 +309,15 @@ public class EditDialog extends JDialog {
         editArea = new PhotonEditPanel(780, 480);
     }
 
-    private static PhotonDot getPosition(MouseEvent e) {
-        if (e.getX() > 15 && e.getY() > 15) {
+    private PhotonDot getPosition(MouseEvent e) {
+        int my = e.getY();
+        if (mirrored) {
+            my = editArea.getHeight() - e.getY() - 1;
+            my -= 5;
+        }
+        if (e.getX() > 15 && my > 15) {
             int x = (e.getX() - 15) / 10;
-            int y = (e.getY() - 15) / 10;
+            int y = (my - 15) / 10;
             if (x < 75 && y < 45) {
                 return new PhotonDot(x, y);
             }

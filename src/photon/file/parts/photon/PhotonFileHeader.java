@@ -352,6 +352,10 @@ public class PhotonFileHeader implements IFileHeader {
         return printTimeSeconds;
     }
 
+    public boolean isMirrored() {
+        return projectType == PhotonProjectType.lcdMirror;
+    }
+
     public void readParameters(byte[] file) throws Exception {
         photonFilePrintParameters = new PhotonFilePrintParameters(getPrintParametersOffsetAddress(), file);
         photonFileMachineInfo = new PhotonFileMachineInfo(getMachineInfoOffsetAddress(), getMachineInfoSize(), file);

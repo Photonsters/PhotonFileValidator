@@ -24,15 +24,14 @@
 
 package photon.file.ui;
 
-import photon.file.PhotonFile;
 import photon.file.parts.PhotonFileLayer;
 import photon.file.parts.PhotonLayer;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
-import java.util.Map;
 
 public class PhotonAaPanel extends JPanel {
     private int width;
@@ -40,6 +39,7 @@ public class PhotonAaPanel extends JPanel {
 
     private BufferedImage image;
 
+    private boolean mirrored;
 
     public PhotonAaPanel(int width, int height) {
         this.width = width;
@@ -48,9 +48,24 @@ public class PhotonAaPanel extends JPanel {
         setPreferredSize(new Dimension(width, height));
     }
 
+    public void setMirrored(boolean mirrored) {
+        this.mirrored = mirrored;
+    }
+
     @Override
     protected void paintComponent(Graphics g) {
         g.drawImage(image, 0, 0, null);
+    }
+
+    private Graphics2D createGraphics() {
+        Graphics2D g = image.createGraphics();
+        if (mirrored) {
+            AffineTransform transform = new AffineTransform();
+            transform.setToScale(1, -1);
+            transform.translate(0, -image.getHeight());
+            g.setTransform(transform);
+        }
+        return g;
     }
 
     public void drawLayer(int layerX, int layerY, PhotonFileLayer layer, int aaLevel) {
@@ -68,7 +83,7 @@ public class PhotonAaPanel extends JPanel {
             photonLayers.add(layer.getAntiAlias(aaLevel-2).getLayer());
         }
 
-        Graphics2D g = image.createGraphics();
+        Graphics2D g = createGraphics();
 
         g.setBackground(Color.decode("#999999"));
         g.clearRect(0, 0, width, height);
@@ -120,7 +135,7 @@ public class PhotonAaPanel extends JPanel {
     }
 
     public void drawDot(int layerX, int layerY, PhotonLayer layer, Color color) {
-        Graphics2D g = image.createGraphics();
+        Graphics2D g = createGraphics();
         g.setColor(color);
         g.fillRect(15 + layerX * 10, 15 + layerY * 10, 9, 9);
         g.dispose();
