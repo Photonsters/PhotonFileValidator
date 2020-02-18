@@ -47,9 +47,7 @@ public class PhotonLayer {
     private byte[][] iArray;
     private int[] pixels;
     private int[] rowIslands;
-    private int[] rowUnsupported;
-    private int[] rowSupported;
-    
+
     private static byte[] emptyRow;
     private static int[] emptyCol;
     
@@ -62,8 +60,6 @@ public class PhotonLayer {
         iArray = new byte[height][width];
         pixels = new int[height];
         rowIslands = new int[height];
-        rowUnsupported = new int[height];
-        rowSupported = new int[height];
 
         if (emptyRow == null || emptyRow.length < width) {
             emptyRow = new byte[width];
@@ -84,19 +80,15 @@ public class PhotonLayer {
         }
         System.arraycopy(emptyCol, 0, pixels, 0, height);
         System.arraycopy(emptyCol, 0, rowIslands, 0, height);
-        System.arraycopy(emptyCol, 0, rowUnsupported, 0, height);
-        System.arraycopy(emptyCol, 0, rowSupported, 0, height);
     }
 
     public void supported(int x, int y) {
         iArray[y][x] = SUPPORTED;
-        rowSupported[y]++;
         pixels[y]++;
     }
 
     public void unSupported(int x, int y) {
         iArray[y][x] = CONNECTED;
-        rowUnsupported[y]++;
         pixels[y]++;
     }
 
@@ -110,12 +102,6 @@ public class PhotonLayer {
     public void remove(int x, int y, byte type) {
         iArray[y][x] = OFF;
         switch (type) {
-            case SUPPORTED:
-                rowUnsupported[y]--;
-                break;
-            case CONNECTED:
-                rowUnsupported[y]--;
-                break;
             case ISLAND:
                 rowIslands[y]--;
                 islandCount--;
@@ -187,7 +173,6 @@ public class PhotonLayer {
 
     private void makeConnected(int x, int y) {
         iArray[y][x] = CONNECTED;
-        rowSupported[y]++;
         rowIslands[y]--;
         islandCount--;
     }
@@ -220,8 +205,6 @@ public class PhotonLayer {
         iArray = null;
         pixels = null;
         rowIslands = null;
-        rowUnsupported = null;
-        rowSupported = null;
     }
 
     public byte[] packLayerImage() {
@@ -274,11 +257,9 @@ public class PhotonLayer {
 
             switch (colorCode) {
             case SUPPORTED:
-                rowSupported[y]+=length;
                 pixels[y]+=length;
                 break;
             case CONNECTED:
-                rowUnsupported[y]+=length;
                 pixels[y]+=length;
                 break;
             case ISLAND:
