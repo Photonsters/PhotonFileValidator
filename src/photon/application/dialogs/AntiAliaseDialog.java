@@ -24,14 +24,9 @@
 
 package photon.application.dialogs;
 
-import com.intellij.uiDesigner.core.GridConstraints;
-import com.intellij.uiDesigner.core.GridLayoutManager;
-import com.intellij.uiDesigner.core.Spacer;
 import photon.application.MainForm;
 import photon.file.PhotonFile;
-import photon.file.parts.PhotonDot;
 import photon.file.parts.PhotonFileLayer;
-import photon.file.parts.PhotonLayer;
 import photon.file.ui.PhotonAaPanel;
 
 import javax.swing.*;
@@ -39,8 +34,6 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.awt.event.*;
-import java.util.ArrayList;
-import java.util.HashSet;
 
 public class AntiAliaseDialog extends JDialog {
     private JPanel contentPane;
@@ -117,6 +110,8 @@ public class AntiAliaseDialog extends JDialog {
         this.photonFile = photonFile;
         this.fileLayer = photonFile.getLayer(layerNo);
 
+        boolean mirrored = photonFile.getPhotonFileHeader().isMirrored();
+
         int indexX = (mouseX < 38) ? 1 : mouseX - 38;
         int indexY = (mouseY < 23) ? 1 : mouseY - 23;
 
@@ -126,6 +121,12 @@ public class AntiAliaseDialog extends JDialog {
         if (indexY + 44 >= photonFile.getHeight()) {
             indexY = photonFile.getHeight() - 44;
         }
+
+        if (mirrored) {
+            indexY = photonFile.getHeight() - indexY - 44;
+        }
+
+        ((PhotonAaPanel) aaArea).setMirrored(mirrored);
 
         layerX = indexX - 1;
         layerY = indexY - 1;
