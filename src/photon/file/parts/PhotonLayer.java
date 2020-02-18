@@ -25,7 +25,6 @@
 package photon.file.parts;
 
 import java.awt.*;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -48,8 +47,11 @@ public class PhotonLayer {
     private byte[][] iArray;
     private int[] pixels;
     private int[] rowIslands;
-    private int[] rowUnsupported;
-    private int[] rowSupported;
+
+    private static byte[] emptyRow;
+    private static int[] emptyCol;
+    
+    private static byte[] scratchPad;
 
     public PhotonLayer(int width, int height) {
         this.width = width;
@@ -58,32 +60,35 @@ public class PhotonLayer {
         iArray = new byte[height][width];
         pixels = new int[height];
         rowIslands = new int[height];
-        rowUnsupported = new int[height];
-        rowSupported = new int[height];
 
+        if (emptyRow == null || emptyRow.length < width) {
+            emptyRow = new byte[width];
+        }
+
+        if (emptyCol == null || emptyCol.length < height) {
+            emptyCol = new int[height];
+        }
+        
+        if (scratchPad == null || scratchPad.length < width * height) {
+        	scratchPad = new byte[width * height];
+        }
     }
 
     public void clear() {
         for (int y = 0; y < height; y++) {
-            for (int x = 0; x < width; x++) {
-                iArray[y][x] = OFF;
-            }
+        	System.arraycopy(emptyRow, 0, iArray[y], 0, width);
         }
-        Arrays.fill(pixels, 0);
-        Arrays.fill(rowIslands, 0);
-        Arrays.fill(rowUnsupported, 0);
-        Arrays.fill(rowSupported, 0);
+        System.arraycopy(emptyCol, 0, pixels, 0, height);
+        System.arraycopy(emptyCol, 0, rowIslands, 0, height);
     }
 
     public void supported(int x, int y) {
         iArray[y][x] = SUPPORTED;
-        rowSupported[y]++;
         pixels[y]++;
     }
 
     public void unSupported(int x, int y) {
         iArray[y][x] = CONNECTED;
-        rowUnsupported[y]++;
         pixels[y]++;
     }
 
@@ -97,12 +102,6 @@ public class PhotonLayer {
     public void remove(int x, int y, byte type) {
         iArray[y][x] = OFF;
         switch (type) {
-            case SUPPORTED:
-                rowUnsupported[y]--;
-                break;
-            case CONNECTED:
-                rowUnsupported[y]--;
-                break;
             case ISLAND:
                 rowIslands[y]--;
                 islandCount--;
@@ -174,7 +173,6 @@ public class PhotonLayer {
 
     private void makeConnected(int x, int y) {
         iArray[y][x] = CONNECTED;
-        rowSupported[y]++;
         rowIslands[y]--;
         islandCount--;
     }
@@ -207,45 +205,44 @@ public class PhotonLayer {
         iArray = null;
         pixels = null;
         rowIslands = null;
-        rowUnsupported = null;
-        rowSupported = null;
     }
 
-    public byte[] packLayerImage() throws IOException {
-        try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
-            for (int y = 0; y < height; y++) {
-                if (pixels[y] == 0) {
-                    add(baos, OFF, width);
-                } else {
-                    byte current = OFF;
-                    int length = 0;
-                    for (int x = 0; x < width; x++) {
-                        byte next = iArray[y][x];
-                        if (next != current) {
-                            if (length > 0) {
-                                add(baos, current, length);
-                            }
-                            current = next;
-                            length = 1;
-                        } else {
-                            length++;
+    public byte[] packLayerImage() {
+    	int ptr = 0;
+        for (int y = 0; y < height; y++) {
+            if (pixels[y] == 0) {
+                ptr = add(ptr, OFF, width);
+            } else {
+                byte current = OFF;
+                int length = 0;
+                for (int x = 0; x < width; x++) {
+                    byte next = iArray[y][x];
+                    if (next != current) {
+                        if (length > 0) {
+                            ptr = add(ptr, current, length);
                         }
-                    }
-                    if (length > 0) {
-                        add(baos, current, length);
+                        current = next;
+                        length = 1;
+                    } else {
+                        length++;
                     }
                 }
+                if (length > 0) {
+                    ptr = add(ptr, current, length);
+                }
             }
-
-            return baos.toByteArray();
         }
+        byte[] img = new byte[ptr];
+        System.arraycopy(scratchPad, 0, img, 0, ptr);
+        return img;
     }
 
     public void unpackLayerImage(byte[] packedLayerImage) {
         clear();
         int x = 0;
         int y = 0;
-        for (int i = 0; i < packedLayerImage.length; i++) {
+        int imageLength = packedLayerImage.length;
+        for (int i = 0; i < imageLength; i++) {
             byte rle = packedLayerImage[i];
             byte colorCode = (byte) ((rle & 0x60) >> 5);
 
@@ -256,19 +253,24 @@ public class PhotonLayer {
                 length = (length << 8) | packedLayerImage[i] & 0x00ff;
             }
 
-            for(int xi = x; xi<(x+length); xi++) {
-                switch (colorCode) {
-                    case SUPPORTED:
-                        supported(xi, y);
-                        break;
-                    case CONNECTED:
-                        unSupported(xi, y);
-                        break;
-                    case ISLAND:
-                        island(xi, y);
-                        break;
-                }
+            Arrays.fill(iArray[y], x, x + length, colorCode);
+
+            switch (colorCode) {
+            case SUPPORTED:
+                pixels[y]+=length;
+                break;
+            case CONNECTED:
+                pixels[y]+=length;
+                break;
+            case ISLAND:
+                rowIslands[y]+= length;
+                islandCount+=length;
+                pixels[y]+=length;
+                break;
+
             }
+            
+
             x += length;
             if (x >= width) {
                 y++;
@@ -277,18 +279,16 @@ public class PhotonLayer {
         }
 
     }
-
-    private void add(ByteArrayOutputStream baos, byte current, int length) throws IOException {
+    
+    
+    private int add(int ptr, byte current, int length) {
         if (length < 32) {
-            byte[] data = new byte[1];
-            data[0] = (byte) ((current << 5) | (length & 0x1f));
-            baos.write(data);
+            scratchPad[ptr++] = (byte) ((current << 5) | (length & 0x1f));
         } else {
-            byte[] data = new byte[2];
-            data[0] = (byte) (0x80 | (current << 5) | (length >> 8 & 0x00FF));
-            data[1] = (byte) (length & 0x00FF);
-            baos.write(data);
+            scratchPad[ptr++] = (byte) (0x80 | (current << 5) | (length >> 8 & 0x00FF));
+            scratchPad[ptr++] = (byte) (length & 0x00FF);
         }
+        return ptr;
     }
 
     /**
@@ -377,44 +377,47 @@ public class PhotonLayer {
         return dots.size();
     }
 
-    public byte[] packImageData() throws Exception {
-        try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
-            for (int y = 0; y < height; y++) {
-                if (pixels[y] == 0) {
-                    addPhotonRLE(baos, true, width);
-                } else {
-                    byte current = OFF;
-                    int length = 0;
-                    for (int x = 0; x < width; x++) {
-                        byte next = iArray[y][x];
-                        if (next != current) {
-                            if (length > 0) {
-                                addPhotonRLE(baos, current==OFF, length);
-                            }
-                            current = next;
-                            length = 1;
-                        } else {
-                            length++;
+    public byte[] packImageData() {
+    	
+    	int ptr = 0;
+    
+        for (int y = 0; y < height; y++) {
+            if (pixels[y] == 0) {
+                ptr = addPhotonRLE(ptr, true, width);
+            } else {
+                byte current = OFF;
+                int length = 0;
+                for (int x = 0; x < width; x++) {
+                    byte next = iArray[y][x];
+                    if (next != current) {
+                        if (length > 0) {
+                            ptr = addPhotonRLE(ptr, current==OFF, length);
                         }
-                    }
-                    if (length > 0) {
-                        addPhotonRLE(baos, current==OFF, length);
+                        current = next;
+                        length = 1;
+                    } else {
+                        length++;
                     }
                 }
+                if (length > 0) {
+                    ptr = addPhotonRLE(ptr, current==OFF, length);
+                }
             }
-
-            return baos.toByteArray();
         }
+        byte[] img = new byte[ptr];
+        System.arraycopy(scratchPad, 0, img, 0, ptr);
+        return img;
     }
 
-    private void addPhotonRLE(ByteArrayOutputStream baos, boolean off, int length) throws IOException {
-        byte[] data = new byte[1];
-        while (length>0) {
-            int lineLength = Integer.min(length, 125); // max storage length of 0x7D (125) ?? Why not 127?
-            data[0] = (byte) ((off ? 0x00: 0x80) | (lineLength & 0x7f));
-            baos.write(data);
+    private int addPhotonRLE(int ptr, boolean off, int length) {
+    	
+        while (length > 0) {
+            int lineLength = length < 125 ? length : 125; // max storage length of 0x7D (125) ?? Why not 127?
+            scratchPad[ptr++] = (byte) ((off ? 0x00: 0x80) | (lineLength & 0x7f));
             length -= lineLength;
         }
+        
+        return ptr;
     }
 
     public byte get(int x, int y) {
