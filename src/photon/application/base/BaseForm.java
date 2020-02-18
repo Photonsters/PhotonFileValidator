@@ -35,6 +35,7 @@ import photon.application.utilities.PhotonPlayWorker;
 import photon.file.PhotonFile;
 import photon.file.parts.PhotonFileLayer;
 import photon.file.parts.PhotonFilePreview;
+import photon.file.parts.PhotonLayer;
 import photon.file.ui.PhotonLayerImage;
 import photon.file.ui.PhotonPreviewImage;
 import photon.file.ui.ScrollPosition;
@@ -431,6 +432,27 @@ public class BaseForm {
 
     }
 
+    public void removeAllIslands() {
+        int layerNo = getLayer();
+        PhotonFileLayer fileLayer = photonFile.getLayer(layerNo);
+        PhotonLayer layer = fileLayer.getLayer();
+
+        if (layer.removeIslands() > 0) {
+            try {
+                fileLayer.saveLayer(layer);
+                photonFile.calculate(layerNo);
+
+                if (layerNo < photonFile.getLayerCount() - 1) {
+                    photonFile.calculate(layerNo + 1);
+                }
+            } catch (Exception e) {
+                System.out.println(e.getMessage());
+            }
+
+            changeLayer();
+            showMarginAndIslandInformation();
+        }
+    }
 
     public void handleKeyEvent(KeyEvent key) {
         if (me.tabbedPane.getSelectedIndex()==0) {

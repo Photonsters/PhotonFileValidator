@@ -339,6 +339,23 @@ public class PhotonLayer {
         return rows;
     }
 
+    public int removeIslands() {
+        int count = 0;
+        if (islandCount > 0) {
+            for (int y = 0; y < height; y++) {
+                if (rowIslands[y] > 0) {
+                    for (int x = 0; x < width; x++) {
+                        if (iArray[y][x] == ISLAND) {
+                            remove(x, y, ISLAND);
+                            ++count;
+                        }
+                    }
+                }
+            }
+        }
+        return count;
+    }
+
     public int fixlayer() {
         PhotonMatix photonMatix = new PhotonMatix();
         ArrayList<PhotonDot> dots = new ArrayList<>();
