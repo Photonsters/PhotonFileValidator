@@ -50,8 +50,8 @@ public class PhotonLayer {
     private int[] rowUnsupported;
     private int[] rowSupported;
     
-    private byte[] emptyRow;
-    private int[] emptyCol;
+    private static byte[] emptyRow;
+    private static int[] emptyCol;
     
     private static byte[] scratchPad;
 
@@ -65,8 +65,13 @@ public class PhotonLayer {
         rowUnsupported = new int[height];
         rowSupported = new int[height];
 
-        emptyRow = new byte[width];
-        emptyCol = new int[height];
+        if (emptyRow == null || emptyRow.length < width) {
+            emptyRow = new byte[width];
+        }
+
+        if (emptyCol == null || emptyCol.length < height) {
+            emptyCol = new int[height];
+        }
         
         if (scratchPad == null || scratchPad.length < width * height) {
         	scratchPad = new byte[width * height];
@@ -217,11 +222,9 @@ public class PhotonLayer {
         rowIslands = null;
         rowUnsupported = null;
         rowSupported = null;
-        emptyRow = null;
-        emptyCol = null;
     }
 
-    public byte[] packLayerImage() throws IOException {
+    public byte[] packLayerImage() {
     	int ptr = 0;
         for (int y = 0; y < height; y++) {
             if (pixels[y] == 0) {
