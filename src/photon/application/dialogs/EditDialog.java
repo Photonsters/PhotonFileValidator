@@ -208,6 +208,12 @@ public class EditDialog extends JDialog {
             try {
                 fileLayer.saveLayer(layer);
                 photonFile.calculate(layerNo);
+
+                // check next layer, just in case we created new islands
+                if (layerNo < photonFile.getLayerCount() - 1) {
+                    photonFile.calculate(layerNo + 1);
+                }
+
             } catch (Exception e) {
                 System.out.println(e.getMessage());
             }
