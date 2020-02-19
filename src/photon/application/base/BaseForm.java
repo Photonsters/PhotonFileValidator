@@ -389,6 +389,7 @@ public class BaseForm {
 
     public void calc() {
         if (me.photonFile != null) {
+            ((PhotonLayerImage) me.layerImage).setMirrored(me.photonFile.getPhotonFileHeader().isMirrored());
             calcWorker = new PhotonCalcWorker(me);
             calcWorker.execute();
         }

@@ -54,6 +54,7 @@ public interface IFileHeader {
     void setOffTimeSeconds(float offTimeSeconds);
 
     int getPrintTimeSeconds();
+    boolean isMirrored();
 
     boolean hasAA();
     int getAALevels();

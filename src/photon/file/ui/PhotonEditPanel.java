@@ -28,6 +28,7 @@ import photon.file.parts.PhotonLayer;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 
 /**
@@ -39,6 +40,7 @@ public class PhotonEditPanel extends JPanel {
 
     private BufferedImage image;
 
+    private boolean mirrored;
 
     public PhotonEditPanel(int width, int height) {
         this.width = width;
@@ -47,14 +49,28 @@ public class PhotonEditPanel extends JPanel {
         setPreferredSize(new Dimension(width, height));
     }
 
+    public void setMirrored(boolean mirrored) {
+        this.mirrored = mirrored;
+    }
+
     @Override
     protected void paintComponent(Graphics g) {
         g.drawImage(image, 0, 0, null);
     }
 
-    public void drawLayer(int layerX, int layerY, PhotonLayer layer) {
+    private Graphics2D createGraphics() {
         Graphics2D g = image.createGraphics();
+        if (mirrored) {
+            AffineTransform transform = new AffineTransform();
+            transform.setToScale(1, -1);
+            transform.translate(0, -image.getHeight());
+            g.setTransform(transform);
+        }
+        return g;
+    }
 
+    public void drawLayer(int layerX, int layerY, PhotonLayer layer) {
+        Graphics2D g = createGraphics();
         g.setBackground(Color.decode("#999999"));
 
         g.clearRect(0, 0, width, height);
@@ -90,7 +106,7 @@ public class PhotonEditPanel extends JPanel {
     }
 
     public void drawDot(int layerX, int layerY, PhotonLayer layer, Color color) {
-        Graphics2D g = image.createGraphics();
+        Graphics2D g = createGraphics();
         g.setColor(color);
         g.fillRect(15+layerX*10, 15+layerY*10, 9, 9);
         g.dispose();

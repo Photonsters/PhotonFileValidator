@@ -30,6 +30,7 @@ import photon.file.parts.PhotonRow;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.BitSet;
@@ -42,12 +43,17 @@ public class PhotonLayerImage extends JPanel {
     private int height;
     private float scale = 1f;
     private BufferedImage image;
+    private boolean mirrored;
 
     public PhotonLayerImage(int width, int height) {
         this.width = width;
         this.height = height;
         image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
         setPreferredSize(new Dimension(width, height));
+    }
+
+    public void setMirrored(boolean mirrored) {
+        this.mirrored = mirrored;
     }
 
     @Override
@@ -71,6 +77,14 @@ public class PhotonLayerImage extends JPanel {
     public void drawLayer(PhotonFileLayer layer, int margin) {
         if (layer != null) {
             Graphics2D g = image.createGraphics();
+
+            if (mirrored) {
+                AffineTransform transform = new AffineTransform();
+                transform.setToScale(1, -1);
+                transform.translate(0, -image.getHeight());
+                g.setTransform(transform);
+            }
+
             g.scale(scale, scale);
 
             g.clearRect(0, 0, width, height);

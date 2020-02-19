@@ -166,6 +166,9 @@ public class PhotonsFileHeader  implements IFileHeader {
     }
 
     @Override
+    public boolean isMirrored() { return false; }
+
+    @Override
     public boolean hasAA() {
         return false;
     }
