@@ -107,8 +107,8 @@ public class PhotonFile {
         if (iFileHeader.getVersion() > 1) {
             parametersPos = layerDefinitionPos;
             if (((PhotonFileHeader)iFileHeader).photonFileMachineInfo.getByteSize() > 0) {
-	            machineInfoPos = parametersPos + ((PhotonFileHeader)iFileHeader).photonFileMachineInfo.getByteSize();
-                layerDefinitionPos = parametersPos + ((PhotonFileHeader)iFileHeader).photonFilePrintParameters.getByteSize();
+	            machineInfoPos = parametersPos + ((PhotonFileHeader)iFileHeader).photonFilePrintParameters.getByteSize();
+                layerDefinitionPos = machineInfoPos + ((PhotonFileHeader)iFileHeader).photonFileMachineInfo.getByteSize();
             } else {
                 layerDefinitionPos = parametersPos + ((PhotonFileHeader)iFileHeader).photonFilePrintParameters.getByteSize();
             }
