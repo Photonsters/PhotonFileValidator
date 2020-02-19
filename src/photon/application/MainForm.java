@@ -225,6 +225,8 @@ public class MainForm extends BaseForm implements ActionListener, ItemListener {
                 if (photonFile != null) {
                     if (e.isShiftDown()) {
                         showAA(e.getX(), e.getY());
+                    } else if (e.isAltDown()) {
+                        removeAllIslands();
                     } else {
                         showEdit(e.getX(), e.getY());
                     }
