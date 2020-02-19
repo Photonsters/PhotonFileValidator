@@ -42,7 +42,7 @@ public class EditDialog extends JDialog {
     private JButton buttonCancel;
     private JLabel infoText;
     private JPanel editArea;
-    private JButton editModeBtn;
+    private JComboBox modeCombo;
 
     private EditDialog me;
     private MainForm mainForm;
@@ -55,10 +55,35 @@ public class EditDialog extends JDialog {
     private HashSet<PhotonDot> dots;
 
     private PhotonDot pressedDot;
-    private boolean editModeSwap = true;
+
+    private enum EditMode {
+        pencil,
+        swap
+    }
+
+    ;
+    private EditMode editMode = EditMode.pencil;
 
     private boolean mirrored;
     private PhotonDot cursorDot;
+
+    private MouseAdapter modePencilHandler = new MouseAdapter() {
+        PhotonDot lastDot;
+
+        @Override
+        public void mousePressed(MouseEvent e) {
+        }
+
+        private handleDotChange(MouseEvent e) {
+            PhotonDot currentDot = getPosition(e);
+            if (currentDot != null) {
+                if (!currentDot.equals(lastDot) && e.getButton() == MouseEvent.BUTTON1 || e.getButton() == MouseEvent.BUTTON2) {
+                    handleClick(currentDot.x, currentDot.y, e.getButton() == MouseEvent.BUTTON1 );
+                }
+            }
+        }
+
+    };
 
     public EditDialog(MainForm mainForm) {
         super(mainForm.frame);
@@ -79,11 +104,12 @@ public class EditDialog extends JDialog {
             public void actionPerformed(ActionEvent e) {onCancel();}
         });
 
-        editModeBtn.addActionListener(new ActionListener() {
+        modeCombo.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                editModeSwap = !editModeSwap;
-                editModeBtn.setText(editModeSwap ? "Uses Swap" : "Uses ON/OFF");
+                JComboBox cb = (JComboBox) e.getSource();
+                String modeName = ((String) cb.getSelectedItem()).toLowerCase();
+                editMode = EditMode.valueOf(modeName);
             }
         });
 
@@ -112,7 +138,7 @@ public class EditDialog extends JDialog {
                 PhotonDot releasedDot = getPosition(e);
                 if (pressedDot != null && releasedDot != null) {
                     boolean onOff = false;
-                    if (!editModeSwap) {
+                    if (editMode == EditMode.pencil) {
                         byte original = layer.get(layerY + pressedDot.y, layerX + pressedDot.x);
                         onOff = original != PhotonLayer.OFF;
                         if (dots.contains(new PhotonDot(layerY + pressedDot.y, layerX + pressedDot.x))) {
@@ -127,7 +153,7 @@ public class EditDialog extends JDialog {
 
                     for (int x = x1; x <= x2; x++) {
                         for (int y = y1; y <= y2; y++) {
-                            if (editModeSwap) {
+                            if (editMode == EditMode.swap) {
                                 me.handleClick(x, y);
                             } else {
                                 me.handleClick(x, y, onOff);
@@ -142,26 +168,31 @@ public class EditDialog extends JDialog {
             @Override
             public void mouseMoved(MouseEvent e) {
 
-                PhotonDot lastCursorDot = cursorDot;
-
-                cursorDot = getPosition(e);
-                if (lastCursorDot != null && !lastCursorDot.equals(cursorDot)) {
-                    Color color = getColor(lastCursorDot);
-                    ((PhotonEditPanel) editArea).drawDot(lastCursorDot.x, lastCursorDot.y, layer, color);
-                    editArea.repaint();
+                if (e.getButton() == MouseEvent.NOBUTTON) {
+                    handleCursor(e);
                 }
-                if (cursorDot != null && !cursorDot.equals(lastCursorDot)) {
-                    Color original = getColor(cursorDot);
-                    Color color = original.brighter();
-                    if (original.equals(Color.black)) {
-                        color = Color.lightGray;
-                    }
-                    ((PhotonEditPanel) editArea).drawDot(cursorDot.x, cursorDot.y, layer, color);
-                    editArea.repaint();
-                }
-
             }
         });
+    }
+
+    private void handleCursor(MouseEvent e) {
+        PhotonDot lastCursorDot = cursorDot;
+
+        cursorDot = getPosition(e);
+        if (lastCursorDot != null && !lastCursorDot.equals(cursorDot)) {
+            Color color = getColor(lastCursorDot);
+            ((PhotonEditPanel) editArea).drawDot(lastCursorDot.x, lastCursorDot.y, layer, color);
+            editArea.repaint();
+        }
+        if (cursorDot != null && !cursorDot.equals(lastCursorDot)) {
+            Color original = getColor(cursorDot);
+            Color color = original.brighter();
+            if (original.equals(Color.black)) {
+                color = Color.lightGray;
+            }
+            ((PhotonEditPanel) editArea).drawDot(cursorDot.x, cursorDot.y, layer, color);
+            editArea.repaint();
+        }
     }
 
     private void handleClick(int x, int y, boolean onOff) {
@@ -357,20 +388,28 @@ public class EditDialog extends JDialog {
         buttonCancel.setText("Cancel");
         panel2.add(buttonCancel, new com.intellij.uiDesigner.core.GridConstraints(0, 0, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_CENTER, com.intellij.uiDesigner.core.GridConstraints.FILL_HORIZONTAL, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_SHRINK | com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_GROW, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         final JPanel panel3 = new JPanel();
-        panel3.setLayout(new com.intellij.uiDesigner.core.GridLayoutManager(1, 2, new Insets(0, 0, 0, 0), -1, -1));
+        panel3.setLayout(new com.intellij.uiDesigner.core.GridLayoutManager(1, 3, new Insets(0, 0, 0, 0), -1, -1));
         contentPane.add(panel3, new com.intellij.uiDesigner.core.GridConstraints(0, 0, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_CENTER, com.intellij.uiDesigner.core.GridConstraints.FILL_BOTH, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_SHRINK | com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_GROW, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, new Dimension(-1, 30), new Dimension(-1, 30), new Dimension(-1, 30), 0, false));
         infoText = new JLabel();
         infoText.setText("");
         panel3.add(infoText, new com.intellij.uiDesigner.core.GridConstraints(0, 0, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_WEST, com.intellij.uiDesigner.core.GridConstraints.FILL_NONE, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_SHRINK | com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_WANT_GROW, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
-        editModeBtn = new JButton();
-        editModeBtn.setText("Using Swap");
-        panel3.add(editModeBtn, new com.intellij.uiDesigner.core.GridConstraints(0, 1, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_CENTER, com.intellij.uiDesigner.core.GridConstraints.FILL_HORIZONTAL, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_SHRINK | com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_GROW, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        modeCombo = new JComboBox();
+        final DefaultComboBoxModel defaultComboBoxModel1 = new DefaultComboBoxModel();
+        defaultComboBoxModel1.addElement("Pencil");
+        defaultComboBoxModel1.addElement("Swap");
+        modeCombo.setModel(defaultComboBoxModel1);
+        panel3.add(modeCombo, new com.intellij.uiDesigner.core.GridConstraints(0, 2, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_WEST, com.intellij.uiDesigner.core.GridConstraints.FILL_HORIZONTAL, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_GROW, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        final JLabel label1 = new JLabel();
+        label1.setText("Mode");
+        panel3.add(label1, new com.intellij.uiDesigner.core.GridConstraints(0, 1, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_WEST, com.intellij.uiDesigner.core.GridConstraints.FILL_NONE, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         final JPanel panel4 = new JPanel();
         panel4.setLayout(new com.intellij.uiDesigner.core.GridLayoutManager(1, 1, new Insets(0, 0, 0, 0), -1, -1));
         contentPane.add(panel4, new com.intellij.uiDesigner.core.GridConstraints(1, 0, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_CENTER, com.intellij.uiDesigner.core.GridConstraints.FILL_BOTH, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_SHRINK | com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_GROW, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_SHRINK | com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
         editArea.setBackground(new Color(-1250068));
         editArea.setEnabled(true);
         panel4.add(editArea, new com.intellij.uiDesigner.core.GridConstraints(0, 0, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_CENTER, com.intellij.uiDesigner.core.GridConstraints.FILL_BOTH, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_SHRINK | com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_GROW, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_SHRINK | com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_WANT_GROW, new Dimension(300, 100), new Dimension(300, 100), null, 0, false));
+        infoText.setLabelFor(modeCombo);
+        label1.setLabelFor(modeCombo);
     }
 
     /**
