@@ -169,11 +169,11 @@ public class PhotonFileLayer {
         for (int y = 0; y < unpackedImage.size(); y++) {
             BitSet currentRow = unpackedImage.get(y);
             if (currentRow != null) {
-                for (int x = 0; x < currentRow.length(); x++) {
-                    if (currentRow.get(x)) {
-                        photonLayer.supported(x, y);
-                    }
-                }
+            	int x = 0;
+            	while ((x = currentRow.nextSetBit(x)) >= 0) {
+            		photonLayer.supported(x, y);
+            		++x;
+            	}
             }
         }
     }
@@ -188,15 +188,15 @@ public class PhotonFileLayer {
             BitSet currentRow = unpackedImage.get(y);
             BitSet prevRow = previousUnpackedImage != null ? previousUnpackedImage.get(y) : null;
             if (currentRow != null) {
-                for (int x = 0; x < currentRow.length(); x++) {
-                    if (currentRow.get(x)) {
-                        if (prevRow == null || prevRow.get(x)) {
-                            photonLayer.supported(x, y);
-                        } else {
-                            photonLayer.island(x, y);
-                        }
+            	int x = 0;
+            	while ((x = currentRow.nextSetBit(x)) >= 0) {
+                    if (prevRow == null || prevRow.get(x)) {
+                        photonLayer.supported(x, y);
+                    } else {
+                        photonLayer.island(x, y);
                     }
-                }
+                    ++x;
+            	}
             }
         }
 
