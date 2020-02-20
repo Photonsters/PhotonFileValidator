@@ -34,12 +34,12 @@ import javax.swing.*;
 /**
  * by bn on 14/07/2018.
  */
-public class PhotonFixWorker extends SwingWorker<Integer, String> implements IPhotonProgress {
+public class PhotonRemoveAllIslandsWorker extends SwingWorker<Integer, String> implements IPhotonProgress {
     private FixDialog fixDialog;
     private PhotonFile photonFile;
     private MainForm mainForm;
 
-    public PhotonFixWorker(FixDialog fixDialog, PhotonFile photonFile, MainForm mainForm) {
+    public PhotonRemoveAllIslandsWorker(FixDialog fixDialog, PhotonFile photonFile, MainForm mainForm) {
         this.fixDialog = fixDialog;
         this.photonFile = photonFile;
         this.mainForm = mainForm;
@@ -67,7 +67,7 @@ public class PhotonFixWorker extends SwingWorker<Integer, String> implements IPh
     @Override
     protected Integer doInBackground() throws Exception {
         try {
-            photonFile.fixLayers(this);
+            photonFile.removeAllIslands(this);
         } catch (Exception e) {
             publish("<br><p>" + e.getMessage()+ "</p>");
             return 0;
