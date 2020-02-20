@@ -375,7 +375,7 @@ public class PhotonFile {
     
     public boolean removeAllIslands(IPhotonProgress progres) throws Exception {
     	boolean layersFixed = false;
-    	progres.showInfo("Removing all leftover " + islandLayers.size() + " islands...<br>");
+    	progres.showInfo("Removing islands from " + islandLayers.size() + " layers...<br>");
 		PhotonLayer layer = null;
 		for (int layerNo : islandLayers) {
 	        PhotonFileLayer fileLayer = layers.get(layerNo);
@@ -392,8 +392,8 @@ public class PhotonFile {
 	        } else {
 	        	progres.showInfo(", " + removed + " islands removed");
 	            fileLayer.saveLayer(layer);
-		            calculate(layerNo);
-		            layersFixed = true;
+	            calculate(layerNo);
+	            layersFixed = true;
 	        }
 	        progres.showInfo("<br>");
 		}
