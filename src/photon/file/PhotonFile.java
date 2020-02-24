@@ -393,6 +393,9 @@ public class PhotonFile {
 	        	progres.showInfo(", " + removed + " islands removed");
 	            fileLayer.saveLayer(layer);
 	            calculate(layerNo);
+	            if (layerNo < getLayerCount() - 1) {
+                    calculate(layerNo + 1);
+                }
 	            layersFixed = true;
 	        }
 	        progres.showInfo("<br>");
@@ -421,6 +424,9 @@ public class PhotonFile {
             } else {
                 fileLayer.saveLayer(layer);
                 calculate(layerNo);
+                if (layerNo < getLayerCount() - 1) {
+                    calculate(layerNo + 1);
+                }
                 layersFixed = true;
             }
 
