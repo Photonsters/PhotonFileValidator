@@ -259,7 +259,7 @@
                     </constraints>
                     <properties>
                       <foreground color="-10066330"/>
-                      <text value="Hint: Click to edit, Shift-Click to view anti-aliase layers"/>
+                      <text value="Hint: Click to edit, Shift-Click to view anti-aliase layers, Alt-Click to remove all islands"/>
                     </properties>
                   </component>
                 </children>
