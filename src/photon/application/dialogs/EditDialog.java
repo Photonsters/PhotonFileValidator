@@ -34,7 +34,9 @@ import photon.file.ui.PhotonEditPanel;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 
 public class EditDialog extends JDialog {
     private JPanel contentPane;
@@ -42,7 +44,8 @@ public class EditDialog extends JDialog {
     private JButton buttonCancel;
     private JLabel infoText;
     private JPanel editArea;
-    private JButton editModeBtn;
+    private JComboBox modeCombo;
+    private JLabel editModeHelp;
 
     private EditDialog me;
     private MainForm mainForm;
@@ -54,16 +57,125 @@ public class EditDialog extends JDialog {
     private int layerY;
     private HashSet<PhotonDot> dots;
 
-    private PhotonDot pressedDot;
-    private boolean editModeSwap = true;
-
     private boolean mirrored;
     private PhotonDot cursorDot;
+
+    private MouseAdapter currentEditModeHandler;
+
+    private class ModePencilHandler extends MouseAdapter {
+        PhotonDot lastCell;
+
+        @Override
+        public void mousePressed(MouseEvent e) {
+            handleCellChange(e);
+        }
+
+        @Override
+        public void mouseDragged(MouseEvent e) {
+            handleCellChange(e);
+        }
+
+        @Override
+        public void mouseReleased(MouseEvent e) {
+            lastCell = null;
+        }
+
+        private void handleCellChange(MouseEvent e) {
+            PhotonDot currentCell = getPosition(e);
+            if (currentCell != null) {
+                if (!currentCell.equals(lastCell)) {
+                    if (e.getButton() == MouseEvent.BUTTON1 || e.getButton() == MouseEvent.BUTTON3) {
+                        boolean on = e.getButton() == MouseEvent.BUTTON1;
+                        byte original = layer.get(layerY + currentCell.y, layerX + currentCell.x);
+                        boolean isOriginalOn = original != PhotonLayer.OFF;
+                        Color originalColor = getOriginalColor(currentCell);
+
+                        PhotonDot dot = new PhotonDot(layerY + currentCell.y, layerX + currentCell.x);
+
+                        if (dots.contains(dot)) {
+                            dots.remove(dot);
+                        }
+
+                        Color color = originalColor;
+                        if (on) {
+                            if (!isOriginalOn) {
+                                color = Color.cyan;
+                                dots.add(dot);
+                            }
+                        } else {
+                            if (isOriginalOn) {
+                                color = Color.darkGray;
+                                dots.add(dot);
+                            }
+                        }
+
+                        ((PhotonEditPanel) editArea).drawDot(currentCell.x, currentCell.y, layer, color);
+                        editArea.repaint();
+
+                    }
+                    lastCell = currentCell;
+                }
+            }
+        }
+
+    }
+
+    ;
+
+    private class ModeSwapHandler extends MouseAdapter {
+        private PhotonDot pressedDot;
+
+        @Override
+        public void mousePressed(MouseEvent e) {
+            pressedDot = getPosition(e);
+        }
+
+        @Override
+        public void mouseReleased(MouseEvent e) {
+            PhotonDot releasedDot = getPosition(e);
+            if (pressedDot != null && releasedDot != null) {
+
+                int x1 = Integer.min(pressedDot.x, releasedDot.x);
+                int x2 = Integer.max(pressedDot.x, releasedDot.x);
+                int y1 = Integer.min(pressedDot.y, releasedDot.y);
+                int y2 = Integer.max(pressedDot.y, releasedDot.y);
+
+                for (int x = x1; x <= x2; x++) {
+                    for (int y = y1; y <= y2; y++) {
+                        Color color = isSet(x, y);
+                        ((PhotonEditPanel) editArea).drawDot(x, y, layer, color);
+                        editArea.repaint();
+                    }
+                }
+            }
+        }
+    }
+
+    ;
+
+    private enum EditMode {
+        pencil("Tip: Use left mouse to set and right mouse to unset pixels."),
+        swap("Tip: Use left mouse to toggle pixels. Drag for toggling within rectangle area.");
+        String help;
+
+        EditMode(String help) {
+            this.help = help;
+        }
+    }
+
+    ;
+    private EditMode editMode = EditMode.pencil;
+
+    private Map<EditMode, MouseAdapter> editModeHandlerRegistry;
 
     public EditDialog(MainForm mainForm) {
         super(mainForm.frame);
         this.me = this;
         this.mainForm = mainForm;
+
+        editModeHandlerRegistry = new HashMap<>();
+        editModeHandlerRegistry.put(EditMode.pencil, new ModePencilHandler());
+        editModeHandlerRegistry.put(EditMode.swap, new ModeSwapHandler());
 
         $$$setupUI$$$();
 
@@ -79,11 +191,13 @@ public class EditDialog extends JDialog {
             public void actionPerformed(ActionEvent e) {onCancel();}
         });
 
-        editModeBtn.addActionListener(new ActionListener() {
+        modeCombo.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                editModeSwap = !editModeSwap;
-                editModeBtn.setText(editModeSwap ? "Uses Swap" : "Uses ON/OFF");
+                JComboBox cb = (JComboBox) e.getSource();
+                String modeName = ((String) cb.getSelectedItem()).toLowerCase();
+                editMode = EditMode.valueOf(modeName);
+                setEditMode(editMode);
             }
         });
 
@@ -101,92 +215,44 @@ public class EditDialog extends JDialog {
             }
         }, KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
 
-        editArea.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mousePressed(MouseEvent e) {
-                pressedDot = getPosition(e);
-            }
-
-            @Override
-            public void mouseReleased(MouseEvent e) {
-                PhotonDot releasedDot = getPosition(e);
-                if (pressedDot != null && releasedDot != null) {
-                    boolean onOff = false;
-                    if (!editModeSwap) {
-                        byte original = layer.get(layerY + pressedDot.y, layerX + pressedDot.x);
-                        onOff = original != PhotonLayer.OFF;
-                        if (dots.contains(new PhotonDot(layerY + pressedDot.y, layerX + pressedDot.x))) {
-                            onOff = !onOff;
-                        }
-                    }
-
-                    int x1 = Integer.min(pressedDot.x, releasedDot.x);
-                    int x2 = Integer.max(pressedDot.x, releasedDot.x);
-                    int y1 = Integer.min(pressedDot.y, releasedDot.y);
-                    int y2 = Integer.max(pressedDot.y, releasedDot.y);
-
-                    for (int x = x1; x <= x2; x++) {
-                        for (int y = y1; y <= y2; y++) {
-                            if (editModeSwap) {
-                                me.handleClick(x, y);
-                            } else {
-                                me.handleClick(x, y, onOff);
-                            }
-                        }
-                    }
-                }
-            }
-        });
+        setEditMode(EditMode.pencil);
 
         editArea.addMouseMotionListener(new MouseMotionAdapter() {
             @Override
             public void mouseMoved(MouseEvent e) {
-
-                PhotonDot lastCursorDot = cursorDot;
-
-                cursorDot = getPosition(e);
-                if (lastCursorDot != null && !lastCursorDot.equals(cursorDot)) {
-                    Color color = getColor(lastCursorDot);
-                    ((PhotonEditPanel) editArea).drawDot(lastCursorDot.x, lastCursorDot.y, layer, color);
-                    editArea.repaint();
-                }
-                if (cursorDot != null && !cursorDot.equals(lastCursorDot)) {
-                    Color original = getColor(cursorDot);
-                    Color color = original.brighter();
-                    if (original.equals(Color.black)) {
-                        color = Color.lightGray;
-                    }
-                    ((PhotonEditPanel) editArea).drawDot(cursorDot.x, cursorDot.y, layer, color);
-                    editArea.repaint();
-                }
-
+                handleCursor(e);
             }
         });
     }
 
-    private void handleClick(int x, int y, boolean onOff) {
-        byte original = layer.get(layerY + y, layerX + x);
-        boolean isOriginalOn = original != PhotonLayer.OFF;
-
-        PhotonDot dot = new PhotonDot(layerY + y, layerX + x);
-
-        if (dots.contains(dot)) {
-            dots.remove(dot);
-        }
-        if ((onOff && !isOriginalOn) || (!onOff && isOriginalOn)) {
-            dots.add(dot);
-        }
-
-        Color color = onOff ? Color.darkGray : Color.cyan;
-        ;
-        ((PhotonEditPanel) editArea).drawDot(x, y, layer, color);
-        editArea.repaint();
+    private void setEditMode(EditMode newEditMode) {
+        editArea.removeMouseListener(currentEditModeHandler);
+        editArea.removeMouseMotionListener(currentEditModeHandler);
+        editMode = newEditMode;
+        editModeHelp.setText(editMode.help);
+        currentEditModeHandler = editModeHandlerRegistry.get(editMode);
+        editArea.addMouseListener(currentEditModeHandler);
+        editArea.addMouseMotionListener(currentEditModeHandler);
     }
 
-    private void handleClick(int x, int y) {
-        Color color = isSet(x, y);
-        ((PhotonEditPanel) editArea).drawDot(x, y, layer, color);
-        editArea.repaint();
+    private void handleCursor(MouseEvent e) {
+        PhotonDot lastCursorDot = cursorDot;
+
+        cursorDot = getPosition(e);
+        if (lastCursorDot != null && !lastCursorDot.equals(cursorDot)) {
+            Color color = getColor(lastCursorDot);
+            ((PhotonEditPanel) editArea).drawDot(lastCursorDot.x, lastCursorDot.y, layer, color);
+            editArea.repaint();
+        }
+        if (cursorDot != null && !cursorDot.equals(lastCursorDot)) {
+            Color original = getColor(cursorDot);
+            Color color = original.brighter();
+            if (original.equals(Color.black)) {
+                color = Color.lightGray;
+            }
+            ((PhotonEditPanel) editArea).drawDot(cursorDot.x, cursorDot.y, layer, color);
+            editArea.repaint();
+        }
     }
 
     private Color isSet(int x, int y) {
@@ -218,6 +284,23 @@ public class EditDialog extends JDialog {
         }
     }
 
+    private Color getOriginalColor(PhotonDot dst) {
+        byte original = layer.get(layerY + dst.y, layerX + dst.x);
+        switch (original) {
+            case PhotonLayer.SUPPORTED:
+                return Color.decode("#008800");
+
+            case PhotonLayer.CONNECTED:
+                return Color.decode("#FFFF00");
+
+            case PhotonLayer.ISLAND:
+                return Color.decode("#FF0000");
+
+            default:
+                return Color.black;
+        }
+    }
+
     private Color getColor(PhotonDot dst) {
         byte original = layer.get(layerY + dst.y, layerX + dst.x);
         boolean result = original != PhotonLayer.OFF;
@@ -241,7 +324,7 @@ public class EditDialog extends JDialog {
             }
 
         } else {
-            return result ? Color.black : Color.cyan;
+            return result ? Color.darkGray : Color.cyan;
         }
     }
 
@@ -343,34 +426,66 @@ public class EditDialog extends JDialog {
         contentPane = new JPanel();
         contentPane.setLayout(new com.intellij.uiDesigner.core.GridLayoutManager(3, 1, new Insets(10, 10, 10, 10), -1, -1));
         final JPanel panel1 = new JPanel();
-        panel1.setLayout(new com.intellij.uiDesigner.core.GridLayoutManager(1, 2, new Insets(0, 0, 0, 0), -1, -1));
+        panel1.setLayout(new com.intellij.uiDesigner.core.GridLayoutManager(1, 3, new Insets(0, 0, 0, 0), -1, -1));
         contentPane.add(panel1, new com.intellij.uiDesigner.core.GridConstraints(2, 0, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_CENTER, com.intellij.uiDesigner.core.GridConstraints.FILL_BOTH, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_SHRINK | com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_GROW, 1, null, null, null, 0, false));
-        final com.intellij.uiDesigner.core.Spacer spacer1 = new com.intellij.uiDesigner.core.Spacer();
-        panel1.add(spacer1, new com.intellij.uiDesigner.core.GridConstraints(0, 0, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_CENTER, com.intellij.uiDesigner.core.GridConstraints.FILL_HORIZONTAL, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_WANT_GROW, 1, null, null, null, 0, false));
         final JPanel panel2 = new JPanel();
         panel2.setLayout(new com.intellij.uiDesigner.core.GridLayoutManager(1, 2, new Insets(0, 0, 0, 0), -1, -1));
-        panel1.add(panel2, new com.intellij.uiDesigner.core.GridConstraints(0, 1, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_CENTER, com.intellij.uiDesigner.core.GridConstraints.FILL_BOTH, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_SHRINK | com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_GROW, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_SHRINK | com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
+        panel1.add(panel2, new com.intellij.uiDesigner.core.GridConstraints(0, 2, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_CENTER, com.intellij.uiDesigner.core.GridConstraints.FILL_BOTH, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_SHRINK | com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_GROW, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_SHRINK | com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
         buttonOK = new JButton();
         buttonOK.setText("OK");
         panel2.add(buttonOK, new com.intellij.uiDesigner.core.GridConstraints(0, 1, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_CENTER, com.intellij.uiDesigner.core.GridConstraints.FILL_HORIZONTAL, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_SHRINK | com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_GROW, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         buttonCancel = new JButton();
         buttonCancel.setText("Cancel");
         panel2.add(buttonCancel, new com.intellij.uiDesigner.core.GridConstraints(0, 0, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_CENTER, com.intellij.uiDesigner.core.GridConstraints.FILL_HORIZONTAL, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_SHRINK | com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_GROW, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        editModeHelp = new JLabel();
+        Font editModeHelpFont = this.$$$getFont$$$(null, -1, 10, editModeHelp.getFont());
+        if (editModeHelpFont != null) editModeHelp.setFont(editModeHelpFont);
+        editModeHelp.setText("Use left button to set and right button to unset pixels");
+        panel1.add(editModeHelp, new com.intellij.uiDesigner.core.GridConstraints(0, 0, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_WEST, com.intellij.uiDesigner.core.GridConstraints.FILL_NONE, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        final com.intellij.uiDesigner.core.Spacer spacer1 = new com.intellij.uiDesigner.core.Spacer();
+        panel1.add(spacer1, new com.intellij.uiDesigner.core.GridConstraints(0, 1, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_CENTER, com.intellij.uiDesigner.core.GridConstraints.FILL_HORIZONTAL, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_WANT_GROW, 1, null, null, null, 0, false));
         final JPanel panel3 = new JPanel();
-        panel3.setLayout(new com.intellij.uiDesigner.core.GridLayoutManager(1, 2, new Insets(0, 0, 0, 0), -1, -1));
+        panel3.setLayout(new com.intellij.uiDesigner.core.GridLayoutManager(1, 4, new Insets(0, 0, 0, 0), -1, -1));
         contentPane.add(panel3, new com.intellij.uiDesigner.core.GridConstraints(0, 0, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_CENTER, com.intellij.uiDesigner.core.GridConstraints.FILL_BOTH, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_SHRINK | com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_GROW, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, new Dimension(-1, 30), new Dimension(-1, 30), new Dimension(-1, 30), 0, false));
         infoText = new JLabel();
+        Font infoTextFont = this.$$$getFont$$$(null, -1, 12, infoText.getFont());
+        if (infoTextFont != null) infoText.setFont(infoTextFont);
         infoText.setText("");
         panel3.add(infoText, new com.intellij.uiDesigner.core.GridConstraints(0, 0, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_WEST, com.intellij.uiDesigner.core.GridConstraints.FILL_NONE, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_SHRINK | com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_WANT_GROW, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
-        editModeBtn = new JButton();
-        editModeBtn.setText("Using Swap");
-        panel3.add(editModeBtn, new com.intellij.uiDesigner.core.GridConstraints(0, 1, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_CENTER, com.intellij.uiDesigner.core.GridConstraints.FILL_HORIZONTAL, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_SHRINK | com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_GROW, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        modeCombo = new JComboBox();
+        final DefaultComboBoxModel defaultComboBoxModel1 = new DefaultComboBoxModel();
+        defaultComboBoxModel1.addElement("Pencil");
+        defaultComboBoxModel1.addElement("Swap");
+        modeCombo.setModel(defaultComboBoxModel1);
+        panel3.add(modeCombo, new com.intellij.uiDesigner.core.GridConstraints(0, 3, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_WEST, com.intellij.uiDesigner.core.GridConstraints.FILL_HORIZONTAL, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_GROW, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        final JLabel label1 = new JLabel();
+        label1.setText("Mode");
+        panel3.add(label1, new com.intellij.uiDesigner.core.GridConstraints(0, 2, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_WEST, com.intellij.uiDesigner.core.GridConstraints.FILL_NONE, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        final com.intellij.uiDesigner.core.Spacer spacer2 = new com.intellij.uiDesigner.core.Spacer();
+        panel3.add(spacer2, new com.intellij.uiDesigner.core.GridConstraints(0, 1, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_CENTER, com.intellij.uiDesigner.core.GridConstraints.FILL_HORIZONTAL, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_WANT_GROW, 1, null, null, null, 0, false));
         final JPanel panel4 = new JPanel();
         panel4.setLayout(new com.intellij.uiDesigner.core.GridLayoutManager(1, 1, new Insets(0, 0, 0, 0), -1, -1));
         contentPane.add(panel4, new com.intellij.uiDesigner.core.GridConstraints(1, 0, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_CENTER, com.intellij.uiDesigner.core.GridConstraints.FILL_BOTH, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_SHRINK | com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_GROW, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_SHRINK | com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
         editArea.setBackground(new Color(-1250068));
         editArea.setEnabled(true);
         panel4.add(editArea, new com.intellij.uiDesigner.core.GridConstraints(0, 0, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_CENTER, com.intellij.uiDesigner.core.GridConstraints.FILL_BOTH, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_SHRINK | com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_GROW, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_SHRINK | com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_WANT_GROW, new Dimension(300, 100), new Dimension(300, 100), null, 0, false));
+        infoText.setLabelFor(modeCombo);
+        label1.setLabelFor(modeCombo);
+    }
+
+    /**
+     * @noinspection ALL
+     */
+    private Font $$$getFont$$$(String fontName, int style, int size, Font currentFont) {
+        if (currentFont == null) return null;
+        String resultName;
+        if (fontName == null) {resultName = currentFont.getName();} else {
+            Font testFont = new Font(fontName, Font.PLAIN, 10);
+            if (testFont.canDisplay('a') && testFont.canDisplay('1')) {resultName = fontName;} else {
+                resultName = currentFont.getName();
+            }
+        }
+        return new Font(resultName, style >= 0 ? style : currentFont.getStyle(), size >= 0 ? size : currentFont.getSize());
     }
 
     /**
