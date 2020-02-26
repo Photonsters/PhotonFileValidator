@@ -319,7 +319,6 @@ public class EditDialog extends JDialog {
         int my = e.getY();
         if (mirrored) {
             my = editArea.getHeight() - e.getY() - 1;
-            my -= 5;
         }
         if (e.getX() > 15 && my > 15) {
             int x = (e.getX() - 15) / 10;
