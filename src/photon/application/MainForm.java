@@ -275,7 +275,7 @@ public class MainForm extends BaseForm implements ActionListener, ItemListener {
     }
 
     public static void main(String[] args) {
-        BaseFrame frame = new BaseFrame("Photon File Validator 2.0");
+        BaseFrame frame = new BaseFrame("Photon File Validator 2.1");
         MainUtils.setIcon(frame);
         MainForm mainForm = new MainForm();
         JPanel panel = mainForm.mainPanel;
