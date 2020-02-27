@@ -352,8 +352,60 @@ public class PhotonFile {
             layer.setLayerOffTimeSeconds(iFileHeader.getOffTimeSeconds());
         }
     }
+    
+    public void fixAll(IPhotonProgress progres) throws Exception {
+    	boolean layerWasFixed = false;
+    	do {
+    		do {
+    			// Repeatedly fix layers until none are possible to fix
+    			// Fixing some layers can make other layers auto-fixable
+    			layerWasFixed = fixLayers(progres);
+    		} while(layerWasFixed);
+	    	if(islandLayers.size() > 0) {
+	    		// Nothing can be done further, just remove all layers left
+	    		layerWasFixed = removeAllIslands(progres) || layerWasFixed;
+	    	}
+	    	if(layerWasFixed && islandLayers.size() > 0) {
+	    		// We could've created new islands by removing islands, repeat fixing process
+	    		// until everything is fixed or nothing can be done
+    			progres.showInfo("<br>Some layers were fixed, but " + islandLayers.size() + " still unsupported, repeating...<br>");
+    		}
+    	} while(layerWasFixed);
+    }
+    
+    public boolean removeAllIslands(IPhotonProgress progres) throws Exception {
+    	boolean layersFixed = false;
+    	progres.showInfo("Removing islands from " + islandLayers.size() + " layers...<br>");
+		PhotonLayer layer = null;
+		for (int layerNo : islandLayers) {
+	        PhotonFileLayer fileLayer = layers.get(layerNo);
+	        if (layer == null) {
+                layer = fileLayer.getLayer();
+            } else {
+                fileLayer.getUpdateLayer(layer);
+            }
+            progres.showInfo("Removing islands from layer " + layerNo);
 
-    public void fixLayers(IPhotonProgress progres) throws Exception {
+	        int removed = layer.removeIslands();
+	        if(removed == 0) {
+	        	progres.showInfo(", but nothing could be done.");
+	        } else {
+	        	progres.showInfo(", " + removed + " islands removed");
+	            fileLayer.saveLayer(layer);
+	            calculate(layerNo);
+	            if (layerNo < getLayerCount() - 1) {
+                    calculate(layerNo + 1);
+                }
+	            layersFixed = true;
+	        }
+	        progres.showInfo("<br>");
+		}
+		findIslands();
+		return layersFixed;
+    }
+
+    public boolean fixLayers(IPhotonProgress progres) throws Exception {
+    	boolean layersFixed = false;
         PhotonLayer layer = null;
         for (int layerNo : islandLayers) {
             progres.showInfo("Checking layer " + layerNo);
@@ -372,12 +424,17 @@ public class PhotonFile {
             } else {
                 fileLayer.saveLayer(layer);
                 calculate(layerNo);
+                if (layerNo < getLayerCount() - 1) {
+                    calculate(layerNo + 1);
+                }
+                layersFixed = true;
             }
 
             progres.showInfo("<br>");
 
         }
         findIslands();
+        return layersFixed;
     }
 
     private int fixit(IPhotonProgress progres, PhotonLayer layer, PhotonFileLayer fileLayer, int loops) throws Exception {
