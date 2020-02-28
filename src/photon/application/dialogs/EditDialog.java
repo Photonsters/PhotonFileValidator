@@ -86,30 +86,7 @@ public class EditDialog extends JDialog {
                 if (!currentCell.equals(lastCell)) {
                     if (e.getButton() == MouseEvent.BUTTON1 || e.getButton() == MouseEvent.BUTTON3) {
                         boolean on = e.getButton() == MouseEvent.BUTTON1;
-                        byte original = layer.get(layerY + currentCell.y, layerX + currentCell.x);
-                        boolean isOriginalOn = original != PhotonLayer.OFF;
-                        Color originalColor = getOriginalColor(currentCell);
-
-                        PhotonDot dot = new PhotonDot(layerY + currentCell.y, layerX + currentCell.x);
-
-                        if (dots.contains(dot)) {
-                            dots.remove(dot);
-                        }
-
-                        Color color = originalColor;
-                        if (on) {
-                            if (!isOriginalOn) {
-                                color = Color.cyan;
-                                dots.add(dot);
-                            }
-                        } else {
-                            if (isOriginalOn) {
-                                color = Color.darkGray;
-                                dots.add(dot);
-                            }
-                        }
-
-                        ((PhotonEditPanel) editArea).drawDot(currentCell.x, currentCell.y, layer, color);
+                        editPixel(currentCell, on);
                         editArea.repaint();
 
                     }
@@ -118,6 +95,33 @@ public class EditDialog extends JDialog {
             }
         }
 
+    }
+
+    private void editPixel(PhotonDot cell, boolean on) {
+        byte original = layer.get(layerY + cell.y, layerX + cell.x);
+        boolean isOriginalOn = original != PhotonLayer.OFF;
+        Color originalColor = getOriginalColor(cell);
+
+        PhotonDot dot = new PhotonDot(layerY + cell.y, layerX + cell.x);
+
+        if (dots.contains(dot)) {
+            dots.remove(dot);
+        }
+
+        Color color = originalColor;
+        if (on) {
+            if (!isOriginalOn) {
+                color = Color.cyan;
+                dots.add(dot);
+            }
+        } else {
+            if (isOriginalOn) {
+                color = Color.darkGray;
+                dots.add(dot);
+            }
+        }
+
+        ((PhotonEditPanel) editArea).drawDot(cell.x, cell.y, layer, color);
     }
 
     ;
@@ -153,8 +157,68 @@ public class EditDialog extends JDialog {
 
     ;
 
+    private class ModeRectHandler extends MouseAdapter {
+        private PhotonDot pressedDot;
+        private Rectangle rect;
+
+        @Override
+        public void mousePressed(MouseEvent e) {
+            pressedDot = getPosition(e);
+        }
+
+        @Override
+        public void mouseDragged(MouseEvent e) {
+            if (pressedDot != null) {
+
+                clearRect();
+
+                PhotonDot currentDot = getPosition(e);
+                int x1 = Integer.min(pressedDot.x, currentDot.x);
+                int x2 = Integer.max(pressedDot.x, currentDot.x);
+                int y1 = Integer.min(pressedDot.y, currentDot.y);
+                int y2 = Integer.max(pressedDot.y, currentDot.y);
+
+                rect = new Rectangle(x1, y1, x2 - x1, y2 - y1);
+                Color color = e.getButton() == MouseEvent.BUTTON1 ? Color.cyan : Color.lightGray;
+                ((PhotonEditPanel) editArea).drawRect(rect, color);
+                editArea.repaint();
+            }
+        }
+
+        private void clearRect() {
+            if (rect != null) {
+                ((PhotonEditPanel) editArea).drawRect(rect, Color.decode("#999999"));
+                rect = null;
+            }
+        }
+        @Override
+        public void mouseReleased(MouseEvent e) {
+            clearRect();
+            PhotonDot releasedDot = getPosition(e);
+            if (pressedDot != null && releasedDot != null) {
+
+                boolean on = e.getButton() == MouseEvent.BUTTON1;
+
+                int x1 = Integer.min(pressedDot.x, releasedDot.x);
+                int x2 = Integer.max(pressedDot.x, releasedDot.x);
+                int y1 = Integer.min(pressedDot.y, releasedDot.y);
+                int y2 = Integer.max(pressedDot.y, releasedDot.y);
+
+                for (int x = x1; x <= x2; x++) {
+                    for (int y = y1; y <= y2; y++) {
+                        editPixel(new PhotonDot(x, y), on);
+                    }
+                    editArea.repaint();
+                }
+            }
+        }
+    }
+
+    ;
+
     private enum EditMode {
         pencil("Tip: Use left mouse to set and right mouse to unset pixels."),
+        rect("Tip: Use left mouse drag to set and right mouse drag to unset areas."),
         swap("Tip: Use left mouse to toggle pixels. Drag for toggling within rectangle area.");
         String help;
 
@@ -175,7 +239,9 @@ public class EditDialog extends JDialog {
 
         editModeHandlerRegistry = new HashMap<>();
         editModeHandlerRegistry.put(EditMode.pencil, new ModePencilHandler());
+        editModeHandlerRegistry.put(EditMode.rect, new ModeRectHandler());
         editModeHandlerRegistry.put(EditMode.swap, new ModeSwapHandler());
+
 
         $$$setupUI$$$();
 
@@ -248,6 +314,8 @@ public class EditDialog extends JDialog {
             Color original = getColor(cursorDot);
             Color color = original.brighter();
             if (original.equals(Color.black)) {
+                color = Color.lightGray;
+            } else if (original.equals(Color.cyan)) {
                 color = Color.lightGray;
             }
             ((PhotonEditPanel) editArea).drawDot(cursorDot.x, cursorDot.y, layer, color);
@@ -455,6 +523,7 @@ public class EditDialog extends JDialog {
         modeCombo = new JComboBox();
         final DefaultComboBoxModel defaultComboBoxModel1 = new DefaultComboBoxModel();
         defaultComboBoxModel1.addElement("Pencil");
+        defaultComboBoxModel1.addElement("Rect");
         defaultComboBoxModel1.addElement("Swap");
         modeCombo.setModel(defaultComboBoxModel1);
         panel3.add(modeCombo, new com.intellij.uiDesigner.core.GridConstraints(0, 3, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_WEST, com.intellij.uiDesigner.core.GridConstraints.FILL_HORIZONTAL, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_GROW, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));

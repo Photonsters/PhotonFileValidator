@@ -111,4 +111,11 @@ public class PhotonEditPanel extends JPanel {
         g.fillRect(15+layerX*10, 15+layerY*10, 9, 9);
         g.dispose();
     }
+
+    public void drawRect(Rectangle r, Color color) {
+        Graphics2D g = createGraphics();
+        g.setColor(color);
+        g.drawRect(15+r.x*10, 15+r.y*10, (r.width + 1) * 10-1, (r.height + 1) * 10-1);
+        g.dispose();
+    }
 }
