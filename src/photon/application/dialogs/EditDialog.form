@@ -87,6 +87,7 @@
             <properties>
               <model>
                 <item value="Pencil"/>
+                <item value="Rect"/>
                 <item value="Swap"/>
               </model>
             </properties>
