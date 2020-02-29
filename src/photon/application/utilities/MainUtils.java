@@ -187,5 +187,13 @@ public class MainUtils {
         }
     }
 
-
+    public static int getSystemDefaultModifierMask() {
+        int mask = Toolkit.getDefaultToolkit().getMenuShortcutKeyMask();
+        if (mask == Event.META_MASK) {
+            return KeyEvent.META_DOWN_MASK;
+        } else if (mask == Event.ALT_MASK) {
+            return KeyEvent.ALT_DOWN_MASK;
+        }
+        return KeyEvent.CTRL_DOWN_MASK;
+    }
 }
