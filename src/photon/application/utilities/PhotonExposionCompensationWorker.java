@@ -24,58 +24,82 @@
 
 package photon.application.utilities;
 
+import images.BinaryImage;
 import photon.application.MainForm;
+import photon.application.dialogs.ExposureCompensationDialog;
 import photon.file.PhotonFile;
 import photon.file.parts.IPhotonProgress;
+import photon.file.parts.IPhotonProgressBar;
+import photon.file.parts.PhotonFileLayer;
 
 import javax.swing.*;
-import java.awt.*;
-import java.io.File;
+import java.util.stream.IntStream;
 
 /**
  * by bn on 16/07/2018.
  */
-public class PhotonCalcWorker extends SwingWorker<Integer, String> implements IPhotonProgress {
+public class PhotonExposionCompensationWorker extends SwingWorker<Integer, Integer> {
     private MainForm mainForm;
-    private File file;
+    private IPhotonProgressBar progress;
+    private PhotonFile file;
+    private ExposureCompensationDialog dlg;
+    private float percentageDone;
 
-    public PhotonCalcWorker(MainForm mainForm) {
+    public PhotonExposionCompensationWorker(ExposureCompensationDialog dlg, PhotonFile file, MainForm mainForm) {
         this.mainForm = mainForm;
-        mainForm.marginInfo.setText("");
+        this.progress = dlg;
+        this.file = file;
+        this.dlg = dlg;
     }
 
     @Override
-    protected void process(java.util.List<String> chunks) {
-        for (String str : chunks) {
-            mainForm.layerInfo.setText(str);
+    protected void process(java.util.List<Integer> chunks) {
+        for (Integer p : chunks) {
+            progress.onProgress(p);
         }
     }
 
     @Override
     protected void done() {
-        mainForm.openBtn.setEnabled(true);
-        if (mainForm.photonFile!=null) {
-            mainForm.showFileInformation();
-        }
+        publish(100);
+        dlg.btnOk.setEnabled(true);
     }
 
+    private void partialDone(float percentage) {
+        percentageDone += percentage;
+        publish(Math.round(percentageDone));
+    }
     @Override
     protected Integer doInBackground() throws Exception {
-        publish("Calculating layers...");
+        publish(0);
         try {
-            mainForm.photonFile.setMargin(mainForm.margin);
-            mainForm.photonFile.calculate(this);
-            publish("Calculation Complete...");
+            int numLayers = file.getLayerCount();
+            final float progressStep = 100.0f / (numLayers + 10);
+            percentageDone = 0f;
+            boolean square = dlg.chkboxUseSquare.getModel().isSelected();
+
+            long start = System.currentTimeMillis();
+            IntStream layerNumbers = IntStream.range(0, numLayers);
+            layerNumbers.parallel().forEach(layerNo -> {
+                PhotonFileLayer layer = file.getLayer(layerNo);
+                BinaryImage image = BinaryImage.from(layer);
+                int size = layerNo < file.getPhotonFileHeader().getBottomLayers() ? dlg.getBottomCompenstation() : dlg.getDefaultCompensation();
+                image.erode(size, square);
+                image.to(layer);
+                partialDone(progressStep);
+            });
+
+            System.out.println(String.format("Compensation done in %s ms", System.currentTimeMillis() - start));
+
+            file.calculate(dlg);
+            mainForm.changeLayer();
+            mainForm.showMarginAndIslandInformation();
+
         } catch (Exception e) {
-            mainForm.marginInfo.setForeground(Color.red);
-            mainForm.marginInfo.setText("Could not calculate the file.");
+            e.printStackTrace();
             return 0;
         }
         return 1;
     }
 
-    @Override
-    public void showInfo(String str) {
-        publish(str);
-    }
 }

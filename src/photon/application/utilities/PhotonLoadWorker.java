@@ -46,9 +46,9 @@ public class PhotonLoadWorker extends SwingWorker<Integer, String> implements IP
         mainForm.layerInfo.setForeground(Color.decode("#000099"));
         mainForm.marginInfo.setText("");
 
-        mainForm.openBtn.setEnabled(false);
+        mainForm.actionOpen.setEnabled(false);
         mainForm.saveBtn.setEnabled(false);
-        mainForm.fixBtn.setEnabled(false);
+        mainForm.actionFix.setEnabled(false);
         mainForm.islandNextBtn.setEnabled(false);
         mainForm.islandPrevBtn.setEnabled(false);
         mainForm.marginNextBtn.setEnabled(false);
@@ -59,7 +59,8 @@ public class PhotonLoadWorker extends SwingWorker<Integer, String> implements IP
         mainForm.tabPreviewLarge.setEnabled(false);
         mainForm.tabPreviewSmall.setEnabled(false);
         mainForm.playButton.setEnabled(false);
-        mainForm.convertBtn.setEnabled(false);
+        mainForm.actionConvert.setEnabled(false);
+        mainForm.actionExposureCompensation.setEnabled(false);
     }
 
     @Override
@@ -73,17 +74,18 @@ public class PhotonLoadWorker extends SwingWorker<Integer, String> implements IP
     protected void done() {
         // mainForm.openBtn.setEnabled(true);
         if (mainForm.photonFile!=null) {
-            mainForm.openBtn.setEnabled(true);
+            mainForm.actionOpen.setEnabled(true);
             mainForm.saveBtn.setEnabled(true);
-            mainForm.informationBtn.setEnabled(true);
+            mainForm.actionInfo.setEnabled(true);
             mainForm.tabPreviewLarge.setEnabled(true);
             mainForm.tabPreviewSmall.setEnabled(true);
             mainForm.showFileInformation();
             mainForm.calc();
             mainForm.playButton.setEnabled(true);
             if (mainForm.photonFile.getVersion()>1) {
-                mainForm.convertBtn.setEnabled(true);
+                mainForm.actionConvert.setEnabled(true);
             }
+            mainForm.actionExposureCompensation.setEnabled(true);
         }
     }
 

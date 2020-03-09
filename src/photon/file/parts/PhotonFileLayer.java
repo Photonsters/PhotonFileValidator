@@ -85,6 +85,23 @@ public class PhotonFileLayer {
         //this.packedLayerImage = copy();
     }
 
+    public int getWidth() {
+        return photonFileHeader.getResolutionX();
+    }
+
+    public int getHeight() {
+        return photonFileHeader.getResolutionY();
+    }
+
+    public byte[] getImageData() {
+        return imageData;
+    }
+
+    public void updateImageData(byte[] imageData) {
+        this.imageData = imageData;
+        this.dataSize = imageData.length;
+    }
+
     public int savePos(int dataPosition) throws Exception {
         dataAddress = dataPosition;
         return dataPosition + dataSize;

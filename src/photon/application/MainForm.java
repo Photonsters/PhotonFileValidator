@@ -39,7 +39,6 @@ import photon.file.ui.PhotonPreviewImage;
 import photon.file.ui.ScrollPosition;
 import photon.file.ui.ScrollUtil;
 
-import javax.sound.midi.Soundbank;
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -47,13 +46,14 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
+import java.util.*;
 
 /**
  * by bn on 29/06/2018.
  */
 public class MainForm extends BaseForm implements ActionListener, ItemListener {
     private JPanel mainPanel;
-    public JButton openBtn;
+    private JButton openBtn;
     public JPanel layerImage;
     public JScrollPane imageScrollPane;
     public JSpinner layerSpinner;
@@ -66,14 +66,14 @@ public class MainForm extends BaseForm implements ActionListener, ItemListener {
     public JLabel marginInfo;
     public JButton marginNextBtn;
     public JButton saveBtn;
-    public JButton informationBtn;
+    private JButton informationBtn;
     private JPanel infoPanel;
     private JLabel logoLabel;
     public JSlider zoomSlider;
     public JSlider layerSlider;
     public JButton marginPrevBtn;
     public JButton islandPrevBtn;
-    public JButton fixBtn;
+    private JButton fixBtn;
     public JTabbedPane tabbedPane;
     public JPanel previewSmallPanel;
     public JPanel tabPreviewSmall;
@@ -86,7 +86,7 @@ public class MainForm extends BaseForm implements ActionListener, ItemListener {
     public JPanel render3D;
 
     public JButton playButton;
-    public JButton convertBtn;
+    private JButton convertBtn;
     public boolean playing;
 
     public final JFileChooser fc;
@@ -98,6 +98,58 @@ public class MainForm extends BaseForm implements ActionListener, ItemListener {
     public AntiAliaseDialog antiAliaseDialog;
     public PlayDialog playDialog;
     public ConvertDialog convertDialog;
+    public ExposureCompensationDialog exposureCompensationDialog;
+
+    public Action actionOpen = new AbstractAction("Open...") {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            openFile();
+        }
+    };
+
+    public Action actionSave = new AbstractAction("Save...") {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            showSave();
+        }
+    };
+
+    public Action actionInfo = new AbstractAction("Information...") {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            showPrint();
+        }
+    };
+
+    public Action actionFix = new AbstractAction("Fix...") {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            showFix();
+        }
+    };
+
+    public Action actionConvert = new AbstractAction("Convert...") {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            showConvert();
+        }
+    };
+
+    public Action actionExposureCompensation = new AbstractAction("Exposure bleeding compensation...") {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            showExposureCompensation();
+        }
+    };
+
+    private Action[] allActions = {
+            actionOpen,
+            actionSave,
+            actionConvert,
+            actionInfo,
+            actionFix,
+            actionExposureCompensation
+    };
 
     public MainForm() {
 
@@ -112,12 +164,7 @@ public class MainForm extends BaseForm implements ActionListener, ItemListener {
             }
         });
 
-        openBtn.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                openFile();
-            }
-        });
+        openBtn.setAction(actionOpen);
 
         layerSpinner.addChangeListener(new ChangeListener() {
 
@@ -161,33 +208,13 @@ public class MainForm extends BaseForm implements ActionListener, ItemListener {
             }
         });
 
-        saveBtn.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                showSave();
-            }
-        });
+        saveBtn.setAction(actionSave);
 
-        fixBtn.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                showFix();
-            }
-        });
+        fixBtn.setAction(actionFix);
 
-        informationBtn.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                showPrint();
-            }
-        });
+        informationBtn.setAction(actionInfo);
 
-        convertBtn.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                showConvert();
-            }
-        });
+        convertBtn.setAction(actionConvert);
 
         zoomSlider.addChangeListener(new ChangeListener() {
             @Override
@@ -248,6 +275,26 @@ public class MainForm extends BaseForm implements ActionListener, ItemListener {
             }
         });
 
+        disableActionsExcept(actionOpen);
+
+    }
+
+    public void disableActionsExcept(Action... excepts) {
+        Set<Action> ex = new HashSet<>(Arrays.asList(excepts));
+        for (Action action : allActions) {
+            if (!ex.contains(action)) {
+                action.setEnabled(false);
+            }
+        }
+    }
+
+    public void enableActionsExcept(Action... excepts) {
+        Set<Action> ex = new HashSet<>(Arrays.asList(excepts));
+        for (Action action : allActions) {
+            if (!ex.contains(action)) {
+                action.setEnabled(true);
+            }
+        }
     }
 
     @Override
@@ -420,19 +467,19 @@ public class MainForm extends BaseForm implements ActionListener, ItemListener {
         final com.intellij.uiDesigner.core.Spacer spacer4 = new com.intellij.uiDesigner.core.Spacer();
         panel6.add(spacer4, new com.intellij.uiDesigner.core.GridConstraints(0, 5, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_CENTER, com.intellij.uiDesigner.core.GridConstraints.FILL_HORIZONTAL, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_WANT_GROW, 1, null, null, null, 0, false));
         saveBtn = new JButton();
-        saveBtn.setEnabled(false);
+        saveBtn.setEnabled(true);
         saveBtn.setText("Save");
         panel6.add(saveBtn, new com.intellij.uiDesigner.core.GridConstraints(0, 1, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_CENTER, com.intellij.uiDesigner.core.GridConstraints.FILL_HORIZONTAL, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, new Dimension(110, 20), new Dimension(110, 20), new Dimension(110, 20), 0, false));
         informationBtn = new JButton();
-        informationBtn.setEnabled(false);
+        informationBtn.setEnabled(true);
         informationBtn.setText("Information");
         panel6.add(informationBtn, new com.intellij.uiDesigner.core.GridConstraints(0, 2, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_CENTER, com.intellij.uiDesigner.core.GridConstraints.FILL_HORIZONTAL, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, new Dimension(110, 20), new Dimension(110, 20), new Dimension(110, 20), 0, false));
         fixBtn = new JButton();
-        fixBtn.setEnabled(false);
+        fixBtn.setEnabled(true);
         fixBtn.setText("Fix");
         panel6.add(fixBtn, new com.intellij.uiDesigner.core.GridConstraints(0, 3, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_CENTER, com.intellij.uiDesigner.core.GridConstraints.FILL_HORIZONTAL, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, new Dimension(110, 20), new Dimension(110, 20), new Dimension(110, 20), 0, false));
         convertBtn = new JButton();
-        convertBtn.setEnabled(false);
+        convertBtn.setEnabled(true);
         convertBtn.setText("Convert");
         panel6.add(convertBtn, new com.intellij.uiDesigner.core.GridConstraints(0, 4, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_CENTER, com.intellij.uiDesigner.core.GridConstraints.FILL_HORIZONTAL, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, new Dimension(110, 20), new Dimension(110, 20), new Dimension(110, 20), 0, false));
         layerSlider = new JSlider();
