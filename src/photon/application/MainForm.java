@@ -24,14 +24,11 @@
 
 package photon.application;
 
-import com.intellij.uiDesigner.core.GridConstraints;
-import com.intellij.uiDesigner.core.GridLayoutManager;
-import com.intellij.uiDesigner.core.Spacer;
+import photon.application.base.BaseForm;
 import photon.application.base.BaseFrame;
+import photon.application.dialogs.*;
 import photon.application.render.OnionMousePanel;
 import photon.application.render.OnionPanel;
-import photon.application.base.BaseForm;
-import photon.application.dialogs.*;
 import photon.application.utilities.MainUtils;
 import photon.application.utilities.PhotonLoadWorker;
 import photon.file.ui.PhotonLayerImage;
@@ -39,11 +36,9 @@ import photon.file.ui.PhotonPreviewImage;
 import photon.file.ui.ScrollPosition;
 import photon.file.ui.ScrollUtil;
 
-import javax.sound.midi.Soundbank;
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
@@ -89,7 +84,6 @@ public class MainForm extends BaseForm implements ActionListener, ItemListener {
     public JButton convertBtn;
     public boolean playing;
 
-    public final JFileChooser fc;
     public InformationDialog informationDialog;
     public PreviewDialog previewDialog;
     public SaveDialog saveDialog;
@@ -126,12 +120,6 @@ public class MainForm extends BaseForm implements ActionListener, ItemListener {
                 changeLayer();
             }
         });
-
-        fc = new JFileChooser();
-        FileNameExtensionFilter filter = new FileNameExtensionFilter(
-                "Photon & ChiTu files", "photon", "cbddlp");
-        fc.setFileFilter(filter);
-
 
         islandNextBtn.addActionListener(new ActionListener() {
             @Override
