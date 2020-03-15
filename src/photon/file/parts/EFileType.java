@@ -33,4 +33,14 @@ public enum EFileType {
         }
         throw new IllegalArgumentException("Unknown file extension passed.");
     }
+
+    public static Boolean isPhotonFile(String fileName) {
+        String lowerName = fileName.toLowerCase();
+        for(EFileType e: EFileType.values()) {
+            if(fileName.endsWith(e.getExtension())) {
+                return true;
+            }
+        }
+        return false;
+    }
 }
