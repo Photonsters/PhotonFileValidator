@@ -72,7 +72,7 @@ public class BaseForm {
         d.setFilenameFilter(new FilenameFilter() {
             @Override
             public boolean accept(File file, String s) {
-                return s.contains(".photon") || s.contains(".cbddlp") || s.contains(".photons");
+                return s.contains(".photon") || s.contains(".cbddlp") || s.contains(".photons") || s.contains(".sl1");
             }
         });
         d.setVisible(true);
