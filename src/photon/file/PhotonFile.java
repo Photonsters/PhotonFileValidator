@@ -130,5 +130,10 @@ public class PhotonFile extends SlicedFile{
             }
         }
     }
+
+    @Override
+    public void fromSlicedFile(SlicedFile input) {
+        throw new UnsupportedOperationException("Not yet implemented");
+    }
 }
 

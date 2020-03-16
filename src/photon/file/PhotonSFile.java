@@ -21,4 +21,9 @@ public class PhotonSFile extends SlicedFile {
     protected void writeFile(OutputStream outputStream) throws Exception {
         throw new UnsupportedOperationException("Not yet implemented");
     }
+
+    @Override
+    public void fromSlicedFile(SlicedFile input) {
+        throw new UnsupportedOperationException("Not yet implemented");
+    }
 }

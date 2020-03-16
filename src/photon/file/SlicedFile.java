@@ -81,12 +81,23 @@ public abstract class SlicedFile {
      * Load a file of the given type.
      * @param file File object to load
      * @param iPhotonProgress For reporting progress back to the UI
+     * @throws Exception on error
      * @return a loaded object
      */
     abstract public SlicedFile readFromFile(File file, IPhotonProgress iPhotonProgress) throws Exception;
 
+    /**
+     * Actually write a file of the given type out.
+     * @param outputStream to write to.
+     * @throws Exception on failure.
+     */
     abstract protected void writeFile(OutputStream outputStream) throws Exception;
 
+    /**
+     * Convert from one file type to another.
+     * @param input to convert from.
+     */
+    abstract public void fromSlicedFile(SlicedFile input);
 
     public void saveFile(File file) throws Exception {
         FileOutputStream fileOutputStream = new FileOutputStream(file);
