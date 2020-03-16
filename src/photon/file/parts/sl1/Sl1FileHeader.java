@@ -25,6 +25,21 @@ public class Sl1FileHeader implements IFileHeader {
     private int printTimeSeconds;
     private int version;
 
+    public void setResolutionX(int resolutionX) {
+        this.resolutionX = resolutionX;
+    }
+
+    public void setResolutionY(int resolutionY) {
+        this.resolutionY = resolutionY;
+    }
+
+    private int resolutionX;
+    private int resolutionY;
+
+    public String getJobName() {
+        return jobName;
+    }
+
     // This is used as the base of the image filenames.
     private String jobName;
 

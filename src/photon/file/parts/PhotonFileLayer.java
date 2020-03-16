@@ -205,7 +205,6 @@ public class PhotonFileLayer {
         isLandsCount = photonLayer.setIslands(islandRows);
     }
 
-
     public static List<PhotonFileLayer> readLayers(PhotonFileHeader photonFileHeader, byte[] file, int margin, IPhotonProgress iPhotonProgress) throws Exception {
         PhotonLayer photonLayer = new PhotonLayer(photonFileHeader.getResolutionX(), photonFileHeader.getResolutionY());
 
