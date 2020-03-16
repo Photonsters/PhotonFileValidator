@@ -25,7 +25,6 @@
 package photon.application.utilities;
 
 import photon.application.MainForm;
-import photon.file.PhotonFile;
 import photon.file.parts.IPhotonProgress;
 
 import javax.swing.*;
@@ -54,7 +53,7 @@ public class PhotonCalcWorker extends SwingWorker<Integer, String> implements IP
     @Override
     protected void done() {
         mainForm.openBtn.setEnabled(true);
-        if (mainForm.photonFile!=null) {
+        if (mainForm.slicedFile !=null) {
             mainForm.showFileInformation();
         }
     }
@@ -63,8 +62,8 @@ public class PhotonCalcWorker extends SwingWorker<Integer, String> implements IP
     protected Integer doInBackground() throws Exception {
         publish("Calculating layers...");
         try {
-            mainForm.photonFile.setMargin(mainForm.margin);
-            mainForm.photonFile.calculate(this);
+            mainForm.slicedFile.setMargin(mainForm.margin);
+            mainForm.slicedFile.calculate(this);
             publish("Calculation Complete...");
         } catch (Exception e) {
             mainForm.marginInfo.setForeground(Color.red);

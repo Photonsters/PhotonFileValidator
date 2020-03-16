@@ -26,6 +26,7 @@ package photon.application.dialogs;
 
 import photon.application.MainForm;
 import photon.file.PhotonFile;
+import photon.file.SlicedFile;
 import photon.file.parts.PhotonFileLayer;
 import photon.file.ui.PhotonAaPanel;
 
@@ -45,7 +46,7 @@ public class AntiAliaseDialog extends JDialog {
 
 
     private MainForm mainForm;
-    private PhotonFile photonFile;
+    private SlicedFile photonFile;
     private PhotonFileLayer fileLayer;
     private int layerX;
     private int layerY;
@@ -106,7 +107,7 @@ public class AntiAliaseDialog extends JDialog {
         aaArea = new PhotonAaPanel(780, 480);
     }
 
-    public void setInformation(PhotonFile photonFile, int layerNo, int mouseX, int mouseY) {
+    public void setInformation(SlicedFile photonFile, int layerNo, int mouseX, int mouseY) {
         this.photonFile = photonFile;
         this.fileLayer = photonFile.getLayer(layerNo);
 
@@ -131,7 +132,7 @@ public class AntiAliaseDialog extends JDialog {
         layerX = indexX - 1;
         layerY = indexY - 1;
 
-        aaLevel.setMaximum(mainForm.photonFile.getPhotonFileHeader().getAALevels());
+        aaLevel.setMaximum(mainForm.slicedFile.getPhotonFileHeader().getAALevels());
 
         if (aaLevel.getValue() == 0) {
             aaLevelName.setText("Combined AA");

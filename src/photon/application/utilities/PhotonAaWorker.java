@@ -72,10 +72,10 @@ public class PhotonAaWorker extends SwingWorker<Integer, String> implements IPho
     protected Integer doInBackground() throws Exception {
         publish("Calculating AA layers...");
         try {
-            mainForm.photonFile.setAALevels(aaLevels);
-            mainForm.photonFile.calculateAaLayers(this, photonAaMatrix);
+            mainForm.slicedFile.setAALevels(aaLevels);
+            mainForm.slicedFile.calculateAaLayers(this, photonAaMatrix);
             publish("AA Calculation Complete...");
-            if (mainForm.photonFile!=null) {
+            if (mainForm.slicedFile !=null) {
                 mainForm.viewLayerInfo();;
             }
         } catch (Exception e) {

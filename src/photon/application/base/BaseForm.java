@@ -31,8 +31,8 @@ import photon.application.render.storage.RotationBaseMatrix;
 import photon.application.utilities.MainUtils;
 import photon.application.utilities.PhotonCalcWorker;
 import photon.application.utilities.PhotonLoadWorker;
-import photon.application.utilities.PhotonPlayWorker;
 import photon.file.PhotonFile;
+import photon.file.SlicedFile;
 import photon.file.parts.PhotonFileLayer;
 import photon.file.parts.PhotonFilePreview;
 import photon.file.parts.PhotonLayer;
@@ -61,7 +61,7 @@ public class BaseForm {
 
     protected String loadedPath;
     protected String loadedFileName;
-    public PhotonFile photonFile;
+    public SlicedFile slicedFile;
     public int margin = 0;
     protected int zoom = 0;
 
@@ -92,8 +92,8 @@ public class BaseForm {
                 me.tabPreviewLarge.setEnabled(false);
                 me.tabPreviewSmall.setEnabled(false);
                 try {
-                    if (photonFile != null) {
-                        photonFile.unLink();
+                    if (slicedFile != null) {
+                        slicedFile.unLink();
                     }
                     setFileName(file);
 
@@ -113,7 +113,7 @@ public class BaseForm {
         if (me.saveDialog == null) {
             me.saveDialog = new SaveDialog(me);
         }
-        me.saveDialog.setInformation(photonFile, loadedPath, loadedFileName);
+        me.saveDialog.setInformation(slicedFile, loadedPath, loadedFileName);
         me.saveDialog.setSize(new Dimension(800, 360));
         me.saveDialog.setLocationRelativeTo(me.frame);
         me.saveDialog.setVisible(true);
@@ -123,7 +123,7 @@ public class BaseForm {
         if (me.fixDialog == null) {
             me.fixDialog = new FixDialog(me);
         }
-        me.fixDialog.setInformation(photonFile);
+        me.fixDialog.setInformation(slicedFile);
         me.fixDialog.setSize(new Dimension(500, 240));
         me.fixDialog.pack();
         me.fixDialog.setLocationRelativeTo(me.frame);
@@ -135,7 +135,7 @@ public class BaseForm {
         if (me.informationDialog == null) {
             me.informationDialog = new InformationDialog(me.frame);
         }
-        me.informationDialog.setInformation(photonFile);
+        me.informationDialog.setInformation(slicedFile);
         me.informationDialog.setSize(new Dimension(650, 320));
         me.informationDialog.setLocationRelativeTo(me.frame);
         me.informationDialog.setVisible(true);
@@ -147,7 +147,7 @@ public class BaseForm {
         if (me.convertDialog == null) {
             me.convertDialog = new ConvertDialog(me);
         }
-        me.convertDialog.setInformation(photonFile);
+        me.convertDialog.setInformation(slicedFile);
         me.convertDialog.setSize(new Dimension(650, 430));
         me.convertDialog.setLocationRelativeTo(me.frame);
         me.convertDialog.setVisible(true);
@@ -155,7 +155,7 @@ public class BaseForm {
     }
 
     protected void showPreview(boolean large) {
-        PhotonFilePreview preview = large ? me.photonFile.getPreviewOne() : me.photonFile.getPreviewTwo();
+        PhotonFilePreview preview = large ? me.slicedFile.getPreviewOne() : me.slicedFile.getPreviewTwo();
         if (me.previewDialog == null) {
             me.previewDialog = new PreviewDialog(me.frame, preview);
         }
@@ -169,7 +169,7 @@ public class BaseForm {
 
     public void showLayerInformation(int layer, PhotonFileLayer fileLayer) {
         me.layerNo.setForeground(fileLayer.getIsLandsCount() > 0 ? Color.red : Color.black);
-        me.layerNo.setText("Layer " + layer + "/" + (me.photonFile.getLayerCount() - 1) + (me.photonFile.hasAA()?" AA("+me.photonFile.getPhotonFileHeader().getAALevels()+")" : ""));
+        me.layerNo.setText("Layer " + layer + "/" + (me.slicedFile.getLayerCount() - 1) + (me.slicedFile.hasAA()?" AA("+me.slicedFile.getPhotonFileHeader().getAALevels()+")" : ""));
         me.layerZ.setText(String.format("Z: %.4f mm", fileLayer.getLayerPositionZ()));
         me.layerExposure.setText(String.format("Exposure: %.1fs", fileLayer.getLayerExposure()));
         me.layerOfftime.setText(String.format("Off Time: %.1fs", fileLayer.getLayerOffTime()));
@@ -177,7 +177,7 @@ public class BaseForm {
 
     public void playLayerInformation(int layer, int aaLevel, PhotonFileLayer fileLayer) {
         me.layerNo.setForeground(fileLayer.getIsLandsCount() > 0 ? Color.red : Color.black);
-        me.layerNo.setText("Layer " + layer + "/" + (me.photonFile.getLayerCount() - 1) + (me.photonFile.hasAA()?" AA("+aaLevel+"/"+me.photonFile.getPhotonFileHeader().getAALevels()+")" : ""));
+        me.layerNo.setText("Layer " + layer + "/" + (me.slicedFile.getLayerCount() - 1) + (me.slicedFile.hasAA()?" AA("+aaLevel+"/"+me.slicedFile.getPhotonFileHeader().getAALevels()+")" : ""));
         me.layerZ.setText(String.format("Z: %.4f mm", fileLayer.getLayerPositionZ()));
         me.layerExposure.setText(String.format("Exposure: %.1fs", fileLayer.getLayerExposure()));
         me.layerOfftime.setText(String.format("Off Time: %.1fs", fileLayer.getLayerOffTime()));
@@ -185,11 +185,11 @@ public class BaseForm {
 
     public void showFileInformation() {
         if (loadedFileName != null) {
-            String information = loadedFileName + " (" + photonFile.getInformation() + ")";
+            String information = loadedFileName + " (" + slicedFile.getInformation() + ")";
             me.zoomSlider.setValue(0);
-            ((PhotonLayerImage) me.layerImage).reScale(1, photonFile.getWidth(), photonFile.getHeight());
-            if (photonFile.getLayerCount() > 0) {
-                PhotonFileLayer fileLayer = photonFile.getLayer(0);
+            ((PhotonLayerImage) me.layerImage).reScale(1, slicedFile.getWidth(), slicedFile.getHeight());
+            if (slicedFile.getLayerCount() > 0) {
+                PhotonFileLayer fileLayer = slicedFile.getLayer(0);
                 if (fileLayer != null) {
                     Border border = BorderFactory.createEmptyBorder(0, 0, 0, 0);
 
@@ -201,22 +201,22 @@ public class BaseForm {
                     me.imageScrollPane.setBorder(border);
 
                     if (me.tabbedPane.getSelectedIndex()==1) {
-                        ((OnionPanel) me.render3D).drawLayer(0, fileLayer, photonFile, me.render3D.getHeight());
+                        ((OnionPanel) me.render3D).drawLayer(0, fileLayer, slicedFile, me.render3D.getHeight());
                     }
 
                     ScrollUtil.scrollTo(me.imageScrollPane, ScrollPosition.HorizontalCenter);
                     ScrollUtil.scrollTo(me.imageScrollPane, ScrollPosition.VerticalCenter);
 
-                    if (photonFile.getLayerCount() > 0) {
+                    if (slicedFile.getLayerCount() > 0) {
                         me.layerSlider.setEnabled(false);
                         me.layerSlider.setValue(0);
-                        me.layerSlider.setMaximum(photonFile.getLayerCount() - 1);
+                        me.layerSlider.setMaximum(slicedFile.getLayerCount() - 1);
 
                         me.layerSpinner.setEnabled(false);
                         me.layerSpinner.setValue(0);
                         SpinnerNumberModel spinnerNumberModel = (SpinnerNumberModel) me.layerSpinner.getModel();
                         spinnerNumberModel.setMinimum(0);
-                        spinnerNumberModel.setMaximum(photonFile.getLayerCount() - 1);
+                        spinnerNumberModel.setMaximum(slicedFile.getLayerCount() - 1);
                         me.layerSpinner.setEnabled(true);
                         me.layerSlider.setEnabled(true);
                         me.zoomSlider.setEnabled(true);
@@ -227,7 +227,7 @@ public class BaseForm {
                     }
 
 
-                    PhotonFilePreview preview = me.photonFile.getPreviewOne();
+                    PhotonFilePreview preview = me.slicedFile.getPreviewOne();
                     ((PhotonPreviewImage) me.previewLargePanel).reInit(preview.getResolutionX(), preview.getResolutionY());
                     ((PhotonPreviewImage) me.previewLargePanel).drawImage(preview);
                     me.tabbedPane.setEnabledAt(2, true);
@@ -237,7 +237,7 @@ public class BaseForm {
                     ScrollUtil.scrollTo(me.previewLargeScrollPane, ScrollPosition.HorizontalCenter);
                     ScrollUtil.scrollTo(me.previewLargeScrollPane, ScrollPosition.VerticalCenter);
 
-                    preview = me.photonFile.getPreviewTwo();
+                    preview = me.slicedFile.getPreviewTwo();
                     ((PhotonPreviewImage) me.previewSmallPanel).reInit(preview.getResolutionX(), preview.getResolutionY());
                     ((PhotonPreviewImage) me.previewSmallPanel).drawImage(preview);
                     me.tabbedPane.setEnabledAt(3, true);
@@ -255,16 +255,16 @@ public class BaseForm {
     }
 
     public void showMarginAndIslandInformation() {
-        boolean hasIslands = photonFile.getIslandLayerCount() > 0;
+        boolean hasIslands = slicedFile.getIslandLayerCount() > 0;
         me.layerInfo.setForeground(hasIslands ? Color.red : Color.decode("#006600"));
-        me.layerInfo.setText(photonFile.getLayerInformation());
+        me.layerInfo.setText(slicedFile.getLayerInformation());
         me.islandNextBtn.setEnabled(hasIslands);
         me.islandPrevBtn.setEnabled(hasIslands);
         me.fixBtn.setEnabled(hasIslands);
 
-        boolean hasMargins = photonFile.getMarginLayers().size() > 0;
+        boolean hasMargins = slicedFile.getMarginLayers().size() > 0;
         me.marginInfo.setForeground(hasMargins ? Color.red : Color.decode("#006600"));
-        me.marginInfo.setText(photonFile.getMarginInformation());
+        me.marginInfo.setText(slicedFile.getMarginInformation());
         me.marginNextBtn.setEnabled(hasMargins);
         me.marginPrevBtn.setEnabled(hasMargins);
     }
@@ -309,7 +309,7 @@ public class BaseForm {
     }
 
     protected void gotoNextLayer(ArrayList<Integer> layers) {
-        if (me.layerSpinner.isEnabled() && photonFile != null) {
+        if (me.layerSpinner.isEnabled() && slicedFile != null) {
             int currentLayer = (Integer) me.layerSpinner.getValue();
             Integer nextLayer = null;
             for (int i : layers) {
@@ -328,7 +328,7 @@ public class BaseForm {
     }
 
     protected void gotoPrevLayer(ArrayList<Integer> layers) {
-        if (me.layerSpinner.isEnabled() && photonFile != null) {
+        if (me.layerSpinner.isEnabled() && slicedFile != null) {
             int currentLayer = (Integer) me.layerSpinner.getValue();
             Integer nextLayer = null;
             for (int i : layers) {
@@ -350,7 +350,7 @@ public class BaseForm {
     public void viewLayerInfo() {
         if (me.layerSpinner.isEnabled()) {
             int layer = getLayer();
-            PhotonFileLayer fileLayer = photonFile.getLayer(layer);
+            PhotonFileLayer fileLayer = slicedFile.getLayer(layer);
             showLayerInformation(layer, fileLayer);
         }
     }
@@ -358,7 +358,7 @@ public class BaseForm {
     public void changeLayer() {
         if (me.layerSpinner.isEnabled()) {
             int layer = getLayer();
-            PhotonFileLayer fileLayer = photonFile.getLayer(layer);
+            PhotonFileLayer fileLayer = slicedFile.getLayer(layer);
             showLayerInformation(layer, fileLayer);
 
             if (me.tabbedPane.getSelectedIndex()==0) {
@@ -367,7 +367,7 @@ public class BaseForm {
             }
 
             if (me.tabbedPane.getSelectedIndex()==1) {
-                ((OnionPanel) me.render3D).drawLayer(layer, fileLayer, photonFile, me.render3D.getHeight());
+                ((OnionPanel) me.render3D).drawLayer(layer, fileLayer, slicedFile, me.render3D.getHeight());
             }
 
             me.layerSlider.setEnabled(false);
@@ -388,8 +388,8 @@ public class BaseForm {
     }
 
     public void calc() {
-        if (me.photonFile != null) {
-            ((PhotonLayerImage) me.layerImage).setMirrored(me.photonFile.getPhotonFileHeader().isMirrored());
+        if (me.slicedFile != null) {
+            ((PhotonLayerImage) me.layerImage).setMirrored(me.slicedFile.getPhotonFileHeader().isMirrored());
             calcWorker = new PhotonCalcWorker(me);
             calcWorker.execute();
         }
@@ -407,7 +407,7 @@ public class BaseForm {
             zoomFactor = 1f + (zoom / 4f);
         }
 
-        me.editDialog.setInformation(photonFile, getLayer(), (int) (x / zoomFactor), (int) (y / zoomFactor));
+        me.editDialog.setInformation(slicedFile, getLayer(), (int) (x / zoomFactor), (int) (y / zoomFactor));
         me.editDialog.setSize(new Dimension(800, 600));
         me.editDialog.setLocationRelativeTo(me.frame);
         me.editDialog.setVisible(true);
@@ -426,7 +426,7 @@ public class BaseForm {
             zoomFactor = 1f + (zoom / 4f);
         }
 
-        me.antiAliaseDialog.setInformation(photonFile, getLayer(), (int) (x / zoomFactor), (int) (y / zoomFactor));
+        me.antiAliaseDialog.setInformation(slicedFile, getLayer(), (int) (x / zoomFactor), (int) (y / zoomFactor));
         me.antiAliaseDialog.setSize(new Dimension(800, 600));
         me.antiAliaseDialog.setLocationRelativeTo(me.frame);
         me.antiAliaseDialog.setVisible(true);
@@ -435,16 +435,16 @@ public class BaseForm {
 
     public void removeAllIslands() {
         int layerNo = getLayer();
-        PhotonFileLayer fileLayer = photonFile.getLayer(layerNo);
+        PhotonFileLayer fileLayer = slicedFile.getLayer(layerNo);
         PhotonLayer layer = fileLayer.getLayer();
 
         if (layer.removeIslands() > 0) {
             try {
                 fileLayer.saveLayer(layer);
-                photonFile.calculate(layerNo);
+                slicedFile.calculate(layerNo);
 
-                if (layerNo < photonFile.getLayerCount() - 1) {
-                    photonFile.calculate(layerNo + 1);
+                if (layerNo < slicedFile.getLayerCount() - 1) {
+                    slicedFile.calculate(layerNo + 1);
                 }
             } catch (Exception e) {
                 System.out.println(e.getMessage());

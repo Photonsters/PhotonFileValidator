@@ -27,6 +27,7 @@ package photon.application.utilities;
 import photon.application.MainForm;
 import photon.application.dialogs.FixDialog;
 import photon.file.PhotonFile;
+import photon.file.SlicedFile;
 import photon.file.parts.IPhotonProgress;
 
 import javax.swing.*;
@@ -36,10 +37,10 @@ import javax.swing.*;
  */
 public class PhotonFixAllWorker extends SwingWorker<Integer, String> implements IPhotonProgress {
     private FixDialog fixDialog;
-    private PhotonFile photonFile;
+    private SlicedFile photonFile;
     private MainForm mainForm;
 
-    public PhotonFixAllWorker(FixDialog fixDialog, PhotonFile photonFile, MainForm mainForm) {
+    public PhotonFixAllWorker(FixDialog fixDialog, SlicedFile photonFile, MainForm mainForm) {
         this.fixDialog = fixDialog;
         this.photonFile = photonFile;
         this.mainForm = mainForm;

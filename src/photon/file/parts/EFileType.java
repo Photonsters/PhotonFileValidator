@@ -4,10 +4,11 @@ package photon.file.parts;
  * Enumeration of possible file types.
  */
 public enum EFileType {
-    Photon("photon"),
-    Cbddlp("cbddlp"),
-    PhotonS("photons"),
-    Sl1("sl1");
+    Photon("photon"), // original photon
+    Cbddlp("cbddlp"), // same as photon, used by other printers
+    PhotonS("photons"), // photon S / later photon fWs
+    Sl1("sl1"), // Prusa SL1 format
+    Zip("zip"); // Chitubox zip format
 
     private String extension;
 

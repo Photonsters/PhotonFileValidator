@@ -26,6 +26,7 @@ package photon.application.utilities;
 
 import photon.application.MainForm;
 import photon.file.PhotonFile;
+import photon.file.SlicedFile;
 import photon.file.parts.IPhotonProgress;
 
 import javax.swing.*;
@@ -72,7 +73,7 @@ public class PhotonLoadWorker extends SwingWorker<Integer, String> implements IP
     @Override
     protected void done() {
         // mainForm.openBtn.setEnabled(true);
-        if (mainForm.photonFile!=null) {
+        if (mainForm.slicedFile !=null) {
             mainForm.openBtn.setEnabled(true);
             mainForm.saveBtn.setEnabled(true);
             mainForm.informationBtn.setEnabled(true);
@@ -81,7 +82,7 @@ public class PhotonLoadWorker extends SwingWorker<Integer, String> implements IP
             mainForm.showFileInformation();
             mainForm.calc();
             mainForm.playButton.setEnabled(true);
-            if (mainForm.photonFile.getVersion()>1) {
+            if (mainForm.slicedFile.getVersion()>1) {
                 mainForm.convertBtn.setEnabled(true);
             }
         }
@@ -91,12 +92,10 @@ public class PhotonLoadWorker extends SwingWorker<Integer, String> implements IP
     protected Integer doInBackground() throws Exception {
         publish("Loading file...");
         try {
-            mainForm.photonFile = new PhotonFile();
-            mainForm.photonFile.setMargin(mainForm.margin);
-            mainForm.photonFile.readFile(file, this);
+            mainForm.slicedFile = SlicedFile.readFile(file, this, mainForm.margin);
             publish("Complete...");
         } catch (Exception e) {
-            mainForm.photonFile = null;
+            mainForm.slicedFile = null;
             mainForm.marginInfo.setForeground(Color.red);
             mainForm.marginInfo.setText("Could not read the file, file is corrupted or in an unsupported format.");
             return 0;

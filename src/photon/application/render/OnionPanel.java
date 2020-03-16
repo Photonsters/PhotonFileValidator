@@ -30,6 +30,7 @@ import photon.application.render.storage.RotationBaseMatrix;
 import photon.application.render.elements.BaseElement;
 import photon.application.render.elements.World;
 import photon.file.PhotonFile;
+import photon.file.SlicedFile;
 import photon.file.parts.PhotonFileLayer;
 import photon.file.parts.PhotonLayer;
 
@@ -76,7 +77,7 @@ public class OnionPanel extends JPanel {
 
     private static final int MAX_SHOW =  500;
 
-    public void drawLayer(int layerNo, PhotonFileLayer fileLayer, PhotonFile photonFile, int screenHeight) {
+    public void drawLayer(int layerNo, PhotonFileLayer fileLayer, SlicedFile photonFile, int screenHeight) {
         double scaleFactor = screenHeight * 1f / (photonFile.getHeight() * 2.6f);
 
         world.clear();

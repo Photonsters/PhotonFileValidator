@@ -32,6 +32,7 @@ import photon.application.utilities.PhotonFixAllWorker;
 import photon.application.utilities.PhotonFixWorker;
 import photon.application.utilities.PhotonRemoveAllIslandsWorker;
 import photon.file.PhotonFile;
+import photon.file.SlicedFile;
 import photon.file.parts.PhotonFileLayer;
 
 import javax.swing.*;
@@ -50,7 +51,7 @@ public class FixDialog extends JDialog {
 
     private FixDialog me;
     private MainForm mainForm;
-    private PhotonFile photonFile;
+    private SlicedFile photonFile;
     private StringBuilder information;
 
     public FixDialog(final MainForm mainForm) {
@@ -74,7 +75,7 @@ public class FixDialog extends JDialog {
                 fixAllButton.setEnabled(false);
                 removeUnsupportedButton.setEnabled(false);
                 buttonOK.setEnabled(false);
-                PhotonFixWorker photonFixWorker = new PhotonFixWorker(me, mainForm.photonFile, mainForm);
+                PhotonFixWorker photonFixWorker = new PhotonFixWorker(me, mainForm.slicedFile, mainForm);
                 photonFixWorker.execute();
             }
         });
@@ -85,7 +86,7 @@ public class FixDialog extends JDialog {
                 fixAllButton.setEnabled(false);
                 removeUnsupportedButton.setEnabled(false);
                 buttonOK.setEnabled(false);
-                PhotonFixAllWorker photonFixWorker = new PhotonFixAllWorker(me, mainForm.photonFile, mainForm);
+                PhotonFixAllWorker photonFixWorker = new PhotonFixAllWorker(me, mainForm.slicedFile, mainForm);
                 photonFixWorker.execute();
             }
         });
@@ -96,7 +97,7 @@ public class FixDialog extends JDialog {
                 fixAllButton.setEnabled(false);
                 removeUnsupportedButton.setEnabled(false);
                 buttonOK.setEnabled(false);
-                PhotonRemoveAllIslandsWorker photonFixWorker = new PhotonRemoveAllIslandsWorker(me, mainForm.photonFile, mainForm);
+                PhotonRemoveAllIslandsWorker photonFixWorker = new PhotonRemoveAllIslandsWorker(me, mainForm.slicedFile, mainForm);
                 photonFixWorker.execute();
             }
         });
@@ -115,7 +116,7 @@ public class FixDialog extends JDialog {
         dispose();
     }
 
-    public void setInformation(PhotonFile photonFile) {
+    public void setInformation(SlicedFile photonFile) {
         information = null;
         this.photonFile = photonFile;
         setTitle("Fix pixels errors");

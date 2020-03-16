@@ -29,6 +29,7 @@ import com.intellij.uiDesigner.core.GridLayoutManager;
 import com.intellij.uiDesigner.core.Spacer;
 import photon.application.MainForm;
 import photon.file.PhotonFile;
+import photon.file.SlicedFile;
 import photon.file.parts.IFileHeader;
 import photon.file.parts.photon.PhotonFileHeader;
 import photon.file.parts.PhotonFilePrintParameters;
@@ -67,7 +68,7 @@ public class SaveDialog extends JDialog {
     private JLabel lightOffDelayLabel;
 
     private MainForm mainForm;
-    private PhotonFile photonFile;
+    private SlicedFile photonFile;
     private String path;
 
     public SaveDialog(MainForm mainForm) {
@@ -170,7 +171,7 @@ public class SaveDialog extends JDialog {
         dispose();
     }
 
-    public void setInformation(PhotonFile photonFile, String path, String name) {
+    public void setInformation(SlicedFile photonFile, String path, String name) {
         this.photonFile = photonFile;
         this.path = path;
         if (name.toLowerCase().endsWith(".photon")) {

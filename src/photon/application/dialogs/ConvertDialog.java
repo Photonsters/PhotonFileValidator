@@ -30,6 +30,7 @@ import com.intellij.uiDesigner.core.Spacer;
 import photon.application.MainForm;
 import photon.application.utilities.PhotonAaWorker;
 import photon.file.PhotonFile;
+import photon.file.SlicedFile;
 import photon.file.parts.PhotonAaMatrix;
 import photon.file.ui.PhotonAALevel;
 import photon.file.ui.PhotonAaPanel;
@@ -199,7 +200,7 @@ public class ConvertDialog extends JDialog {
         dispose();
     }
 
-    public void setInformation(PhotonFile photonFile) {
+    public void setInformation(SlicedFile photonFile) {
 
         aaLevel.setValue(PhotonAALevel.findByLevel(photonFile.getAALevels()).index);
         setMatrix(gb3);
