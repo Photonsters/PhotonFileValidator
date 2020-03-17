@@ -24,6 +24,9 @@
 
 package photon.application;
 
+import com.intellij.uiDesigner.core.GridConstraints;
+import com.intellij.uiDesigner.core.GridLayoutManager;
+import com.intellij.uiDesigner.core.Spacer;
 import photon.application.base.BaseForm;
 import photon.application.base.BaseFrame;
 import photon.application.dialogs.*;
@@ -467,7 +470,5 @@ public class MainForm extends BaseForm implements ActionListener, ItemListener {
     /**
      * @noinspection ALL
      */
-    public JComponent $$$getRootComponent$$$() {
-        return mainPanel;
-    }
+    public JComponent $$$getRootComponent$$$() { return mainPanel; }
 }
