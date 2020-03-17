@@ -226,24 +226,24 @@ public class BaseForm {
                         me.zoomSlider.setEnabled(false);
                     }
 
+                    if(me.slicedFile.hasPreviews()) {
+                        PhotonFilePreview preview = me.slicedFile.getPreviewOne();
+                        ((PhotonPreviewImage) me.previewLargePanel).reInit(preview.getResolutionX(), preview.getResolutionY());
+                        ((PhotonPreviewImage) me.previewLargePanel).drawImage(preview);
+                        me.tabbedPane.setEnabledAt(2, true);
+                        me.previewLargeScrollPane.setBorder(border);
+                        me.previewLargeScrollPane.setBackground(Color.decode("#ececec"));
 
-                    PhotonFilePreview preview = me.slicedFile.getPreviewOne();
-                    ((PhotonPreviewImage) me.previewLargePanel).reInit(preview.getResolutionX(), preview.getResolutionY());
-                    ((PhotonPreviewImage) me.previewLargePanel).drawImage(preview);
-                    me.tabbedPane.setEnabledAt(2, true);
-                    me.previewLargeScrollPane.setBorder(border);
-                    me.previewLargeScrollPane.setBackground(Color.decode("#ececec"));
+                        ScrollUtil.scrollTo(me.previewLargeScrollPane, ScrollPosition.HorizontalCenter);
+                        ScrollUtil.scrollTo(me.previewLargeScrollPane, ScrollPosition.VerticalCenter);
 
-                    ScrollUtil.scrollTo(me.previewLargeScrollPane, ScrollPosition.HorizontalCenter);
-                    ScrollUtil.scrollTo(me.previewLargeScrollPane, ScrollPosition.VerticalCenter);
-
-                    preview = me.slicedFile.getPreviewTwo();
-                    ((PhotonPreviewImage) me.previewSmallPanel).reInit(preview.getResolutionX(), preview.getResolutionY());
-                    ((PhotonPreviewImage) me.previewSmallPanel).drawImage(preview);
-                    me.tabbedPane.setEnabledAt(3, true);
-                    me.previewSmallScrollPane.setBorder(border);
-                    me.previewSmallScrollPane.setBackground(Color.decode("#ececec"));
-
+                        preview = me.slicedFile.getPreviewTwo();
+                        ((PhotonPreviewImage) me.previewSmallPanel).reInit(preview.getResolutionX(), preview.getResolutionY());
+                        ((PhotonPreviewImage) me.previewSmallPanel).drawImage(preview);
+                        me.tabbedPane.setEnabledAt(3, true);
+                        me.previewSmallScrollPane.setBorder(border);
+                        me.previewSmallScrollPane.setBackground(Color.decode("#ececec"));
+                    }
                     me.layerSpinner.requestFocus();
                 }
             }

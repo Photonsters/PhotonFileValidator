@@ -54,7 +54,12 @@ public class PhotonFileLayer {
     private ArrayList<PhotonFileLayer> antiAliasLayers = new ArrayList<>();
 
     private boolean extendsMargin;
-    private PhotonFileHeader photonFileHeader;
+
+    public void setFileHeader(IFileHeader fileHeader) {
+        this.photonFileHeader = fileHeader;
+    }
+
+    private IFileHeader photonFileHeader;
     public boolean isCalculated;
 
     private PhotonFileLayer(PhotonInputStream ds) throws Exception {
@@ -69,6 +74,10 @@ public class PhotonFileLayer {
         unknown2 = ds.readInt();
         unknown3 = ds.readInt();
         unknown4 = ds.readInt();
+    }
+
+    public PhotonFileLayer() {
+        // blank constructor for filling in later.
     }
 
     public PhotonFileLayer(PhotonFileLayer photonFileLayer, PhotonFileHeader photonFileHeader) {

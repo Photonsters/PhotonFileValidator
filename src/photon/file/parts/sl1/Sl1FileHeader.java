@@ -126,12 +126,12 @@ public class Sl1FileHeader implements IFileHeader {
 
     @Override
     public int getResolutionY() {
-        return 0;
+        return resolutionY;
     }
 
     @Override
     public int getResolutionX() {
-        return 0;
+        return resolutionX;
     }
 
     @Override

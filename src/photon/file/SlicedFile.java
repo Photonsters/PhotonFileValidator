@@ -99,6 +99,12 @@ public abstract class SlicedFile {
      */
     abstract public void fromSlicedFile(SlicedFile input);
 
+    /**
+     * Whether this sliced file has associated preview images
+     * @return true iff it has previews.
+     */
+    abstract public boolean hasPreviews();
+
     public void saveFile(File file) throws Exception {
         FileOutputStream fileOutputStream = new FileOutputStream(file);
         writeFile(fileOutputStream);

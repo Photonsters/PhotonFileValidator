@@ -77,8 +77,10 @@ public class PhotonLoadWorker extends SwingWorker<Integer, String> implements IP
             mainForm.openBtn.setEnabled(true);
             mainForm.saveBtn.setEnabled(true);
             mainForm.informationBtn.setEnabled(true);
-            mainForm.tabPreviewLarge.setEnabled(true);
-            mainForm.tabPreviewSmall.setEnabled(true);
+            if( mainForm.slicedFile.hasPreviews()) {
+                mainForm.tabPreviewLarge.setEnabled(true);
+                mainForm.tabPreviewSmall.setEnabled(true);
+            }
             mainForm.showFileInformation();
             mainForm.calc();
             mainForm.playButton.setEnabled(true);
