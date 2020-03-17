@@ -398,16 +398,16 @@ public abstract class SlicedFile {
     }
 
     public void calculateAaLayers(IPhotonProgress progres, PhotonAaMatrix photonAaMatrix) throws Exception {
-        PhotonFileLayer.calculateAALayers((PhotonFileHeader) iFileHeader, layers, photonAaMatrix, progres);
+        PhotonFileLayer.calculateAALayers(iFileHeader, layers, photonAaMatrix, progres);
     }
 
     public void calculate(IPhotonProgress progres) throws Exception {
-        PhotonFileLayer.calculateLayers((PhotonFileHeader)iFileHeader, layers, margin, progres);
+        PhotonFileLayer.calculateLayers(iFileHeader, layers, margin, progres);
         resetMarginAndIslandInfo();
     }
 
     public void calculate(int layerNo) throws Exception {
-        PhotonFileLayer.calculateLayers((PhotonFileHeader)iFileHeader, layers, margin, layerNo);
+        PhotonFileLayer.calculateLayers(iFileHeader, layers, margin, layerNo);
         resetMarginAndIslandInfo();
     }
 

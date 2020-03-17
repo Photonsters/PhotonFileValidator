@@ -265,7 +265,7 @@ public class PhotonFileLayer {
         antiAliasLayers.add(layer);
     }
 
-    public static void calculateAALayers(PhotonFileHeader photonFileHeader, List<PhotonFileLayer> layers, PhotonAaMatrix photonAaMatrix, IPhotonProgress iPhotonProgress) throws Exception {
+    public static void calculateAALayers(IFileHeader photonFileHeader, List<PhotonFileLayer> layers, PhotonAaMatrix photonAaMatrix, IPhotonProgress iPhotonProgress) throws Exception {
         PhotonLayer photonLayer = new PhotonLayer(photonFileHeader.getResolutionX(), photonFileHeader.getResolutionY());
         int[][] source = new int[photonFileHeader.getResolutionY()][photonFileHeader.getResolutionX()];
 
@@ -296,7 +296,7 @@ public class PhotonFileLayer {
             // Calc
             int[][] target = photonAaMatrix.calc(source);
 
-            int aaTresholdDiff = 255 / photonFileHeader.getAntiAliasingLevel();
+            int aaTresholdDiff = 255 / photonFileHeader.getAALevels();
             int aaTreshold = 0;
             for (PhotonFileLayer aaFileLayer : layer.antiAliasLayers) {
                 photonLayer.clear();
@@ -320,7 +320,7 @@ public class PhotonFileLayer {
 
     }
 
-    public static void calculateLayers(PhotonFileHeader photonFileHeader, List<PhotonFileLayer> layers, int margin, IPhotonProgress iPhotonProgress) throws Exception {
+    public static void calculateLayers(IFileHeader photonFileHeader, List<PhotonFileLayer> layers, int margin, IPhotonProgress iPhotonProgress) throws Exception {
         PhotonLayer photonLayer = new PhotonLayer(photonFileHeader.getResolutionX(), photonFileHeader.getResolutionY());
         ArrayList<BitSet> previousUnpackedImage = null;
         int i = 0;
@@ -361,7 +361,7 @@ public class PhotonFileLayer {
         System.gc();
     }
 
-    public static void calculateLayers(PhotonFileHeader photonFileHeader, List<PhotonFileLayer> layers, int margin, int layerNo) throws Exception {
+    public static void calculateLayers(IFileHeader photonFileHeader, List<PhotonFileLayer> layers, int margin, int layerNo) throws Exception {
         PhotonLayer photonLayer = new PhotonLayer(photonFileHeader.getResolutionX(), photonFileHeader.getResolutionY());
         ArrayList<BitSet> previousUnpackedImage = null;
 

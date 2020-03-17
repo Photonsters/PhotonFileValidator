@@ -211,7 +211,7 @@ public class Sl1FileHeader implements IFileHeader {
 
     @Override
     public int getAALevels() {
-        return 0;
+        return 1;
     }
 
     @Override
