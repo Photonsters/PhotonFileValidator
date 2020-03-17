@@ -75,7 +75,7 @@ public class PhotonAaWorker extends SwingWorker<Integer, String> implements IPho
             mainForm.photonFile.setAALevels(aaLevels);
             mainForm.photonFile.calculateAaLayers(this, photonAaMatrix);
             publish("AA Calculation Complete...");
-            if (mainForm.photonFile !=null) {
+            if (mainForm.photonFile!=null) {
                 mainForm.viewLayerInfo();;
             }
         } catch (Exception e) {

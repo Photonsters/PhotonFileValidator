@@ -53,7 +53,7 @@ public class PhotonCalcWorker extends SwingWorker<Integer, String> implements IP
     @Override
     protected void done() {
         mainForm.openBtn.setEnabled(true);
-        if (mainForm.photonFile !=null) {
+        if (mainForm.photonFile!=null) {
             mainForm.showFileInformation();
         }
     }

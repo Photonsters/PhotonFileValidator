@@ -72,7 +72,7 @@ public class PhotonLoadWorker extends SwingWorker<Integer, String> implements IP
     @Override
     protected void done() {
         // mainForm.openBtn.setEnabled(true);
-        if (mainForm.photonFile !=null) {
+        if (mainForm.photonFile!=null) {
             mainForm.openBtn.setEnabled(true);
             mainForm.saveBtn.setEnabled(true);
             mainForm.informationBtn.setEnabled(true);

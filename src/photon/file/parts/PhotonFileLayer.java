@@ -296,6 +296,7 @@ public class PhotonFileLayer {
             // Calc
             int[][] target = photonAaMatrix.calc(source);
 
+            // TODO:: Ensure this is at least 1 / that we are running on a file which supports AA
             int aaTresholdDiff = 255 / photonFileHeader.getAALevels();
             int aaTreshold = 0;
             for (PhotonFileLayer aaFileLayer : layer.antiAliasLayers) {
