@@ -124,28 +124,28 @@ public class MainForm extends BaseForm implements ActionListener, ItemListener {
         islandNextBtn.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                gotoNextLayer(slicedFile.getIslandLayers());
+                gotoNextLayer(photonFile.getIslandLayers());
             }
         });
 
         islandPrevBtn.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                gotoPrevLayer(slicedFile.getIslandLayers());
+                gotoPrevLayer(photonFile.getIslandLayers());
             }
         });
 
         marginNextBtn.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                gotoNextLayer(slicedFile.getMarginLayers());
+                gotoNextLayer(photonFile.getMarginLayers());
             }
         });
 
         marginPrevBtn.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                gotoPrevLayer(slicedFile.getMarginLayers());
+                gotoPrevLayer(photonFile.getMarginLayers());
             }
         });
 
@@ -184,11 +184,11 @@ public class MainForm extends BaseForm implements ActionListener, ItemListener {
                 if (newZoom != zoom) {
                     zoom = newZoom;
                     if (zoom == 0) {
-                        ((PhotonLayerImage) layerImage).reScale(1, slicedFile.getWidth(), slicedFile.getHeight());
+                        ((PhotonLayerImage) layerImage).reScale(1, photonFile.getWidth(), photonFile.getHeight());
                     } else if (zoom > 0) {
-                        ((PhotonLayerImage) layerImage).reScale(1f + (zoom / 2f), slicedFile.getWidth(), slicedFile.getHeight());
+                        ((PhotonLayerImage) layerImage).reScale(1f + (zoom / 2f), photonFile.getWidth(), photonFile.getHeight());
                     } else {
-                        ((PhotonLayerImage) layerImage).reScale(1f + (zoom / 4f), slicedFile.getWidth(), slicedFile.getHeight());
+                        ((PhotonLayerImage) layerImage).reScale(1f + (zoom / 4f), photonFile.getWidth(), photonFile.getHeight());
                     }
                     changeLayer();
                     ScrollUtil.scrollTo(me.imageScrollPane, ScrollPosition.HorizontalCenter);
@@ -210,7 +210,7 @@ public class MainForm extends BaseForm implements ActionListener, ItemListener {
         layerImage.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                if (slicedFile != null) {
+                if (photonFile != null) {
                     if (e.isShiftDown()) {
                         showAA(e.getX(), e.getY());
                     } else if (e.isAltDown()) {
@@ -240,7 +240,7 @@ public class MainForm extends BaseForm implements ActionListener, ItemListener {
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        if (slicedFile != null) {
+        if (photonFile != null) {
             switch (e.getActionCommand()) {
                 case MainUtils.PRINT_MENU:
                     showPrint();
@@ -467,6 +467,7 @@ public class MainForm extends BaseForm implements ActionListener, ItemListener {
     /**
      * @noinspection ALL
      */
-    public JComponent $$$getRootComponent$$$() { return mainPanel; }
-
+    public JComponent $$$getRootComponent$$$() {
+        return mainPanel;
+    }
 }

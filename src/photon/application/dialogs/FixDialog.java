@@ -75,7 +75,7 @@ public class FixDialog extends JDialog {
                 fixAllButton.setEnabled(false);
                 removeUnsupportedButton.setEnabled(false);
                 buttonOK.setEnabled(false);
-                PhotonFixWorker photonFixWorker = new PhotonFixWorker(me, mainForm.slicedFile, mainForm);
+                PhotonFixWorker photonFixWorker = new PhotonFixWorker(me, mainForm.photonFile, mainForm);
                 photonFixWorker.execute();
             }
         });
@@ -86,7 +86,7 @@ public class FixDialog extends JDialog {
                 fixAllButton.setEnabled(false);
                 removeUnsupportedButton.setEnabled(false);
                 buttonOK.setEnabled(false);
-                PhotonFixAllWorker photonFixWorker = new PhotonFixAllWorker(me, mainForm.slicedFile, mainForm);
+                PhotonFixAllWorker photonFixWorker = new PhotonFixAllWorker(me, mainForm.photonFile, mainForm);
                 photonFixWorker.execute();
             }
         });
@@ -97,7 +97,7 @@ public class FixDialog extends JDialog {
                 fixAllButton.setEnabled(false);
                 removeUnsupportedButton.setEnabled(false);
                 buttonOK.setEnabled(false);
-                PhotonRemoveAllIslandsWorker photonFixWorker = new PhotonRemoveAllIslandsWorker(me, mainForm.slicedFile, mainForm);
+                PhotonRemoveAllIslandsWorker photonFixWorker = new PhotonRemoveAllIslandsWorker(me, mainForm.photonFile, mainForm);
                 photonFixWorker.execute();
             }
         });

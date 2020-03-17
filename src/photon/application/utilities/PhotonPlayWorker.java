@@ -25,7 +25,6 @@
 package photon.application.utilities;
 
 import photon.application.MainForm;
-import photon.file.PhotonFile;
 import photon.file.SlicedFile;
 import photon.file.parts.IPhotonProgress;
 import photon.file.parts.PhotonFileLayer;
@@ -65,7 +64,7 @@ public class PhotonPlayWorker extends SwingWorker<Integer, String> implements IP
         mainForm.playButton.setEnabled(true);
         mainForm.playButton.setText("Play");
         mainForm.playing = false;
-        if (mainForm.slicedFile != null) {
+        if (mainForm.photonFile != null) {
             mainForm.viewLayerInfo();;
         }
     }
@@ -73,7 +72,7 @@ public class PhotonPlayWorker extends SwingWorker<Integer, String> implements IP
     @Override
     protected Integer doInBackground() throws Exception {
         try {
-            SlicedFile photonFile = mainForm.slicedFile;
+            SlicedFile photonFile = mainForm.photonFile;
 
             int totalLayers = photonFile.getLayerCount() * photonFile.getAALevels();
 

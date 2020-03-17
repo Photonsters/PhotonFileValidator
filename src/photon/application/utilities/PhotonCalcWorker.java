@@ -53,7 +53,7 @@ public class PhotonCalcWorker extends SwingWorker<Integer, String> implements IP
     @Override
     protected void done() {
         mainForm.openBtn.setEnabled(true);
-        if (mainForm.slicedFile !=null) {
+        if (mainForm.photonFile !=null) {
             mainForm.showFileInformation();
         }
     }
@@ -62,8 +62,8 @@ public class PhotonCalcWorker extends SwingWorker<Integer, String> implements IP
     protected Integer doInBackground() throws Exception {
         publish("Calculating layers...");
         try {
-            mainForm.slicedFile.setMargin(mainForm.margin);
-            mainForm.slicedFile.calculate(this);
+            mainForm.photonFile.setMargin(mainForm.margin);
+            mainForm.photonFile.calculate(this);
             publish("Calculation Complete...");
         } catch (Exception e) {
             mainForm.marginInfo.setForeground(Color.red);
