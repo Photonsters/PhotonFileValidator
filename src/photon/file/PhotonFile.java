@@ -24,12 +24,10 @@
 
 package photon.file;
 
-import photon.file.parts.IPhotonProgress;
-import photon.file.parts.PhotonFileLayer;
-import photon.file.parts.PhotonFilePreview;
-import photon.file.parts.PhotonOutputStream;
+import photon.file.parts.*;
 import photon.file.parts.photon.PhotonFileHeader;
 
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.OutputStream;
 
@@ -37,6 +35,12 @@ import java.io.OutputStream;
  * by bn on 30/06/2018.
  */
 public class PhotonFile extends SlicedFile{
+    // Dimensions of the preview images on a photon.
+    // While I don't know they _have_ to be this, it doesn't hurt to make them this.
+    final static int PREVIEW_LARGE_X = 400;
+    final static int PREVIEW_LARGE_Y = 300;
+    final static int PREVIEW_SMALL_X = 200;
+    final static int PREVIEW_SMALL_Y = 125;
 
     public PhotonFile readFromFile(File file, IPhotonProgress iPhotonProgress) throws Exception {
         byte[] fileData = getBinaryData(file);
@@ -132,13 +136,32 @@ public class PhotonFile extends SlicedFile{
     }
 
     @Override
-    public void fromSlicedFile(SlicedFile input) {
-        throw new UnsupportedOperationException("Not yet implemented");
+    public SlicedFile fromSlicedFile(SlicedFile input) {
+        iFileHeader = new PhotonFileHeader(input.iFileHeader);
+        if( input.hasPreviews() ) {
+            previewOne = input.previewOne;
+            previewTwo = input.previewTwo;
+        } else {
+            // need to fake them.
+
+        }
+        layers = input.layers;
+        islandList = input.islandList;
+        islandLayerCount = input.islandLayerCount;
+        islandLayers = input.islandLayers;
+        margin = input.margin;
+        marginLayers = input.marginLayers;
+        return this;
     }
 
     @Override
     public boolean hasPreviews() {
         return true;
+    }
+
+    @Override
+    public EFileType getType() {
+        return EFileType.Photon;
     }
 }
 

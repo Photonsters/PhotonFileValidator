@@ -1,5 +1,6 @@
 package photon.file;
 
+import photon.file.parts.EFileType;
 import photon.file.parts.IPhotonProgress;
 import photon.file.parts.PhotonFileLayer;
 import photon.file.parts.PhotonLayer;
@@ -31,9 +32,6 @@ public class Sl1File extends SlicedFile{
 
         iFileHeader = header;
 
-        // TODO:: Fake a preview
-        // TODO:: Fake a small preview
-        // TODO:: create parameters object
         iPhotonProgress.showInfo("Reading sl1 layers information...");
 
         // Extract and parse the first layer so we know the dimensions we are dealing with.
@@ -110,12 +108,17 @@ public class Sl1File extends SlicedFile{
     }
 
     @Override
-    public void fromSlicedFile(SlicedFile input) {
+    public SlicedFile fromSlicedFile(SlicedFile input) {
         throw new UnsupportedOperationException("Not yet implemented");
     }
 
     @Override
     public boolean hasPreviews() {
         return false;
+    }
+
+    @Override
+    public EFileType getType() {
+        return EFileType.Sl1;
     }
 }

@@ -25,7 +25,6 @@
 package photon.file;
 
 import photon.file.parts.*;
-import photon.file.parts.photon.PhotonFileHeader;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -96,14 +95,21 @@ public abstract class SlicedFile {
     /**
      * Convert from one file type to another.
      * @param input to convert from.
+     * @return self (for builder pattern)
      */
-    abstract public void fromSlicedFile(SlicedFile input);
+    abstract public SlicedFile fromSlicedFile(SlicedFile input);
 
     /**
      * Whether this sliced file has associated preview images
      * @return true iff it has previews.
      */
     abstract public boolean hasPreviews();
+
+    /**
+     * What type of sliced file this is
+     * @return the type of file this is.
+     */
+    public abstract EFileType getType();
 
     public void saveFile(File file) throws Exception {
         FileOutputStream fileOutputStream = new FileOutputStream(file);

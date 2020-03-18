@@ -31,6 +31,10 @@ import java.util.Arrays;
  * by bn on 01/07/2018.
  */
 public class PhotonFilePreview {
+    //private static final Logger LOGGER = Logger.getLogger(PhotonFilePreview.class.getName());
+    private static final int MAX_RUN_LENGTH = 4095;
+    private static final int MAX_RUN_BYTE1 = -2;
+    private static final int MAX_RUN_BYTE2 = 63;
     private int resolutionX;
     private int resolutionY;
     private int imageAddress;
@@ -45,10 +49,20 @@ public class PhotonFilePreview {
     private int p3;
     private int p4;
 
+    /*
+    static public void setupLogging() throws IOException {
+        if( logging_setup ) return;
+        LOGGER.setLevel(Level.INFO);
+        FileHandler fh = new FileHandler("output.log");
+        SimpleFormatter sf = new SimpleFormatter();
+        fh.setFormatter(sf);
+        LOGGER.addHandler(fh);
+        logging_setup = true;
+    }*/
+
     public PhotonFilePreview(int previewAddress, byte[] file) throws Exception {
         byte[] data = Arrays.copyOfRange(file, previewAddress, previewAddress + 32);
         PhotonInputStream ds = new PhotonInputStream(new ByteArrayInputStream(data));
-
         resolutionX = ds.readInt();
         resolutionY = ds.readInt();
         imageAddress = ds.readInt();
@@ -59,7 +73,6 @@ public class PhotonFilePreview {
         p4 = ds.readInt();
 
         rawImageData = Arrays.copyOfRange(file, imageAddress, imageAddress + dataSize);
-
         decodeImageData();
     }
 
@@ -96,12 +109,102 @@ public class PhotonFilePreview {
             if ((dot & 0x0020) == 0x0020) {
                 repeat += rawImageData[++i] & 0xFF | ((rawImageData[++i] & 0x0F) << 8);
             }
-
             while (repeat > 0) {
-                imageData[d++] = color;
+                try {
+                    imageData[d++] = color;
+                } catch (ArrayIndexOutOfBoundsException e) {
+                    throw new IllegalArgumentException("moo");
+                }
                 repeat--;
             }
         }
+    }
+
+    /**
+     * Calculates a RLE block to add to a preview
+     * @param colour The colour to add in standard 8bit RGB
+     * @param run_Length how many pixels of this colour to add
+     * @param index the index into the byte array of where to add the first value
+     * @param output the byte array to write to
+     * @return the index of the next pixel in the byte array.
+     */
+    private int addRun(int colour, int run_Length, int index, byte[] output) {
+        // scheme is as follows: (yes, 5bit colour)
+        // RRRRRGGGGGXBBBBB
+        // If X is high, then next word is a run length with a max of 4094, stored like this:
+        // 56789ABC....1234
+        // If X is low, this is a single pixel.
+        int blue = (colour & 0xF8) >> 3;
+        int green = (colour & 0xF800 ) >> 5;
+        int red = (colour & 0xF80000 ) >> 8;
+        int dot = red | green | blue| (run_Length > 2 ? 0x20 : 0);
+        byte dotL = (byte)(dot & 0xFF);
+        byte dotR = (byte)((dot & 0xFF00) >> 8);
+
+        if( run_Length == 1 ) {
+            // just one
+            output[index++] = dotL;
+            output[index++] = dotR;
+            return index;
+        }
+
+        if( run_Length == 2) {
+            // weird edge case time! the photon doesn't bother doing RLE for runs of 2
+            // it just outputs two runs of 1. idk why either.
+            output[index++] = dotL;
+            output[index++] = dotR;
+            output[index++] = dotL;
+            output[index++] = dotR;
+            return index;
+        }
+
+        // as we have already implicitly got 1 in the colour word.
+        run_Length--;
+        int full_runs = run_Length / MAX_RUN_LENGTH;
+        int remainder = run_Length % MAX_RUN_LENGTH;
+        for(int i=0; i<full_runs; i++ ) {
+            output[index++] = dotL;
+            output[index++] = dotR;
+            output[index++] = MAX_RUN_BYTE1;
+            output[index++] = MAX_RUN_BYTE2;
+        }
+        if( remainder == 0 ) {
+            // all done
+            return index;
+        }
+        if( remainder == 1 ) {
+            //edge case
+            dotR ^= 0x20;
+        }
+        output[index++] = dotL;
+        output[index++] = dotR;
+        output[index++] = (byte) ((remainder & 0xFF));
+        output[index++] = (byte) ((remainder & 0xF00) >> 8);
+
+        return index;
+    }
+
+    private void encodeImageData() {
+        // allocate for worst case scenario up front - 1 word per pixel
+        byte[] result = new byte[2*resolutionX * resolutionY];
+        int index = 0;
+        int cur_pixel = imageData[0];
+        int repeat = 1;
+        // Genuinely start from 1 as we have set up above.
+        for(int i = 1; i<imageData.length; i++) {
+            if(imageData[i] == cur_pixel) {
+                repeat++;
+                continue;
+            }
+            index = addRun(cur_pixel, repeat, index, result);
+            cur_pixel = imageData[i];
+            repeat = 1;
+        }
+        // close it off
+        index = addRun(cur_pixel, repeat, index, result);
+        // Now we know how much we need.
+        rawImageData = new byte[index];
+        System.arraycopy(result, 0, rawImageData, 0, index);
 
     }
 

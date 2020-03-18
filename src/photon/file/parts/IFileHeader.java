@@ -65,4 +65,14 @@ public interface IFileHeader {
 
     int getByteSize();
     void unLink();
+
+    /**
+     * Function to attempt to convert one type of IFileHeader to another,
+     * making sensible choices for any missing values. Use instanceof if needs be!
+     * It is probably best to implement this as a call to a copy constructor, but we cannot
+     * specify constructors in interfaces.
+     * @param other The IFileHeader to copy from
+     * @return a new IFileHeader object.
+     */
+    IFileHeader fromIFileHeader(IFileHeader other);
 }

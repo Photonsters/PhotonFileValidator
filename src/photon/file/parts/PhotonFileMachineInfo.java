@@ -32,8 +32,7 @@ import java.util.Arrays;
  */
 public class PhotonFileMachineInfo {
     private int u1, u2, u3, u4, u5, u6, u7;
-    
-    private int machineNameAddress;
+
     private int machineNameSize;
     private byte[] machineName = {};
 
@@ -41,8 +40,14 @@ public class PhotonFileMachineInfo {
     
     private int infoByteSize;
 
+    public PhotonFileMachineInfo(String machineName, int size) {
+    	this.machineName = machineName.getBytes();
+    	this.machineNameSize = this.machineName.length;
+    	infoByteSize = size;
+	}
+
     public PhotonFileMachineInfo(int address, int byteSize, byte[] file) throws Exception {
-    	
+		int machineNameAddress;
     	this.infoByteSize = byteSize;
     	
     	if (byteSize > 0) {

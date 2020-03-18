@@ -35,6 +35,10 @@ import java.util.List;
  *  by bn on 30/06/2018.
  */
 public class PhotonFileHeader implements IFileHeader {
+    static final int MAGIC_NUMBER = 318570521;
+    static final int PARAMETERS_SIZE = 60;
+    static final int MACHINE_INFO_SIZE = 76;
+    static final int BED_Z_DIMENSIONS = 150;
     private int header1;
     private int version;
     private float bedXmm;
@@ -75,6 +79,38 @@ public class PhotonFileHeader implements IFileHeader {
     public PhotonFilePrintParameters photonFilePrintParameters;
     public PhotonFileMachineInfo photonFileMachineInfo;
 
+    public PhotonFileHeader(IFileHeader other) {
+        // Note we don't bother setting the addresses as they will be calculated on save.
+        header1 = MAGIC_NUMBER;
+        version = 2;
+        bedXmm = other.getBuildAreaX();
+        bedYmm = other.getBuildAreaY();
+        bedZmm = BED_Z_DIMENSIONS;
+        layerHeightMilimeter = other.getLayerHeight();
+        exposureTimeSeconds = other.getExposureTimeSeconds();
+        exposureBottomTimeSeconds = other.getBottomExposureTimeSeconds();
+        offTimeSeconds = other.getOffTimeSeconds();
+        bottomLayers = other.getBottomLayers();
+        resolutionX = other.getResolutionX();
+        resolutionY = other.getResolutionY();
+
+        numberOfLayers = other.getNumberOfLayers();
+
+        printTimeSeconds = other.getPrintTimeSeconds();
+        projectType = PhotonProjectType.lcdMirror;
+
+        printParametersSize = PARAMETERS_SIZE;
+        // TODO:: AA
+        antiAliasingLevel = 1;
+
+        lightPWM = 255;
+        bottomLightPWM = 255;
+        machineInfoSize = MACHINE_INFO_SIZE;
+
+        photonFilePrintParameters = new PhotonFilePrintParameters(getBottomLayers());
+        photonFileMachineInfo = new PhotonFileMachineInfo("Photon", MACHINE_INFO_SIZE);
+
+    }
 
     public PhotonFileHeader(byte[] file) throws Exception {
         PhotonInputStream ds = new PhotonInputStream(new ByteArrayInputStream(file));
@@ -242,6 +278,11 @@ public class PhotonFileHeader implements IFileHeader {
     }
 
     public void unLink() {
+    }
+
+    @Override
+    public IFileHeader fromIFileHeader(IFileHeader other) {
+        return new PhotonFileHeader(other);
     }
 
     public void setExposureTimeSeconds(float exposureTimeSeconds) {

@@ -1,5 +1,6 @@
 package photon.file;
 
+import photon.file.parts.EFileType;
 import photon.file.parts.IPhotonProgress;
 import photon.file.parts.photons.PhotonsFileHeader;
 
@@ -23,12 +24,17 @@ public class PhotonSFile extends SlicedFile {
     }
 
     @Override
-    public void fromSlicedFile(SlicedFile input) {
+    public SlicedFile fromSlicedFile(SlicedFile input) {
         throw new UnsupportedOperationException("Not yet implemented");
     }
 
     @Override
     public boolean hasPreviews() {
         return true;
+    }
+
+    @Override
+    public EFileType getType() {
+        return EFileType.PhotonS;
     }
 }

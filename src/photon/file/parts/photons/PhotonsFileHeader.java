@@ -202,4 +202,9 @@ public class PhotonsFileHeader  implements IFileHeader {
     public void unLink() {
 
     }
+
+    @Override
+    public IFileHeader fromIFileHeader(IFileHeader other) {
+        return null;
+    }
 }

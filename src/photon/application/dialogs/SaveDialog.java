@@ -30,6 +30,7 @@ import com.intellij.uiDesigner.core.Spacer;
 import photon.application.MainForm;
 import photon.file.PhotonFile;
 import photon.file.SlicedFile;
+import photon.file.parts.EFileType;
 import photon.file.parts.IFileHeader;
 import photon.file.parts.photon.PhotonFileHeader;
 import photon.file.parts.PhotonFilePrintParameters;
@@ -131,17 +132,36 @@ public class SaveDialog extends JDialog {
     private void onOK() {
         File file = new File(path + File.separatorChar + textName.getText());
         try {
-            IFileHeader header = photonFile.getPhotonFileHeader();
+            EFileType desiredType = EFileType.identifyFile(textName.getText());
+            // TODO:: remember that photon == cbddlp (I think even v2?) and doesn't need conversion
+            SlicedFile outputFile = null;
+            if (desiredType != photonFile.getType()) {
+                switch (desiredType) {
+                    case Sl1:
+                    case PhotonS:
+                    case Zip:
+                        throw new UnsupportedOperationException("Not yet implemented");
+                    case Photon:
+                    case Cbddlp:
+                        outputFile = new PhotonFile().fromSlicedFile(photonFile);
+                }
+            } else {
+                outputFile = photonFile;
+            }
+
+
+            IFileHeader header = outputFile.getPhotonFileHeader();
             header.setExposureTimeSeconds(getFloat(textExposure.getText()));
             header.setOffTimeSeconds(getFloat(textOffTime.getText()));
             header.setExposureBottomTimeSeconds(getFloat(textBottomExposure.getText()));
             header.setBottomLayers(Integer.parseInt(textBottomLayers.getText()));
 
             if (version2FormatCheckBox.isSelected()) {
-                if (photonFile.getVersion() == 1) {
-                    photonFile.changeToVersion2();
+                if (outputFile.getVersion() == 1) {
+                    outputFile.changeToVersion2();
                 }
-                PhotonFilePrintParameters parameters = ((PhotonFileHeader) photonFile.getPhotonFileHeader()).photonFilePrintParameters;
+                // TODO:: THIS IS PHOTON SPECIFIC
+                PhotonFilePrintParameters parameters = ((PhotonFileHeader) outputFile.getPhotonFileHeader()).photonFilePrintParameters;
                 parameters.bottomLiftDistance = getFloat(bottomLiftDistance.getText());
                 parameters.bottomLiftSpeed = getFloat(bottomLiftSpeed.getText());
                 parameters.liftingDistance = getFloat(liftingDistance.getText());
@@ -151,11 +171,11 @@ public class SaveDialog extends JDialog {
                 parameters.lightOffDelay = getFloat(lightOffDelay.getText());
             }
 
-            photonFile.adjustLayerSettings();
+            outputFile.adjustLayerSettings();
             if (fixZcheck.isSelected()) {
-                photonFile.fixLayerHeights();
+                outputFile.fixLayerHeights();
             }
-            photonFile.saveFile(file);
+            outputFile.saveFile(file);
             mainForm.setFileName(file);
             mainForm.showFileInformation();
             mainForm.marginInfo.setForeground(Color.decode("#008800"));
