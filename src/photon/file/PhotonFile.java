@@ -27,6 +27,7 @@ package photon.file;
 import photon.file.parts.*;
 import photon.file.parts.photon.PhotonFileHeader;
 
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.OutputStream;
@@ -143,7 +144,16 @@ public class PhotonFile extends SlicedFile{
             previewTwo = input.previewTwo;
         } else {
             // need to fake them.
-
+            BufferedImage preview = new BufferedImage(PREVIEW_LARGE_X, PREVIEW_LARGE_Y, BufferedImage.TYPE_INT_RGB);
+            Graphics2D graphics2D = preview.createGraphics();
+            graphics2D.setPaint(new Color(255,0,0));
+            graphics2D.fillRect(0,0,PREVIEW_LARGE_X,PREVIEW_LARGE_Y);
+            previewOne = new PhotonFilePreview(preview);
+            preview = new BufferedImage(PREVIEW_SMALL_X, PREVIEW_SMALL_Y, BufferedImage.TYPE_INT_RGB);
+            graphics2D = preview.createGraphics();
+            graphics2D.setPaint(new Color(0,255,0));
+            graphics2D.fillRect(0,0,PREVIEW_SMALL_X,PREVIEW_SMALL_Y);
+            previewTwo = new PhotonFilePreview(preview);
         }
         layers = input.layers;
         islandList = input.islandList;

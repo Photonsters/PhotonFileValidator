@@ -24,6 +24,8 @@
 
 package photon.file.parts;
 
+import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferInt;
 import java.io.ByteArrayInputStream;
 import java.util.Arrays;
 
@@ -74,6 +76,15 @@ public class PhotonFilePreview {
 
         rawImageData = Arrays.copyOfRange(file, imageAddress, imageAddress + dataSize);
         decodeImageData();
+    }
+
+    public PhotonFilePreview(BufferedImage image) {
+        resolutionX = image.getWidth();
+        resolutionY = image.getHeight();
+        imageData = ((DataBufferInt)image.getRaster().getDataBuffer()).getData();
+        encodeImageData();
+        imageData = null;
+        dataSize = rawImageData.length;
     }
 
     public void save(PhotonOutputStream os, int startAddress) throws Exception {
