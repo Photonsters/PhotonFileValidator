@@ -144,6 +144,7 @@ public class PhotonFile extends SlicedFile{
             previewTwo = input.previewTwo;
         } else {
             // need to fake them.
+            // TODO:: Maybe something more interesting than a solid colour?
             BufferedImage preview = new BufferedImage(PREVIEW_LARGE_X, PREVIEW_LARGE_Y, BufferedImage.TYPE_INT_RGB);
             Graphics2D graphics2D = preview.createGraphics();
             graphics2D.setPaint(new Color(255,0,0));

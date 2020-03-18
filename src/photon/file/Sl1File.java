@@ -10,12 +10,14 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.*;
 
+import java.nio.Buffer;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
+import java.util.zip.ZipOutputStream;
 
 public class Sl1File extends SlicedFile{
     @Override
@@ -104,12 +106,38 @@ public class Sl1File extends SlicedFile{
 
     @Override
     protected void writeFile(OutputStream outputStream) throws Exception {
-        throw new UnsupportedOperationException("Not yet implemented");
+        ZipOutputStream zos = new ZipOutputStream(outputStream);
+        ZipEntry config = new ZipEntry("config.ini");
+        zos.putNextEntry(config);
+        ((Sl1FileHeader)iFileHeader).write(zos);
+        zos.closeEntry();
+        // TODO:: AA
+        String name;
+        ZipEntry layerEntry;
+        BufferedImage image;
+        for( int i=0; i<layers.size(); i++ ) {
+            name = String.format("%s%05d.png",((Sl1FileHeader)iFileHeader).getJobName(), i);
+            layerEntry = new ZipEntry(name);
+            image = layers.get(i).getLayer().getImage();
+            zos.putNextEntry(layerEntry);
+            ImageIO.write(image, "png", zos);
+            zos.closeEntry();
+        }
+        zos.close();
     }
 
     @Override
     public SlicedFile fromSlicedFile(SlicedFile input) {
-        throw new UnsupportedOperationException("Not yet implemented");
+        iFileHeader = new Sl1FileHeader(input.iFileHeader);
+        previewOne = null;
+        previewTwo = null;
+        layers = input.layers;
+        islandList = input.islandList;
+        islandLayerCount = input.islandLayerCount;
+        islandLayers = input.islandLayers;
+        margin = input.margin;
+        marginLayers = input.marginLayers;
+        return this;
     }
 
     @Override

@@ -24,8 +24,13 @@
 
 package photon.file.parts;
 
+import javax.imageio.ImageIO;
 import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.awt.image.WritableRaster;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.nio.Buffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
@@ -279,7 +284,24 @@ public class PhotonLayer {
         }
 
     }
-    
+
+    /**
+     * Expand the layer into an image.
+     * @return the layer as an image.
+     * @throws IOException on error decoding the layer
+     */
+    public BufferedImage getImage() throws IOException {
+        BufferedImage result = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+        int idx=0;
+        for(int i=0; i<height; i++) {
+            for( int j=0; j<width; j++ )
+            {
+                 // TODO:: AA layers
+                result.setRGB(j, i, iArray[i][j] > 0 ?  0xFFFFFF : 0x000000);
+            }
+        }
+        return result;
+    }
     
     private int add(int ptr, byte current, int length) {
         if (length < 32) {

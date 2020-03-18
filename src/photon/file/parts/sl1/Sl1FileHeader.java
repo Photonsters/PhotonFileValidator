@@ -3,10 +3,7 @@ package photon.file.parts.sl1;
 import photon.file.parts.IFileHeader;
 import photon.file.parts.PhotonFileLayer;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -43,6 +40,19 @@ public class Sl1FileHeader implements IFileHeader {
     // This is used as the base of the image filenames.
     private String jobName;
 
+    public Sl1FileHeader(IFileHeader other) {
+        layerHeightMilimeter = other.getLayerHeight();
+        exposureTimeSeconds = other.getExposureTimeSeconds();
+        exposureBottomTimeSeconds = other.getBottomExposureTimeSeconds();
+        offTimeSeconds = other.getOffTimeSeconds();
+        bottomLayers = other.getBottomLayers();
+        numberOfLayers = other.getNumberOfLayers();
+        printTimeSeconds = other.getPrintTimeSeconds();
+        resolutionX = other.getResolutionX();
+        resolutionY = other.getResolutionY();
+        jobName = "SL1";
+        version = 1;
+    }
 
     public Sl1FileHeader(InputStream entry) throws IOException {
         BufferedReader headerStream = new BufferedReader(new InputStreamReader(entry));
@@ -112,6 +122,18 @@ public class Sl1FileHeader implements IFileHeader {
 
         // TODO:: add v2 support.
         version = 1;
+    }
+
+    public void write(OutputStream output) throws IOException {
+        String outputString = "action = print\n"
+                + String.format("jobDir = %s\n", jobName)
+                + String.format("expTime = %f\n", exposureTimeSeconds)
+                + String.format("expTimeFirst = %f\n", exposureBottomTimeSeconds)
+                + String.format("layerHeight = %f\n", layerHeightMilimeter)
+                + String.format("numFade = %d\n", bottomLayers)
+                + String.format("NumFast = %d\n", numberOfLayers)
+                + "numSlow = 0\n";
+        output.write(outputString.getBytes());
     }
 
     @Override

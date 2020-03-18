@@ -29,6 +29,7 @@ import com.intellij.uiDesigner.core.GridLayoutManager;
 import com.intellij.uiDesigner.core.Spacer;
 import photon.application.MainForm;
 import photon.file.PhotonFile;
+import photon.file.Sl1File;
 import photon.file.SlicedFile;
 import photon.file.parts.EFileType;
 import photon.file.parts.IFileHeader;
@@ -133,17 +134,29 @@ public class SaveDialog extends JDialog {
         File file = new File(path + File.separatorChar + textName.getText());
         try {
             EFileType desiredType = EFileType.identifyFile(textName.getText());
-            // TODO:: remember that photon == cbddlp (I think even v2?) and doesn't need conversion
             SlicedFile outputFile = null;
             if (desiredType != photonFile.getType()) {
                 switch (desiredType) {
                     case Sl1:
+                        outputFile = new Sl1File().fromSlicedFile(photonFile);
+                        break;
                     case PhotonS:
                     case Zip:
                         throw new UnsupportedOperationException("Not yet implemented");
                     case Photon:
+                        if (photonFile.getType() == EFileType.Cbddlp) {
+                            outputFile = photonFile;
+                        } else {
+                            outputFile = new PhotonFile().fromSlicedFile(photonFile);
+                        }
+                        break;
                     case Cbddlp:
-                        outputFile = new PhotonFile().fromSlicedFile(photonFile);
+                        if (photonFile.getType() == EFileType.Photon) {
+                            outputFile = photonFile;
+                        } else {
+                            outputFile = new PhotonFile().fromSlicedFile(photonFile);
+                        }
+                        break;
                 }
             } else {
                 outputFile = photonFile;
@@ -156,11 +169,10 @@ public class SaveDialog extends JDialog {
             header.setExposureBottomTimeSeconds(getFloat(textBottomExposure.getText()));
             header.setBottomLayers(Integer.parseInt(textBottomLayers.getText()));
 
-            if (version2FormatCheckBox.isSelected()) {
+            if (version2FormatCheckBox.isSelected()  && outputFile.getType() == EFileType.Photon) {
                 if (outputFile.getVersion() == 1) {
                     outputFile.changeToVersion2();
                 }
-                // TODO:: THIS IS PHOTON SPECIFIC
                 PhotonFilePrintParameters parameters = ((PhotonFileHeader) outputFile.getPhotonFileHeader()).photonFilePrintParameters;
                 parameters.bottomLiftDistance = getFloat(bottomLiftDistance.getText());
                 parameters.bottomLiftSpeed = getFloat(bottomLiftSpeed.getText());
