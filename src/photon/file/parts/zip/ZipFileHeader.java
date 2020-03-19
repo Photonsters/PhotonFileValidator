@@ -17,8 +17,8 @@ public class ZipFileHeader implements IFileHeader {
             "M106 S0;\n" +
             "G1 Z150 F25;\n" +
             "M18;";
-  //  private static Pattern linePattern = Pattern.compile(";\\s*:.*");
 
+    // Core fields
     private float layerHeightMilimeter;
     private float exposureTimeSeconds;
     private float exposureBottomTimeSeconds;
@@ -32,6 +32,17 @@ public class ZipFileHeader implements IFileHeader {
 
     private int resolutionX;
     private int resolutionY;
+
+    // zip specific fields
+    private String file_name;
+    private String machine_type;
+    private String volume;
+    private String resin;
+    private String weight;
+    private String price;
+    private String machine_x, machine_y, machine_z;
+
+
 
     private String start_gcode;
     private String end_gcode;
