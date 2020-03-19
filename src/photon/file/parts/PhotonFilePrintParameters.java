@@ -25,79 +25,46 @@
 package photon.file.parts;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.util.Arrays;
+import java.util.Map;
 
 public class PhotonFilePrintParameters {
-    public float bottomLiftDistance = 5.0f;
-    public float bottomLiftSpeed = 300.0f;
+    
+    public PhotonFilePrintParameters() {};
 
-    public float liftingDistance = 5.0f;
-    public float liftingSpeed = 300.0f;
-    public float retractSpeed = 300.0f;
-
-    public float volumeMl = 0;
-    public float weightG =  0;
-    public float costDollars = 0;
-
-    public float bottomLightOffDelay = 0.0f;
-    public float lightOffDelay = 0.0f;
-    public int bottomLayerCount;
-
-    public int p1;
-    public int p2;
-    public int p3;
-    public int p4;
-
-
-    public PhotonFilePrintParameters(int bottomLayerCount) {
-        this.bottomLayerCount = bottomLayerCount;
-    }
-
-    public PhotonFilePrintParameters(int parametersPos, byte[] file) throws Exception {
+    public PhotonFilePrintParameters(int parametersPos, byte[] file, Map<String,String> paramMap) throws IOException {
         byte[] data = Arrays.copyOfRange(file, parametersPos, parametersPos + getByteSize());
         PhotonInputStream ds = new PhotonInputStream(new ByteArrayInputStream(data));
 
-        bottomLiftDistance = ds.readFloat();
-        bottomLiftSpeed = ds.readFloat();
-
-        liftingDistance = ds.readFloat();
-        liftingSpeed = ds.readFloat();
-        retractSpeed = ds.readFloat();
-
-        volumeMl = ds.readFloat();
-        weightG = ds.readFloat();
-        costDollars = ds.readFloat();
-
-        bottomLightOffDelay = ds.readFloat();
-        lightOffDelay = ds.readFloat();
-        bottomLayerCount = ds.readInt();
-
-        p1 = ds.readInt();
-        p2 = ds.readInt();
-        p3 = ds.readInt();
-        p4 = ds.readInt();
+        paramMap.put("bottomLiftDistance", String.valueOf(ds.readFloat()));
+        paramMap.put("bottomLiftSpeed", String.valueOf(ds.readFloat()));
+        paramMap.put("LiftDistance", String.valueOf(ds.readFloat()));
+        paramMap.put("liftSpeed", String.valueOf(ds.readFloat()));
+        paramMap.put("retractSpeed", String.valueOf(ds.readFloat()));
+        paramMap.put("volume", String.valueOf(ds.readFloat()));
+        paramMap.put("weight", String.valueOf(ds.readFloat()));
+        paramMap.put("cost", String.valueOf(ds.readFloat()));
+        paramMap.put("bottomLightOffDelay", String.valueOf(ds.readFloat()));
+        paramMap.put("bottomLayerCount", String.valueOf(ds.readInt()));
     }
 
-    public void save(PhotonOutputStream os) throws Exception {
-        os.writeFloat(bottomLiftDistance);
-        os.writeFloat(bottomLiftSpeed);
 
-        os.writeFloat(liftingDistance);
-        os.writeFloat(liftingSpeed);
-        os.writeFloat(retractSpeed);
-
-        os.writeFloat(volumeMl);
-        os.writeFloat(weightG);
-        os.writeFloat(costDollars);
-
-        os.writeFloat(bottomLightOffDelay);
-        os.writeFloat(lightOffDelay);
-        os.writeInt(bottomLayerCount);
-
-        os.writeInt(p1);
-        os.writeInt(p2);
-        os.writeInt(p3);
-        os.writeInt(p4);
+    public void save(PhotonOutputStream os, Map<String, String> paramMap) throws Exception {
+        os.writeFloat(Float.parseFloat(paramMap.get("bottomLiftDistance")));
+        os.writeFloat(Float.parseFloat(paramMap.get("bottomLiftSpeed")));
+        os.writeFloat(Float.parseFloat(paramMap.get("LiftDistance")));
+        os.writeFloat(Float.parseFloat(paramMap.get("liftSpeed")));
+        os.writeFloat(Float.parseFloat(paramMap.get("retractSpeed")));
+        os.writeFloat(Float.parseFloat(paramMap.get("volume")));
+        os.writeFloat(Float.parseFloat(paramMap.get("weight")));
+        os.writeFloat(Float.parseFloat(paramMap.get("cost")));
+        os.writeFloat(Float.parseFloat(paramMap.get("bottomLightOffDelay")));
+        os.writeInt(Integer.parseInt(paramMap.get("bottomLayerCount")));
+        os.writeInt(0);
+        os.writeInt(0);
+        os.writeInt(0);
+        os.writeInt(0);
     }
 
     public int getByteSize() {

@@ -29,6 +29,7 @@ import photon.file.parts.*;
 
 import java.io.ByteArrayInputStream;
 import java.util.List;
+import java.util.Map;
 
 /**
  *  by bn on 30/06/2018.
@@ -38,8 +39,15 @@ public class PhotonFileHeader extends SlicedFileHeader {
     static final int PARAMETERS_SIZE = 60;
     static final int MACHINE_INFO_SIZE = 76;
     static final int BED_Z_DIMENSIONS = 150;
+
+    public static final float DEFAULT_BOTTOM_LIFT_DISTANCE = 5.0f;
+    public static final float DEFAULT_BOTTOM_LIFT_SPEED = 300.0f;
+    public static final float DEFAULT_LIFT_DISTANCE = 5.0f;
+    public static final float DEFAULT_LIFT_SPEED = 300.0f;
+    public static final float DEFAULT_RETRACT_SPEED = 300.0f;
+
+
     private int header1;
-    private int version;
     private float bedZmm;
     private int unknown1;
     private int unknown2;
@@ -82,7 +90,8 @@ public class PhotonFileHeader extends SlicedFileHeader {
         bottomLightPWM = 255;
         machineInfoSize = MACHINE_INFO_SIZE;
 
-        photonFilePrintParameters = new PhotonFilePrintParameters(getBottomLayers());
+        photonFilePrintParameters = new PhotonFilePrintParameters();
+        additionalParameters.put("bottomLayerCount", String.valueOf(getBottomLayers()));
         photonFileMachineInfo = new PhotonFileMachineInfo("Photon", MACHINE_INFO_SIZE);
 
     }
@@ -216,10 +225,6 @@ public class PhotonFileHeader extends SlicedFileHeader {
         return printParametersOffsetAddress;
     }
 
-    public int getPrintParametersSize() {
-        return printParametersSize;
-    }
-
     public int getMachineInfoOffsetAddress() {
     	return machineInfoOffsetAddress;
     }
@@ -243,8 +248,8 @@ public class PhotonFileHeader extends SlicedFileHeader {
         antiAliasingLevel = 1;
         lightPWM = 255;
         bottomLightPWM = 255;
-
-        photonFilePrintParameters = new PhotonFilePrintParameters(getBottomLayers());
+        additionalParameters.put("bottomLayerCount", String.valueOf(getBottomLayers()));
+        photonFilePrintParameters = new PhotonFilePrintParameters();
     }
 
     public boolean hasAA() {
@@ -296,7 +301,14 @@ public class PhotonFileHeader extends SlicedFileHeader {
     }
 
     public void readParameters(byte[] file) throws Exception {
-        photonFilePrintParameters = new PhotonFilePrintParameters(getPrintParametersOffsetAddress(), file);
+        photonFilePrintParameters = new PhotonFilePrintParameters(getPrintParametersOffsetAddress(), file, additionalParameters);
         photonFileMachineInfo = new PhotonFileMachineInfo(getMachineInfoOffsetAddress(), getMachineInfoSize(), file);
     }
+
+    /**
+     * Get the entire map of additional parameters.
+     * This is mostly a transitional function for things which created machine / print parameter objects.
+     * @return a map of parameters to values
+     */
+    public Map<String, String> getAdditionalParameters() { return additionalParameters; }
 }

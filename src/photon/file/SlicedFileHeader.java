@@ -79,7 +79,7 @@ abstract public class SlicedFileHeader {
      * @param parameter to look for - note this is case insensitive
      * @return the value for the parameter, or NULL if not present
      */
-    public String getAdditionalParameter(String parameter) {
+    public String getParam(String parameter) {
         return additionalParameters.get(parameter.toLowerCase());
     }
     /**
@@ -88,8 +88,50 @@ abstract public class SlicedFileHeader {
      * @param defaultValue to return if parameter does not exist
      * @return the value for the parameter, or defaultValue if not present
      */
-    public String getAdditionalParameterOrDefault(String parameter, String defaultValue) {
+    public String getParamOrDefault(String parameter, String defaultValue) {
         return additionalParameters.getOrDefault(parameter, defaultValue);
+    }
+
+    /**
+     * Check if the file has the specified parameter
+     * @param parameter to check for
+     * @return true iff it has been set for this file
+     */
+    public boolean hasParam(String parameter) {
+        return additionalParameters.containsKey(parameter);
+    }
+
+    /**
+     * Get a format specific additional parameter, converted to a float
+     * @param parameter to look for (case insensitive).
+     * @return the value as a float, or 0.0 if it is not set.
+     */
+    public Float getFloatParam(String parameter) {
+        return getFloatParamOrDefault(parameter, 0f);
+    }
+
+    /**
+     * Get a format specific additional parameter, converted to a float if present,
+     * or a default value otherwise
+     * @param parameter to look for (case insensitive)
+     * @param defaultValue if the parameter is not set
+     * @return either the value associated with the parameter or the default value, as a float
+     */
+    public Float getFloatParamOrDefault(String parameter, Float defaultValue) {
+        if( additionalParameters.containsKey(parameter) )
+        {
+            return Float.parseFloat(additionalParameters.get(parameter));
+        }
+        return defaultValue;
+    }
+
+    /**
+     * Set a given additional parameter.
+     * @param parameter to set
+     * @param value to set
+     */
+    public void setAdditionalParameters(String parameter, String value) {
+        additionalParameters.put(parameter, value);
     }
 
     public int getNumberOfLayers() { return numberOfLayers; }

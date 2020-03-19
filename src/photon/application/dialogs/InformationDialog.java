@@ -29,8 +29,6 @@ import com.intellij.uiDesigner.core.GridLayoutManager;
 import com.intellij.uiDesigner.core.Spacer;
 import photon.file.SlicedFile;
 import photon.file.SlicedFileHeader;
-import photon.file.parts.photon.PhotonFileHeader;
-import photon.file.parts.PhotonFilePrintParameters;
 
 import javax.swing.*;
 import java.awt.*;
@@ -49,7 +47,7 @@ public class InformationDialog extends JDialog {
     private JLabel printVolume;
     private JLabel printTime;
     private JLabel fileTime;
-    private JLabel fileVolumne;
+    private JLabel fileVolume;
     private JLabel fileWeight;
     private JLabel fileCost;
     private JLabel fileHeader;
@@ -96,19 +94,25 @@ public class InformationDialog extends JDialog {
 
 
             fileHeader.setText("File version " + photonFile.getVersion());
-            if (photonFile.getVersion() > 1) {
-                PhotonFilePrintParameters parameters = ((PhotonFileHeader) photonFile.getPhotonFileHeader()).photonFilePrintParameters;
-                fileCost.setText(String.format("%8.4f $", parameters.costDollars));
-                fileWeight.setText(String.format("%8.2f g", parameters.weightG));
-                fileVolumne.setText(String.format("%,.1f ml", parameters.volumeMl));
-                fileTime.setText(getDuration(photonFile.getPhotonFileHeader().getPrintTimeSeconds()));
+            if (photonFileHeader.hasParam("cost")) {
+                fileCost.setText(String.format("%8.4f $", photonFileHeader.getFloatParam("cost")));
             } else {
                 fileCost.setText("");
-                fileWeight.setText("");
-                fileVolumne.setText("");
-                fileTime.setText("");
             }
 
+            if (photonFileHeader.hasParam("weight")) {
+                fileWeight.setText(String.format("%8.4f $", photonFile.getPhotonFileHeader().getFloatParam("weight")));
+            } else {
+                fileWeight.setText("");
+            }
+
+            if (photonFileHeader.hasParam("volume")) {
+                fileVolume.setText(String.format("%8.4f $", photonFile.getPhotonFileHeader().getFloatParam("volume")));
+            } else {
+                fileVolume.setText("");
+            }
+
+            fileTime.setText(getDuration(photonFile.getPhotonFileHeader().getPrintTimeSeconds()));
         }
     }
 
@@ -262,9 +266,9 @@ public class InformationDialog extends JDialog {
         fileTime = new JLabel();
         fileTime.setText("");
         panel3.add(fileTime, new com.intellij.uiDesigner.core.GridConstraints(9, 4, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_EAST, com.intellij.uiDesigner.core.GridConstraints.FILL_NONE, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_WANT_GROW, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
-        fileVolumne = new JLabel();
-        fileVolumne.setText("");
-        panel3.add(fileVolumne, new com.intellij.uiDesigner.core.GridConstraints(8, 4, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_EAST, com.intellij.uiDesigner.core.GridConstraints.FILL_NONE, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_WANT_GROW, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        fileVolume = new JLabel();
+        fileVolume.setText("");
+        panel3.add(fileVolume, new com.intellij.uiDesigner.core.GridConstraints(8, 4, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_EAST, com.intellij.uiDesigner.core.GridConstraints.FILL_NONE, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_WANT_GROW, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         fileWeight = new JLabel();
         fileWeight.setText("");
         panel3.add(fileWeight, new com.intellij.uiDesigner.core.GridConstraints(7, 4, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_EAST, com.intellij.uiDesigner.core.GridConstraints.FILL_NONE, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_WANT_GROW, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));

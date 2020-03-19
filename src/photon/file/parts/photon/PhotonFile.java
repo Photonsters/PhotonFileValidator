@@ -96,8 +96,9 @@ public class PhotonFile extends SlicedFile {
         previewTwo.save(os, previewTwoPos);
 
         if (fileHeader.getVersion() > 1) {
-            ((PhotonFileHeader)fileHeader).photonFilePrintParameters.save(os);
-            ((PhotonFileHeader)fileHeader).photonFileMachineInfo.save(os, machineInfoPos);
+            PhotonFileHeader photonFileHeader = (PhotonFileHeader)fileHeader;
+            photonFileHeader.photonFilePrintParameters.save(os, photonFileHeader.getAdditionalParameters());
+            photonFileHeader.photonFileMachineInfo.save(os, machineInfoPos);
         }
 
         // Optimize order for speed read on photon

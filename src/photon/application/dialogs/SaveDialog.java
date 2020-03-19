@@ -33,8 +33,6 @@ import photon.file.parts.photon.PhotonFile;
 import photon.file.parts.sl1.Sl1File;
 import photon.file.SlicedFile;
 import photon.file.parts.EFileType;
-import photon.file.parts.photon.PhotonFileHeader;
-import photon.file.parts.PhotonFilePrintParameters;
 
 import javax.swing.*;
 import java.awt.*;
@@ -175,14 +173,13 @@ public class SaveDialog extends JDialog {
                 if (outputFile.getVersion() == 1) {
                     outputFile.changeToVersion2();
                 }
-                PhotonFilePrintParameters parameters = ((PhotonFileHeader) outputFile.getPhotonFileHeader()).photonFilePrintParameters;
-                parameters.bottomLiftDistance = getFloat(bottomLiftDistance.getText());
-                parameters.bottomLiftSpeed = getFloat(bottomLiftSpeed.getText());
-                parameters.liftingDistance = getFloat(liftingDistance.getText());
-                parameters.liftingSpeed = getFloat(liftingSpeed.getText());
-                parameters.retractSpeed = getFloat(retractSpeed.getText());
-                parameters.bottomLightOffDelay = getFloat(bottomLightOffDelay.getText());
-                parameters.lightOffDelay = getFloat(lightOffDelay.getText());
+                header.setAdditionalParameters("bottomLiftDistance", bottomLiftDistance.getText());
+                header.setAdditionalParameters("bottomLiftSpeed", bottomLiftSpeed.getText());
+                header.setAdditionalParameters("liftDistance", liftingDistance.getText());
+                header.setAdditionalParameters("liftSpeed", liftingSpeed.getText());
+                header.setAdditionalParameters("retractSpeed", retractSpeed.getText());
+                header.setAdditionalParameters("bottomLightOffDelay", bottomLightOffDelay.getText());
+                header.setAdditionalParameters("lightOffDelay", lightOffDelay.getText());
             }
             outputFile.adjustLayerSettings();
             if (fixZcheck.isSelected()) {
@@ -228,20 +225,22 @@ public class SaveDialog extends JDialog {
             version2FormatCheckBox.setEnabled(false);
         }
 
+        SlicedFileHeader header = photonFile.getHeader();
+
         bottomLiftDistance.setText(String.format("%.1f",
-                photonFile.getHeader().getAdditionalParameterOrDefault("bottomLiftDistance", "5.0")));
+                header.getFloatParamOrDefault("bottomLiftDistance", 5.0f)));
         bottomLiftSpeed.setText(String.format("%.1f",
-                photonFile.getHeader().getAdditionalParameterOrDefault("bottomLiftSpeed", "300.0")));
+                header.getFloatParamOrDefault("bottomLiftSpeed", 300.0f)));
         liftingDistance.setText(String.format("%.1f",
-                photonFile.getHeader().getAdditionalParameterOrDefault("liftingDistance", "50.0")));
+                header.getFloatParamOrDefault("liftDistance", 50.0f)));
         liftingSpeed.setText(String.format("%.1f",
-                photonFile.getHeader().getAdditionalParameterOrDefault("liftingSpeed", "300.0")));
+                header.getFloatParamOrDefault("liftSpeed", 300.0f)));
         retractSpeed.setText(String.format("%.1f",
-                photonFile.getHeader().getAdditionalParameterOrDefault("retractSpeed", "300.0")));
+                header.getFloatParamOrDefault("retractSpeed", 300.0f)));
         bottomLightOffDelay.setText(String.format("%.1f",
-                photonFile.getHeader().getAdditionalParameterOrDefault("bottomLightOffDelay", "0.0")));
+                header.getFloatParamOrDefault("bottomLightOffDelay", 0.0f)));
         lightOffDelay.setText(String.format("%.1f",
-                photonFile.getHeader().getAdditionalParameterOrDefault("lightOffDelay", "0.0")));
+                header.getFloatParamOrDefault("lightOffDelay", 0.0f)));
     }
 
     private String makeFileName(String path, String name, String ext) {
