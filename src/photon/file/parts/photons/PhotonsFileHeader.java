@@ -24,15 +24,15 @@
 
 package photon.file.parts.photons;
 
-import photon.file.parts.IFileHeader;
+import photon.file.SlicedFileHeader;
 import photon.file.parts.PhotonFileLayer;
-import photon.file.parts.PhotonInputStream;
+
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.util.List;
 
-public class PhotonsFileHeader  implements IFileHeader {
+public class PhotonsFileHeader  extends SlicedFileHeader {
 
     private int fileVersion;
 
@@ -78,96 +78,6 @@ public class PhotonsFileHeader  implements IFileHeader {
 
     }
 
-
-
-        @Override
-    public String getInformation() {
-        return null;
-    }
-
-    @Override
-    public int getNumberOfLayers() {
-        return 0;
-    }
-
-    @Override
-    public int getResolutionY() {
-        return 0;
-    }
-
-    @Override
-    public int getResolutionX() {
-        return 0;
-    }
-
-    @Override
-    public float getBuildAreaX() {
-        return 0;
-    }
-
-    @Override
-    public float getBuildAreaY() {
-        return 0;
-    }
-
-    @Override
-    public int getBottomLayers() {
-        return 0;
-    }
-
-    @Override
-    public void setBottomLayers(int bottomLayers) {
-
-    }
-
-    @Override
-    public float getLayerHeight() {
-        return 0;
-    }
-
-    @Override
-    public float getExposureTimeSeconds() {
-        return 0;
-    }
-
-    @Override
-    public float getBottomExposureTimeSeconds() {
-        return 0;
-    }
-
-    @Override
-    public void setExposureBottomTimeSeconds(float exposureBottomTimeSeconds) {
-
-    }
-
-    @Override
-    public void setExposureTimeSeconds(float exposureTimeSeconds) {
-
-    }
-
-    @Override
-    public float getNormalExposure() {
-        return 0;
-    }
-
-    @Override
-    public float getOffTimeSeconds() {
-        return 0;
-    }
-
-    @Override
-    public void setOffTimeSeconds(float offTimeSeconds) {
-
-    }
-
-    @Override
-    public int getPrintTimeSeconds() {
-        return 0;
-    }
-
-    @Override
-    public boolean isMirrored() { return false; }
-
     @Override
     public boolean hasAA() {
         return false;
@@ -184,27 +94,12 @@ public class PhotonsFileHeader  implements IFileHeader {
     }
 
     @Override
-    public int getVersion() {
-        return 0;
-    }
-
-    @Override
-    public void setFileVersion(int i) {
-
-    }
-
-    @Override
-    public int getByteSize() {
-        return 0;
-    }
-
-    @Override
     public void unLink() {
 
     }
 
     @Override
-    public IFileHeader fromIFileHeader(IFileHeader other) {
-        return null;
+    public SlicedFileHeader fromIFileHeader(SlicedFileHeader other) {
+        throw new IllegalArgumentException("Not implemented");
     }
 }

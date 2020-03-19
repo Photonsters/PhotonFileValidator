@@ -33,7 +33,7 @@ public class Sl1File extends SlicedFile {
         Sl1FileHeader header = new Sl1FileHeader(zf.getInputStream(headerEntry));
 
 
-        iFileHeader = header;
+        fileHeader = header;
 
         iPhotonProgress.showInfo("Reading sl1 layers information...");
 
@@ -70,8 +70,8 @@ public class Sl1File extends SlicedFile {
             iPhotonProgress.showInfo("Reading SL1 file layer " + (curIndex+1) + "/" + header.getNumberOfLayers());
 
             layerArr[curIndex] = PhotonFileLayer.readLayer(
-                    iFileHeader.getResolutionX(),
-                    iFileHeader.getResolutionY(),
+                    fileHeader.getResolutionX(),
+                    fileHeader.getResolutionY(),
                     zf.getInputStream(entry));
 
             if( curIndex < header.getBottomLayers()) {
@@ -94,14 +94,14 @@ public class Sl1File extends SlicedFile {
         ZipOutputStream zos = new ZipOutputStream(outputStream);
         ZipEntry config = new ZipEntry("config.ini");
         zos.putNextEntry(config);
-        ((Sl1FileHeader)iFileHeader).write(zos);
+        ((Sl1FileHeader)fileHeader).write(zos);
         zos.closeEntry();
         // TODO:: AA
         String name;
         ZipEntry layerEntry;
         BufferedImage image;
         for( int i=0; i<layers.size(); i++ ) {
-            name = String.format("%s%05d.png",((Sl1FileHeader)iFileHeader).getJobName(), i);
+            name = String.format("%s%05d.png",((Sl1FileHeader)fileHeader).getJobName(), i);
             layerEntry = new ZipEntry(name);
             image = layers.get(i).getLayer().getImage();
             zos.putNextEntry(layerEntry);
@@ -113,7 +113,7 @@ public class Sl1File extends SlicedFile {
 
     @Override
     public SlicedFile fromSlicedFile(SlicedFile input) {
-        iFileHeader = new Sl1FileHeader(input.getHeader());
+        fileHeader = new Sl1FileHeader(input.getHeader());
         previewOne = null;
         previewTwo = null;
         layers = input.getLayers();

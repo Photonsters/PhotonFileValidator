@@ -15,7 +15,7 @@ public class PhotonSFile extends SlicedFile {
         byte[] fileData = getBinaryData(file);
 
         PhotonsFileHeader photonsFileHeader = new PhotonsFileHeader(fileData);
-        iFileHeader = photonsFileHeader;
+        fileHeader = photonsFileHeader;
 
         return this;    }
 

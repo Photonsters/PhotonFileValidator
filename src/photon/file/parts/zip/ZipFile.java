@@ -33,7 +33,7 @@ public class ZipFile extends SlicedFile {
             throw new FileNotFoundException("Missing run.gcode");
         }
         ZipFileHeader header = new ZipFileHeader(zf.getInputStream(headerEntry));
-        iFileHeader = header;
+        fileHeader = header;
 
         iPhotonProgress.showInfo("Reading large preview...");
         ZipEntry entry = zf.getEntry("preview.png");
@@ -77,8 +77,8 @@ public class ZipFile extends SlicedFile {
 
 
             layerArr[curIndex] = PhotonFileLayer.readLayer(
-                    iFileHeader.getResolutionX(),
-                    iFileHeader.getResolutionY(),
+                    fileHeader.getResolutionX(),
+                    fileHeader.getResolutionY(),
                     zf.getInputStream(entry));
 
             if( curIndex < header.getBottomLayers()) {
@@ -106,7 +106,7 @@ public class ZipFile extends SlicedFile {
         BufferedImage image;
         String name;
         for (int i = 0; i < layers.size(); i++) {
-            name = String.format("%d.png", ((Sl1FileHeader) iFileHeader).getJobName(), i);
+            name = String.format("%d.png", ((Sl1FileHeader) fileHeader).getJobName(), i);
             layerEntry = new ZipEntry(name);
             image = layers.get(i).getLayer().getImage();
             zos.putNextEntry(layerEntry);
@@ -126,14 +126,14 @@ public class ZipFile extends SlicedFile {
 
         ZipEntry gCode = new ZipEntry("run.gcode");
         zos.putNextEntry(gCode);
-        ((ZipFileHeader) iFileHeader).write(zos);
+        ((ZipFileHeader) fileHeader).write(zos);
         zos.closeEntry();
         zos.close();
     }
 
     @Override
     public SlicedFile fromSlicedFile(SlicedFile input) {
-        iFileHeader = new ZipFileHeader(input.getHeader());
+        fileHeader = new ZipFileHeader(input.getHeader());
         previewOne = input.getPreviewOne();
         previewTwo = input.getPreviewTwo();
         layers = input.getLayers();

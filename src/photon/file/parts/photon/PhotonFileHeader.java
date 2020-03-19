@@ -24,44 +24,32 @@
 
 package photon.file.parts.photon;
 
+import photon.file.SlicedFileHeader;
 import photon.file.parts.*;
-import photon.file.ui.Text;
 
 import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.util.List;
 
 /**
  *  by bn on 30/06/2018.
  */
-public class PhotonFileHeader implements IFileHeader {
+public class PhotonFileHeader extends SlicedFileHeader {
     static final int MAGIC_NUMBER = 318570521;
     static final int PARAMETERS_SIZE = 60;
     static final int MACHINE_INFO_SIZE = 76;
     static final int BED_Z_DIMENSIONS = 150;
     private int header1;
     private int version;
-    private float bedXmm;
-    private float bedYmm;
     private float bedZmm;
     private int unknown1;
     private int unknown2;
     private int unknown3;
-    private float layerHeightMilimeter;
-    private float exposureTimeSeconds;
-    private float exposureBottomTimeSeconds;
-    private float offTimeSeconds;
-    private int bottomLayers;
-    private int resolutionX;
-    private int resolutionY;
 
     private int previewOneOffsetAddress;
     private int layersDefinitionOffsetAddress;
-    private int numberOfLayers;
 
     private int previewTwoOffsetAddress;
 
-    private int printTimeSeconds;
     private PhotonProjectType projectType;
 
     private int printParametersOffsetAddress;
@@ -79,29 +67,16 @@ public class PhotonFileHeader implements IFileHeader {
     public PhotonFilePrintParameters photonFilePrintParameters;
     public PhotonFileMachineInfo photonFileMachineInfo;
 
-    public PhotonFileHeader(IFileHeader other) {
+    public PhotonFileHeader(SlicedFileHeader other) {
+        super(other);
         // Note we don't bother setting the addresses as they will be calculated on save.
         header1 = MAGIC_NUMBER;
         version = 2;
-        bedXmm = other.getBuildAreaX();
-        bedYmm = other.getBuildAreaY();
         bedZmm = BED_Z_DIMENSIONS;
-        layerHeightMilimeter = other.getLayerHeight();
-        exposureTimeSeconds = other.getExposureTimeSeconds();
-        exposureBottomTimeSeconds = other.getBottomExposureTimeSeconds();
-        offTimeSeconds = other.getOffTimeSeconds();
-        bottomLayers = other.getBottomLayers();
-        resolutionX = other.getResolutionX();
-        resolutionY = other.getResolutionY();
-
-        numberOfLayers = other.getNumberOfLayers();
-
-        printTimeSeconds = other.getPrintTimeSeconds();
         projectType = PhotonProjectType.lcdMirror;
 
         printParametersSize = PARAMETERS_SIZE;
-        // TODO:: AA
-        antiAliasingLevel = 1;
+        antiAliasingLevel = other.getAALevels();
 
         lightPWM = 255;
         bottomLightPWM = 255;
@@ -118,8 +93,8 @@ public class PhotonFileHeader implements IFileHeader {
         header1 = ds.readInt();
         version = ds.readInt();
 
-        bedXmm = ds.readFloat();
-        bedYmm = ds.readFloat();
+        buildAreaX = ds.readFloat();
+        buildAreaY = ds.readFloat();
         bedZmm = ds.readFloat();
 
         unknown1 = ds.readInt();
@@ -174,8 +149,8 @@ public class PhotonFileHeader implements IFileHeader {
         os.writeInt(header1);
         os.writeInt(version);
 
-        os.writeFloat(bedXmm);
-        os.writeFloat(bedYmm);
+        os.writeFloat(buildAreaX);
+        os.writeFloat(buildAreaY);
         os.writeFloat(bedZmm);
 
         os.writeInt(unknown1);
@@ -225,84 +200,16 @@ public class PhotonFileHeader implements IFileHeader {
         return previewTwoOffsetAddress;
     }
 
-    public int getNumberOfLayers() {
-        return numberOfLayers;
-    }
 
     public int getLayersDefinitionOffsetAddress() {
         return layersDefinitionOffsetAddress;
     }
 
-    public float getNormalExposure() {
-        return exposureTimeSeconds;
-    }
-
-    public float getOffTime() {
-        return offTimeSeconds;
-    }
-
-    public int getResolutionX() {
-        return resolutionX;
-    }
-
-    public int getResolutionY() {
-        return resolutionY;
-    }
-
-    public float getBuildAreaX() {
-        return bedXmm;
-    }
-
-    public float getBuildAreaY() {
-        return bedYmm;
-    }
-
-    public float getLayerHeight() {
-        return layerHeightMilimeter;
-    }
-
-    public int getBottomLayers() {
-        return bottomLayers;
-    }
-
-    public float getBottomExposureTimeSeconds() {
-        return exposureBottomTimeSeconds;
-    }
-
-    public float getOffTimeSeconds() {
-        return offTimeSeconds;
-    }
-
-    public float getExposureTimeSeconds() {
-        return exposureTimeSeconds;
-    }
-
     public void unLink() {
     }
 
-    @Override
-    public IFileHeader fromIFileHeader(IFileHeader other) {
+    public SlicedFileHeader fromIFileHeader(SlicedFileHeader other) {
         return new PhotonFileHeader(other);
-    }
-
-    public void setExposureTimeSeconds(float exposureTimeSeconds) {
-        this.exposureTimeSeconds = exposureTimeSeconds;
-    }
-
-    public void setExposureBottomTimeSeconds(float exposureBottomTimeSeconds) {
-        this.exposureBottomTimeSeconds = exposureBottomTimeSeconds;
-    }
-
-    public void setOffTimeSeconds(float offTimeSeconds) {
-        this.offTimeSeconds = offTimeSeconds;
-    }
-
-    public void setBottomLayers(int bottomLayers) {
-        this.bottomLayers = bottomLayers;
-    }
-
-    public int getVersion() {
-        return version;
     }
 
     public int getPrintParametersOffsetAddress() {
@@ -320,7 +227,8 @@ public class PhotonFileHeader implements IFileHeader {
     public int getMachineInfoSize() {
     	return machineInfoSize;
     }
-    
+
+    //TODO:: this should probably be removed in favour of getAALevels
     public int getAntiAliasingLevel() {
         return antiAliasingLevel;
     }
@@ -329,6 +237,7 @@ public class PhotonFileHeader implements IFileHeader {
         this.antiAliasingLevel = antiAliasingLevel;
     }
 
+    @Override
     public void setFileVersion(int i) {
         version = i;
         antiAliasingLevel = 1;
@@ -336,14 +245,6 @@ public class PhotonFileHeader implements IFileHeader {
         bottomLightPWM = 255;
 
         photonFilePrintParameters = new PhotonFilePrintParameters(getBottomLayers());
-    }
-
-    public String getInformation() {
-        return String.format("T: %.3f", layerHeightMilimeter) +
-                ", E: " + Text.formatSeconds(exposureTimeSeconds) +
-                ", O: " + Text.formatSeconds(offTimeSeconds) +
-                ", BE: " + Text.formatSeconds(exposureBottomTimeSeconds) +
-                String.format(", BL: %d", bottomLayers);
     }
 
     public boolean hasAA() {
@@ -389,10 +290,7 @@ public class PhotonFileHeader implements IFileHeader {
     }
 
 
-    public int getPrintTimeSeconds() {
-        return printTimeSeconds;
-    }
-
+    @Override
     public boolean isMirrored() {
         return projectType == PhotonProjectType.lcdMirror;
     }

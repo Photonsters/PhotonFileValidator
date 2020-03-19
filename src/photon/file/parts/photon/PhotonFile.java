@@ -47,7 +47,7 @@ public class PhotonFile extends SlicedFile {
         byte[] fileData = getBinaryData(file);
         iPhotonProgress.showInfo("Reading Photon file header information...");
         PhotonFileHeader photonFileHeader = new PhotonFileHeader(fileData);
-        iFileHeader = photonFileHeader;
+        fileHeader = photonFileHeader;
 
         iPhotonProgress.showInfo("Reading photon large preview image information...");
         previewOne = new PhotonFilePreview(photonFileHeader.getPreviewOneOffsetAddress(), fileData);
@@ -67,41 +67,41 @@ public class PhotonFile extends SlicedFile {
 
 
     protected void writeFile(OutputStream outputStream) throws Exception {
-        int antiAliasLevel = iFileHeader.getAALevels();
+        int antiAliasLevel = fileHeader.getAALevels();
 
         int headerPos = 0;
-        int previewOnePos = headerPos + iFileHeader.getByteSize();
+        int previewOnePos = headerPos + fileHeader.getByteSize();
         int previewTwoPos = previewOnePos + previewOne.getByteSize();
         int layerDefinitionPos = previewTwoPos + previewTwo.getByteSize();
 
         int parametersPos = 0;
         int machineInfoPos = 0;
-        if (iFileHeader.getVersion() > 1) {
+        if (fileHeader.getVersion() > 1) {
             parametersPos = layerDefinitionPos;
-            if (((PhotonFileHeader)iFileHeader).photonFileMachineInfo.getByteSize() > 0) {
-	            machineInfoPos = parametersPos + ((PhotonFileHeader)iFileHeader).photonFilePrintParameters.getByteSize();
-                layerDefinitionPos = machineInfoPos + ((PhotonFileHeader)iFileHeader).photonFileMachineInfo.getByteSize();
+            if (((PhotonFileHeader)fileHeader).photonFileMachineInfo.getByteSize() > 0) {
+	            machineInfoPos = parametersPos + ((PhotonFileHeader)fileHeader).photonFilePrintParameters.getByteSize();
+                layerDefinitionPos = machineInfoPos + ((PhotonFileHeader)fileHeader).photonFileMachineInfo.getByteSize();
             } else {
-                layerDefinitionPos = parametersPos + ((PhotonFileHeader)iFileHeader).photonFilePrintParameters.getByteSize();
+                layerDefinitionPos = parametersPos + ((PhotonFileHeader)fileHeader).photonFilePrintParameters.getByteSize();
             }
         }
 
-        int dataPosition = layerDefinitionPos + (PhotonFileLayer.getByteSize() * iFileHeader.getNumberOfLayers() * antiAliasLevel);
+        int dataPosition = layerDefinitionPos + (PhotonFileLayer.getByteSize() * fileHeader.getNumberOfLayers() * antiAliasLevel);
 
 
         PhotonOutputStream os = new PhotonOutputStream(outputStream);
 
-        ((PhotonFileHeader)iFileHeader).save(os, previewOnePos, previewTwoPos, layerDefinitionPos, parametersPos, machineInfoPos);
+        ((PhotonFileHeader)fileHeader).save(os, previewOnePos, previewTwoPos, layerDefinitionPos, parametersPos, machineInfoPos);
         previewOne.save(os, previewOnePos);
         previewTwo.save(os, previewTwoPos);
 
-        if (iFileHeader.getVersion() > 1) {
-            ((PhotonFileHeader)iFileHeader).photonFilePrintParameters.save(os);
-            ((PhotonFileHeader)iFileHeader).photonFileMachineInfo.save(os, machineInfoPos);
+        if (fileHeader.getVersion() > 1) {
+            ((PhotonFileHeader)fileHeader).photonFilePrintParameters.save(os);
+            ((PhotonFileHeader)fileHeader).photonFileMachineInfo.save(os, machineInfoPos);
         }
 
         // Optimize order for speed read on photon
-        for (int i = 0; i < iFileHeader.getNumberOfLayers(); i++) {
+        for (int i = 0; i < fileHeader.getNumberOfLayers(); i++) {
             PhotonFileLayer layer = layers.get(i);
             dataPosition = layer.savePos(dataPosition);
             if (antiAliasLevel > 1) {
@@ -112,20 +112,20 @@ public class PhotonFile extends SlicedFile {
         }
 
         // Order for backward compatibility with photon/cbddlp version 1
-        for (int i = 0; i < iFileHeader.getNumberOfLayers(); i++) {
+        for (int i = 0; i < fileHeader.getNumberOfLayers(); i++) {
             layers.get(i).save(os);
         }
 
         if (antiAliasLevel > 1) {
             for (int a = 0; a < (antiAliasLevel - 1); a++) {
-                for (int i = 0; i < iFileHeader.getNumberOfLayers(); i++) {
+                for (int i = 0; i < fileHeader.getNumberOfLayers(); i++) {
                     layers.get(i).getAntiAlias(a).save(os);
                 }
             }
         }
 
         // Optimize order for speed read on photon
-        for (int i = 0; i < iFileHeader.getNumberOfLayers(); i++) {
+        for (int i = 0; i < fileHeader.getNumberOfLayers(); i++) {
             PhotonFileLayer layer = layers.get(i);
             layer.saveData(os);
             if (antiAliasLevel > 1) {
@@ -138,7 +138,7 @@ public class PhotonFile extends SlicedFile {
 
     @Override
     public SlicedFile fromSlicedFile(SlicedFile input) {
-        iFileHeader = new PhotonFileHeader(input.getHeader());
+        fileHeader = new PhotonFileHeader(input.getHeader());
         if( input.hasPreviews() ) {
             previewOne = input.getPreviewOne();
             previewTwo = input.getPreviewTwo();

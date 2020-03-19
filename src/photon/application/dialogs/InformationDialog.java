@@ -28,7 +28,7 @@ import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
 import com.intellij.uiDesigner.core.Spacer;
 import photon.file.SlicedFile;
-import photon.file.parts.IFileHeader;
+import photon.file.SlicedFileHeader;
 import photon.file.parts.photon.PhotonFileHeader;
 import photon.file.parts.PhotonFilePrintParameters;
 
@@ -70,7 +70,7 @@ public class InformationDialog extends JDialog {
 
     public void setInformation(SlicedFile photonFile) {
         if (photonFile != null) {
-            IFileHeader photonFileHeader = photonFile.getPhotonFileHeader();
+            SlicedFileHeader photonFileHeader = photonFile.getPhotonFileHeader();
 
             buildAreaX.setText(String.format("%8.2f mm", photonFileHeader.getBuildAreaX()));
             buildAreaY.setText(String.format("%8.2f mm", photonFileHeader.getBuildAreaY()));

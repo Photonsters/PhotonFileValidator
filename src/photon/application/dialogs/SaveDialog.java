@@ -28,11 +28,11 @@ import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
 import com.intellij.uiDesigner.core.Spacer;
 import photon.application.MainForm;
+import photon.file.SlicedFileHeader;
 import photon.file.parts.photon.PhotonFile;
 import photon.file.parts.sl1.Sl1File;
 import photon.file.SlicedFile;
 import photon.file.parts.EFileType;
-import photon.file.parts.IFileHeader;
 import photon.file.parts.photon.PhotonFileHeader;
 import photon.file.parts.PhotonFilePrintParameters;
 
@@ -141,6 +141,7 @@ public class SaveDialog extends JDialog {
                         outputFile = new Sl1File().fromSlicedFile(photonFile);
                         break;
                     case PhotonS:
+                        throw new UnsupportedOperationException("Not yet implemented");
                     case Zip:
                         throw new UnsupportedOperationException("Not yet implemented");
                     case Photon:
@@ -163,13 +164,14 @@ public class SaveDialog extends JDialog {
             }
 
 
-            IFileHeader header = outputFile.getPhotonFileHeader();
+            SlicedFileHeader header = outputFile.getPhotonFileHeader();
             header.setExposureTimeSeconds(getFloat(textExposure.getText()));
             header.setOffTimeSeconds(getFloat(textOffTime.getText()));
             header.setExposureBottomTimeSeconds(getFloat(textBottomExposure.getText()));
             header.setBottomLayers(Integer.parseInt(textBottomLayers.getText()));
 
-            if (version2FormatCheckBox.isSelected()  && outputFile.getType() == EFileType.Photon) {
+            // TODO:: migrate this to additional parameters.
+            if (version2FormatCheckBox.isSelected() && outputFile.getType() == EFileType.Photon) {
                 if (outputFile.getVersion() == 1) {
                     outputFile.changeToVersion2();
                 }
@@ -182,7 +184,6 @@ public class SaveDialog extends JDialog {
                 parameters.bottomLightOffDelay = getFloat(bottomLightOffDelay.getText());
                 parameters.lightOffDelay = getFloat(lightOffDelay.getText());
             }
-
             outputFile.adjustLayerSettings();
             if (fixZcheck.isSelected()) {
                 outputFile.fixLayerHeights();
@@ -206,15 +207,8 @@ public class SaveDialog extends JDialog {
     public void setInformation(SlicedFile photonFile, String path, String name) {
         this.photonFile = photonFile;
         this.path = path;
-        // TODO:: update this
-        if (name.toLowerCase().endsWith(".photon")) {
-            name = makeFileName(path, name.substring(0, name.length() - 7), ".photon");
-        } else if (name.toLowerCase().endsWith(".cbddlp")) {
-            name = makeFileName(path, name.substring(0, name.length() - 7), ".cbddlp");
+        name = makeFileName(path, name.substring(0, name.length() - 7), EFileType.identifyFile(name).getExtension());
 
-        } else {
-            name = name + "1.photon";
-        }
         textName.setText(name);
         textExposure.setText(String.format("%.1f", photonFile.getPhotonFileHeader().getExposureTimeSeconds()));
         textOffTime.setText(String.format("%.1f", photonFile.getPhotonFileHeader().getOffTimeSeconds()));
@@ -228,28 +222,26 @@ public class SaveDialog extends JDialog {
             fixZcheck.setText(String.format("Total Z error is %f mm", drift));
         }
 
-        if (photonFile.getVersion() == 1) {
-            bottomLiftDistance.setText("5.0");
-            bottomLiftSpeed.setText("300.0");
-            liftingDistance.setText("5.0");
-            liftingSpeed.setText("300.0");
-            retractSpeed.setText("300.0");
-            bottomLightOffDelay.setText("0.0");
-            lightOffDelay.setText("0.0");
-        } else {
+        if ((photonFile.getType() == EFileType.Photon || photonFile.getType() == EFileType.Cbddlp)
+                && photonFile.getVersion() == 2) {
             version2FormatCheckBox.setSelected(true);
             version2FormatCheckBox.setEnabled(false);
-            PhotonFilePrintParameters parameters = ((PhotonFileHeader) photonFile.getPhotonFileHeader()).photonFilePrintParameters;
-
-            bottomLiftDistance.setText(String.format("%.1f", parameters.bottomLiftDistance));
-            bottomLiftSpeed.setText(String.format("%.1f", parameters.bottomLiftSpeed));
-            liftingDistance.setText(String.format("%.1f", parameters.liftingDistance));
-            liftingSpeed.setText(String.format("%.1f", parameters.liftingSpeed));
-            retractSpeed.setText(String.format("%.1f", parameters.retractSpeed));
-            bottomLightOffDelay.setText(String.format("%.1f", parameters.bottomLightOffDelay));
-            lightOffDelay.setText(String.format("%.1f", parameters.lightOffDelay));
         }
 
+        bottomLiftDistance.setText(String.format("%.1f",
+                photonFile.getHeader().getAdditionalParameterOrDefault("bottomLiftDistance", "5.0")));
+        bottomLiftSpeed.setText(String.format("%.1f",
+                photonFile.getHeader().getAdditionalParameterOrDefault("bottomLiftSpeed", "300.0")));
+        liftingDistance.setText(String.format("%.1f",
+                photonFile.getHeader().getAdditionalParameterOrDefault("liftingDistance", "50.0")));
+        liftingSpeed.setText(String.format("%.1f",
+                photonFile.getHeader().getAdditionalParameterOrDefault("liftingSpeed", "300.0")));
+        retractSpeed.setText(String.format("%.1f",
+                photonFile.getHeader().getAdditionalParameterOrDefault("retractSpeed", "300.0")));
+        bottomLightOffDelay.setText(String.format("%.1f",
+                photonFile.getHeader().getAdditionalParameterOrDefault("bottomLightOffDelay", "0.0")));
+        lightOffDelay.setText(String.format("%.1f",
+                photonFile.getHeader().getAdditionalParameterOrDefault("lightOffDelay", "0.0")));
     }
 
     private String makeFileName(String path, String name, String ext) {

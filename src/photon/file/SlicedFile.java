@@ -36,7 +36,7 @@ import java.util.List;
 
 
 public abstract class SlicedFile {
-    protected IFileHeader iFileHeader;
+    protected SlicedFileHeader fileHeader;
     // TODO:: Should we push these down to those filetypes which have previews?
     protected PhotonFilePreview previewOne;
     protected PhotonFilePreview previewTwo;
@@ -145,12 +145,12 @@ public abstract class SlicedFile {
     }
 
     public String getInformation() {
-        if (iFileHeader == null) return "";
-        return iFileHeader.getInformation();
+        if (fileHeader == null) return "";
+        return fileHeader.getInformation();
     }
 
-    public IFileHeader getHeader() {
-        return iFileHeader;
+    public SlicedFileHeader getHeader() {
+        return fileHeader;
     }
 
     public List<PhotonFileLayer> getLayers() {
@@ -233,7 +233,7 @@ public abstract class SlicedFile {
             islandList = new StringBuilder();
             islandLayerCount = 0;
             if (layers != null) {
-                for (int i = 0; i < iFileHeader.getNumberOfLayers(); i++) {
+                for (int i = 0; i < fileHeader.getNumberOfLayers(); i++) {
                     PhotonFileLayer layer = layers.get(i);
                     if (layer.getIsLandsCount() > 0) {
                         if (islandLayerCount < 11) {
@@ -253,15 +253,15 @@ public abstract class SlicedFile {
     }
 
     public int getWidth() {
-        return iFileHeader.getResolutionY();
+        return fileHeader.getResolutionY();
     }
 
     public int getHeight() {
-        return iFileHeader.getResolutionX();
+        return fileHeader.getResolutionX();
     }
 
     public int getLayerCount() {
-        return iFileHeader.getNumberOfLayers();
+        return fileHeader.getNumberOfLayers();
     }
 
     public PhotonFileLayer getLayer(int i) {
@@ -281,8 +281,8 @@ public abstract class SlicedFile {
         return total;
     }
 
-    public IFileHeader getPhotonFileHeader() {
-        return iFileHeader;
+    public SlicedFileHeader getPhotonFileHeader() {
+        return fileHeader;
     }
 
     public PhotonFilePreview getPreviewOne() {
@@ -305,8 +305,8 @@ public abstract class SlicedFile {
         if (marginLayers != null) {
             marginLayers.clear();
         }
-        iFileHeader.unLink();
-        iFileHeader = null;
+        fileHeader.unLink();
+        fileHeader = null;
         previewOne.unLink();
         previewOne = null;
         previewTwo.unLink();
@@ -318,12 +318,12 @@ public abstract class SlicedFile {
     public void adjustLayerSettings() {
         for (int i = 0; i < layers.size(); i++) {
             PhotonFileLayer layer = layers.get(i);
-            if (i < iFileHeader.getBottomLayers()) {
-                layer.setLayerExposure(iFileHeader.getBottomExposureTimeSeconds());
+            if (i < fileHeader.getBottomLayers()) {
+                layer.setLayerExposure(fileHeader.getBottomExposureTimeSeconds());
             } else {
-                layer.setLayerExposure(iFileHeader.getNormalExposure());
+                layer.setLayerExposure(fileHeader.getNormalExposure());
             }
-            layer.setLayerOffTimeSeconds(iFileHeader.getOffTimeSeconds());
+            layer.setLayerOffTimeSeconds(fileHeader.getOffTimeSeconds());
         }
     }
 
@@ -425,16 +425,16 @@ public abstract class SlicedFile {
     }
 
     public void calculateAaLayers(IPhotonProgress progres, PhotonAaMatrix photonAaMatrix) throws Exception {
-        PhotonFileLayer.calculateAALayers(iFileHeader, layers, photonAaMatrix, progres);
+        PhotonFileLayer.calculateAALayers(fileHeader, layers, photonAaMatrix, progres);
     }
 
     public void calculate(IPhotonProgress progres) throws Exception {
-        PhotonFileLayer.calculateLayers(iFileHeader, layers, margin, progres);
+        PhotonFileLayer.calculateLayers(fileHeader, layers, margin, progres);
         resetMarginAndIslandInfo();
     }
 
     public void calculate(int layerNo) throws Exception {
-        PhotonFileLayer.calculateLayers(iFileHeader, layers, margin, layerNo);
+        PhotonFileLayer.calculateLayers(fileHeader, layers, margin, layerNo);
         resetMarginAndIslandInfo();
     }
 
@@ -456,7 +456,7 @@ public abstract class SlicedFile {
     }
 
     public float getZdrift() {
-        float expectedHeight = iFileHeader.getLayerHeight() * (iFileHeader.getNumberOfLayers() - 1);
+        float expectedHeight = fileHeader.getLayerHeight() * (fileHeader.getNumberOfLayers() - 1);
         float actualHeight = layers.get(layers.size() - 1).getLayerPositionZ();
         return expectedHeight - actualHeight;
 
@@ -465,30 +465,30 @@ public abstract class SlicedFile {
     public void fixLayerHeights() {
         int index = 0;
         for (PhotonFileLayer layer : layers) {
-            layer.setLayerPositionZ(index * iFileHeader.getLayerHeight());
+            layer.setLayerPositionZ(index * fileHeader.getLayerHeight());
             index++;
         }
     }
 
     public int getVersion() {
-        return iFileHeader.getVersion();
+        return fileHeader.getVersion();
     }
 
     public boolean hasAA() {
-        return iFileHeader.hasAA();
+        return fileHeader.hasAA();
     }
 
     public int getAALevels() {
-        return iFileHeader.getAALevels();
+        return fileHeader.getAALevels();
     }
 
     public void changeToVersion2() {
-        iFileHeader.setFileVersion(2);
+        fileHeader.setFileVersion(2);
     }
 
     // only call this when recalculating AA levels
     public void setAALevels(int levels) {
-        iFileHeader.setAALevels(levels, layers);
+        fileHeader.setAALevels(levels, layers);
     }
 
 }
