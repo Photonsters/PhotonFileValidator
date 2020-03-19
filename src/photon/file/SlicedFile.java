@@ -25,6 +25,9 @@
 package photon.file;
 
 import photon.file.parts.*;
+import photon.file.parts.photon.PhotonFile;
+import photon.file.parts.sl1.PhotonSFile;
+import photon.file.parts.sl1.Sl1File;
 import photon.file.parts.zip.ZipFile;
 
 import java.io.*;

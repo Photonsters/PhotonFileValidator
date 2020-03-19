@@ -29,7 +29,6 @@ import photon.application.render.storage.Renderer;
 import photon.application.render.storage.RotationBaseMatrix;
 import photon.application.render.elements.BaseElement;
 import photon.application.render.elements.World;
-import photon.file.PhotonFile;
 import photon.file.SlicedFile;
 import photon.file.parts.PhotonFileLayer;
 import photon.file.parts.PhotonLayer;

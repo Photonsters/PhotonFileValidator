@@ -1,5 +1,6 @@
-package photon.file;
+package photon.file.parts.sl1;
 
+import photon.file.SlicedFile;
 import photon.file.parts.EFileType;
 import photon.file.parts.IPhotonProgress;
 import photon.file.parts.photons.PhotonsFileHeader;

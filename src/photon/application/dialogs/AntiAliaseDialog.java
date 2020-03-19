@@ -25,7 +25,6 @@
 package photon.application.dialogs;
 
 import photon.application.MainForm;
-import photon.file.PhotonFile;
 import photon.file.SlicedFile;
 import photon.file.parts.PhotonFileLayer;
 import photon.file.ui.PhotonAaPanel;

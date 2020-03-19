@@ -27,7 +27,6 @@ package photon.application.dialogs;
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
 import com.intellij.uiDesigner.core.Spacer;
-import photon.file.PhotonFile;
 import photon.file.SlicedFile;
 import photon.file.parts.IFileHeader;
 import photon.file.parts.photon.PhotonFileHeader;

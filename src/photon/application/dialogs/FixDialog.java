@@ -31,7 +31,6 @@ import photon.application.MainForm;
 import photon.application.utilities.PhotonFixAllWorker;
 import photon.application.utilities.PhotonFixWorker;
 import photon.application.utilities.PhotonRemoveAllIslandsWorker;
-import photon.file.PhotonFile;
 import photon.file.SlicedFile;
 import photon.file.parts.PhotonFileLayer;
 

@@ -1,5 +1,6 @@
-package photon.file;
+package photon.file.parts.sl1;
 
+import photon.file.SlicedFile;
 import photon.file.parts.EFileType;
 import photon.file.parts.IPhotonProgress;
 import photon.file.parts.PhotonFileLayer;
@@ -19,7 +20,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
 
-public class Sl1File extends SlicedFile{
+public class Sl1File extends SlicedFile {
     @Override
     public SlicedFile readFromFile(File file, IPhotonProgress iPhotonProgress) throws Exception {
         ZipFile zf = new ZipFile(file);
@@ -112,15 +113,15 @@ public class Sl1File extends SlicedFile{
 
     @Override
     public SlicedFile fromSlicedFile(SlicedFile input) {
-        iFileHeader = new Sl1FileHeader(input.iFileHeader);
+        iFileHeader = new Sl1FileHeader(input.getHeader());
         previewOne = null;
         previewTwo = null;
-        layers = input.layers;
-        islandList = input.islandList;
-        islandLayerCount = input.islandLayerCount;
-        islandLayers = input.islandLayers;
-        margin = input.margin;
-        marginLayers = input.marginLayers;
+        layers = input.getLayers();
+        islandList = input.getIslandList();
+        islandLayerCount = input.getIslandLayerCount();
+        islandLayers = input.getIslandLayers();
+        margin = input.getMargin();
+        marginLayers = input.getMarginLayers();
         return this;
     }
 

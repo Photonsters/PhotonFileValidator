@@ -29,11 +29,9 @@ import com.intellij.uiDesigner.core.GridLayoutManager;
 import com.intellij.uiDesigner.core.Spacer;
 import photon.application.MainForm;
 import photon.application.utilities.PhotonAaWorker;
-import photon.file.PhotonFile;
 import photon.file.SlicedFile;
 import photon.file.parts.PhotonAaMatrix;
 import photon.file.ui.PhotonAALevel;
-import photon.file.ui.PhotonAaPanel;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;

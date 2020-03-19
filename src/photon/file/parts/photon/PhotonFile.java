@@ -22,10 +22,10 @@
  * SOFTWARE.
  */
 
-package photon.file;
+package photon.file.parts.photon;
 
+import photon.file.SlicedFile;
 import photon.file.parts.*;
-import photon.file.parts.photon.PhotonFileHeader;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -35,7 +35,7 @@ import java.io.OutputStream;
 /**
  * by bn on 30/06/2018.
  */
-public class PhotonFile extends SlicedFile{
+public class PhotonFile extends SlicedFile {
     // Dimensions of the preview images on a photon.
     // While I don't know they _have_ to be this, it doesn't hurt to make them this.
     final static int PREVIEW_LARGE_X = 400;
@@ -138,10 +138,10 @@ public class PhotonFile extends SlicedFile{
 
     @Override
     public SlicedFile fromSlicedFile(SlicedFile input) {
-        iFileHeader = new PhotonFileHeader(input.iFileHeader);
+        iFileHeader = new PhotonFileHeader(input.getHeader());
         if( input.hasPreviews() ) {
-            previewOne = input.previewOne;
-            previewTwo = input.previewTwo;
+            previewOne = input.getPreviewOne();
+            previewTwo = input.getPreviewTwo();
         } else {
             // need to fake them.
             // TODO:: Maybe something more interesting than a solid colour?
@@ -156,12 +156,12 @@ public class PhotonFile extends SlicedFile{
             graphics2D.fillRect(0,0,PREVIEW_SMALL_X,PREVIEW_SMALL_Y);
             previewTwo = new PhotonFilePreview(preview);
         }
-        layers = input.layers;
-        islandList = input.islandList;
-        islandLayerCount = input.islandLayerCount;
-        islandLayers = input.islandLayers;
-        margin = input.margin;
-        marginLayers = input.marginLayers;
+        layers = input.getLayers();
+        islandList = input.getIslandList();
+        islandLayerCount = input.getIslandLayerCount();
+        islandLayers = input.getIslandLayers();
+        margin = input.getMargin();
+        marginLayers = input.getMarginLayers();
         return this;
     }
 

@@ -26,7 +26,6 @@ package photon.application.dialogs;
 
 import photon.application.MainForm;
 import photon.application.utilities.MainUtils;
-import photon.file.PhotonFile;
 import photon.file.SlicedFile;
 import photon.file.parts.PhotonDot;
 import photon.file.parts.PhotonFileLayer;

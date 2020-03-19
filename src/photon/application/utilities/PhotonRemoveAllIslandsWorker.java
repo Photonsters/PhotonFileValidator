@@ -26,7 +26,6 @@ package photon.application.utilities;
 
 import photon.application.MainForm;
 import photon.application.dialogs.FixDialog;
-import photon.file.PhotonFile;
 import photon.file.SlicedFile;
 import photon.file.parts.IPhotonProgress;
 
