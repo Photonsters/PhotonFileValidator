@@ -288,9 +288,8 @@ public class PhotonLayer {
     /**
      * Expand the layer into an image.
      * @return the layer as an image.
-     * @throws IOException on error decoding the layer
      */
-    public BufferedImage getImage() throws IOException {
+    public BufferedImage getImage() {
         BufferedImage result = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
         int idx=0;
         for(int i=0; i<height; i++) {

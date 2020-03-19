@@ -26,7 +26,10 @@ package photon.file.parts;
 
 import photon.file.parts.photon.PhotonFileHeader;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.util.*;
 
 /**
@@ -212,6 +215,33 @@ public class PhotonFileLayer {
         photonLayer.reduce();
 
         isLandsCount = photonLayer.setIslands(islandRows);
+    }
+
+    /**
+     * Read a photon layer from a normal image file (e.g. a png)
+     * @param width of the image
+     * @param height of the image
+     * @param input stream to read the image from
+     * @return a PhotonFileLayer of the image
+     * @throws Exception on failure
+     */
+    public static PhotonFileLayer readLayer(int width, int height, InputStream input) throws Exception {
+        PhotonFileLayer target = new PhotonFileLayer();
+        BufferedImage img = ImageIO.read(input);
+
+        PhotonLayer layer = new PhotonLayer(width, height);
+        layer.clear();
+        //TODO:: AA Support
+        // TODO:: This can prbably be a lot faster by using getRaster.getData to access the buffer directly.
+        for( int y=0; y<height; y++) {
+            for( int x=0; x<width; x++) {
+                // assume the image is greyscale. TODO:: average the values?
+                if( (img.getRGB(x,y)&0x000000ff) == 0x000000ff)
+                    layer.supported(x,y);
+            }
+        }
+        target.saveLayer(layer);
+        return target;
     }
 
     public static List<PhotonFileLayer> readLayers(PhotonFileHeader photonFileHeader, byte[] file, int margin, IPhotonProgress iPhotonProgress) throws Exception {

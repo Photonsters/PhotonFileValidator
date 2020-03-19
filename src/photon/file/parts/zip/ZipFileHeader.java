@@ -1,4 +1,4 @@
-package photon.file.parts.sl1;
+package photon.file.parts.zip;
 
 import photon.file.parts.IFileHeader;
 import photon.file.parts.PhotonFileLayer;
@@ -7,9 +7,17 @@ import java.io.*;
 import java.util.List;
 import java.util.regex.Pattern;
 
-public class Sl1FileHeader implements IFileHeader {
-
-    private static Pattern linePattern = Pattern.compile("\\s*=\\s*");
+public class ZipFileHeader implements IFileHeader {
+    private static final String DEFAULT_START_GCODE =
+            "G21;\n" +
+            "G90;\n" +
+            "M106 S0;\n" +
+            "G28 Z0;\n";
+    private static final String DEFAULT_END_GCODE =
+            "M106 S0;\n" +
+            "G1 Z150 F25;\n" +
+            "M18;";
+  //  private static Pattern linePattern = Pattern.compile(";\\s*:.*");
 
     private float layerHeightMilimeter;
     private float exposureTimeSeconds;
@@ -22,25 +30,13 @@ public class Sl1FileHeader implements IFileHeader {
     private int printTimeSeconds;
     private int version;
 
-    public void setResolutionX(int resolutionX) {
-        this.resolutionX = resolutionX;
-    }
-
-    public void setResolutionY(int resolutionY) {
-        this.resolutionY = resolutionY;
-    }
-
     private int resolutionX;
     private int resolutionY;
 
-    public String getJobName() {
-        return jobName;
-    }
+    private String start_gcode;
+    private String end_gcode;
 
-    // This is used as the base of the image filenames.
-    private String jobName;
-
-    public Sl1FileHeader(IFileHeader other) {
+    public ZipFileHeader(IFileHeader other) {
         layerHeightMilimeter = other.getLayerHeight();
         exposureTimeSeconds = other.getExposureTimeSeconds();
         exposureBottomTimeSeconds = other.getBottomExposureTimeSeconds();
@@ -50,93 +46,60 @@ public class Sl1FileHeader implements IFileHeader {
         printTimeSeconds = other.getPrintTimeSeconds();
         resolutionX = other.getResolutionX();
         resolutionY = other.getResolutionY();
-        jobName = "SL1";
+        start_gcode = DEFAULT_START_GCODE;
+        end_gcode = DEFAULT_END_GCODE;
         version = 1;
     }
 
-    public Sl1FileHeader(InputStream entry) throws IOException {
+    public ZipFileHeader(InputStream entry) throws IOException {
         BufferedReader headerStream = new BufferedReader(new InputStreamReader(entry));
+        String[] components;
         while( headerStream.ready()) {
             String line = headerStream.readLine();
-            String[] components = linePattern.split(line);
-            if( components.length != 2 ) {
-                throw new IllegalArgumentException("Unparsable line:" + line + " in config.ini");
-            }
-            /* Sample of config.ini
-             * action = print
-             * jobDir = 20mm_cube
-             * expTime = 12
-             * expTimeFirst = 70
-             * fileCreationTimestamp = 2020-03-01 at 15:33:48 UTC
-             * layerHeight = 0.05
-             * materialName = Anycubic White 0.05
-             * numFade = 8
-             * numFast = 476
-             * numSlow = 0
-             * printProfile = 0.05 Normal - Copy
-             * printTime = 8491.555556
-             * printerModel = SL1
-             * printerProfile = Original Prusa SL1
-             * printerVariant = default
-             * prusaSlicerVersion = PrusaSlicer-2.1.1+win64-201912101512
-             * usedMaterial = 0.782136
-             */
-            switch(components[0].toLowerCase()) {
-                case "jobdir":
-                    jobName = components[1];
-                    break;
-                case "layerheight":
+            components = line.split(":");
+            switch (components[0].toLowerCase()) {
+                case ";layerheight":
                     layerHeightMilimeter = Float.parseFloat(components[1]);
                     break;
-                case "exptime":
+                case ";normalexposuretime":
                     exposureTimeSeconds = Float.parseFloat(components[1]);
                     break;
-                case "exptimefirst":
+                case ";bottomLayerexposuretime":
                     exposureBottomTimeSeconds = Float.parseFloat(components[1]);
                     break;
-                case "numfade":
+                case ";lightofftime":
+                    offTimeSeconds = Float.parseFloat(components[1]);
+                    break;
+                case ";bottomlayercount":
                     bottomLayers = Integer.parseInt(components[1]);
                     break;
-                case "numfast":
+                case ";totallayer":
                     numberOfLayers = Integer.parseInt(components[1]);
                     break;
-                case "printtime":
+                case ";estimatedprinttime":
                     printTimeSeconds = (int)Float.parseFloat(components[1]);
                     break;
-                case "numslow":
-                case "action":
-                case "filecreationtimestamp":
-                case "materialname":
-                case "printerprofile":
-                case "printprofile":
-                case "printermodel":
-                case "printervariant":
-                case "prusaslicerversion":
-                case "usedmaterial":
-                    // TODO:: add these and save them on non-conversions
+                case ";resolutionx":
+                    resolutionX = Integer.parseInt(components[1]);
+                    break;
+                case ";resolutiony":
+                    resolutionY = Integer.parseInt(components[1]);
                     break;
                 default:
-                    throw new IllegalArgumentException("Unknown key in config.ini: " + line);
+                    // TODO:: implement the rest
+                    break;
             }
         }
-
-        // TODO:: add v2 support.
+        // TODO:: this is not accurate, it's really a v2. Need to consider this.
         version = 1;
     }
 
     public void write(OutputStream output) throws IOException {
-        String outputString = "action = print\n"
-                + String.format("jobDir = %s\n", jobName)
-                + String.format("expTime = %f\n", exposureTimeSeconds)
-                + String.format("expTimeFirst = %f\n", exposureBottomTimeSeconds)
-                + String.format("layerHeight = %f\n", layerHeightMilimeter)
-                + String.format("numFade = %d\n", bottomLayers)
-                + String.format("NumFast = %d\n", numberOfLayers)
-                + "numSlow = 0\n";
-        output.write(outputString.getBytes());
+        throw new UnsupportedOperationException("unimplemented");
     }
 
-    @Override
+
+        @Override
     public String getInformation() {
         return null;
     }
@@ -237,9 +200,7 @@ public class Sl1FileHeader implements IFileHeader {
     }
 
     @Override
-    public void setAALevels(int levels, List<PhotonFileLayer> layers) {
-
-    }
+    public void setAALevels(int levels, List<PhotonFileLayer> layers) { /* TODO */ }
 
     @Override
     public int getVersion() {
@@ -257,12 +218,10 @@ public class Sl1FileHeader implements IFileHeader {
     }
 
     @Override
-    public void unLink() {
-
-    }
+    public void unLink() { /* no-op */ }
 
     @Override
     public IFileHeader fromIFileHeader(IFileHeader other) {
-        return new Sl1FileHeader(other);
+        return new ZipFileHeader(other);
     }
 }

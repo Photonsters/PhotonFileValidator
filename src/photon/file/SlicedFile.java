@@ -25,6 +25,7 @@
 package photon.file;
 
 import photon.file.parts.*;
+import photon.file.parts.zip.ZipFile;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -67,7 +68,9 @@ public abstract class SlicedFile {
             case Sl1:
                 result = new Sl1File();
                 break;
-            // TODO:: implement other types.
+            case Zip:
+                result = new ZipFile();
+                break;
             default:
                 throw new UnsupportedOperationException("Unknown file type passed to readFile. This is a bug.");
         }
@@ -143,6 +146,21 @@ public abstract class SlicedFile {
         return iFileHeader.getInformation();
     }
 
+    public IFileHeader getHeader() {
+        return iFileHeader;
+    }
+
+    public List<PhotonFileLayer> getLayers() {
+        return layers;
+    }
+
+    public StringBuilder getIslandList() {
+        return islandList;
+    }
+
+    public int getMargin() {
+        return margin;
+    }
 
     public int getIslandLayerCount() {
         if (islandList == null) {

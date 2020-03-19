@@ -206,6 +206,7 @@ public class SaveDialog extends JDialog {
     public void setInformation(SlicedFile photonFile, String path, String name) {
         this.photonFile = photonFile;
         this.path = path;
+        // TODO:: update this
         if (name.toLowerCase().endsWith(".photon")) {
             name = makeFileName(path, name.substring(0, name.length() - 7), ".photon");
         } else if (name.toLowerCase().endsWith(".cbddlp")) {

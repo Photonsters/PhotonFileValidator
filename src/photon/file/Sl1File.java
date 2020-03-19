@@ -68,7 +68,11 @@ public class Sl1File extends SlicedFile{
             int curIndex = Integer.parseInt(entryMatcher.group(1));
             iPhotonProgress.showInfo("Reading SL1 file layer " + (curIndex+1) + "/" + header.getNumberOfLayers());
 
-            layerArr[curIndex] = readLayer(zf.getInputStream(entry));
+            layerArr[curIndex] = PhotonFileLayer.readLayer(
+                    iFileHeader.getResolutionX(),
+                    iFileHeader.getResolutionY(),
+                    zf.getInputStream(entry));
+
             if( curIndex < header.getBottomLayers()) {
                 layerArr[curIndex].setLayerExposure(header.getBottomExposureTimeSeconds());
             } else {
@@ -82,26 +86,6 @@ public class Sl1File extends SlicedFile{
         layers = Arrays.asList(layerArr);
 
         return this;
-    }
-
-    protected PhotonFileLayer readLayer(InputStream input) throws Exception {
-        PhotonFileLayer target = new PhotonFileLayer();
-        BufferedImage img = ImageIO.read(input);
-
-
-
-        PhotonLayer layer = new PhotonLayer(iFileHeader.getResolutionX(), iFileHeader.getResolutionY());
-        layer.clear();
-        //TODO:: AA Support
-        for( int y=0; y<iFileHeader.getResolutionY(); y++) {
-            for( int x=0; x<iFileHeader.getResolutionX(); x++) {
-                // assume the image is greyscale. TODO:: average the values?
-                if( (img.getRGB(x,y)&0x000000ff) == 0x000000ff)
-                    layer.supported(x,y);
-            }
-        }
-        target.saveLayer(layer);
-        return target;
     }
 
     @Override

@@ -24,9 +24,14 @@
 
 package photon.file.parts;
 
+import javax.imageio.ImageIO;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
+import java.awt.image.WritableRaster;
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Arrays;
 
 /**
@@ -78,13 +83,46 @@ public class PhotonFilePreview {
         decodeImageData();
     }
 
+    public PhotonFilePreview(InputStream input) throws IOException {
+        BufferedImage img = ImageIO.read(input);
+        resolutionX = img.getWidth();
+        resolutionY = img.getHeight();
+        BufferedImage rgbImg;
+        if(img.getType() == BufferedImage.TYPE_INT_RGB)
+        {
+            rgbImg = img;
+        } else {
+            // wrong image format, convert it.
+            rgbImg = new BufferedImage(resolutionX, resolutionY, BufferedImage.TYPE_INT_RGB);
+            Graphics graphics = rgbImg.getGraphics();
+            graphics.drawImage(img, 0, 0, null);
+            graphics.dispose();
+        }
+        imageData = ((DataBufferInt)rgbImg.getRaster().getDataBuffer()).getData();
+        encodeImageData();
+        dataSize = rawImageData.length;
+
+    }
+
     public PhotonFilePreview(BufferedImage image) {
         resolutionX = image.getWidth();
         resolutionY = image.getHeight();
         imageData = ((DataBufferInt)image.getRaster().getDataBuffer()).getData();
         encodeImageData();
-        imageData = null;
         dataSize = rawImageData.length;
+    }
+
+    /**
+     * Expand the preview image back out to a buffered image.
+     * @return the image
+     */
+    public BufferedImage getImage() {
+       if( imageData == null ) decodeImageData();
+       BufferedImage result = new BufferedImage(resolutionX, resolutionY, BufferedImage.TYPE_INT_RGB);
+       WritableRaster raster = result.getRaster();
+       raster.setPixels(0,0,resolutionX,resolutionY, imageData);
+       imageData = null;
+       return result;
     }
 
     public void save(PhotonOutputStream os, int startAddress) throws Exception {
