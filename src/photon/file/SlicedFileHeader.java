@@ -116,16 +116,27 @@ abstract public class SlicedFileHeader {
      * @return the value as a int, or 0 if it is not set.
      */
     public int getIntParam(String parameter) {
+        return getIntParamOrDefault(parameter, 0);
+    }
+
+    /**
+     * Get a format specific additional parameter, converted to an int if present,
+     * or a default value otherwise
+     * @param parameter to look for
+     * @param defaultValue if the parameter is not set
+     * @return either the value associated with the parameter or the default value, as an int
+     */
+    public int getIntParamOrDefault(String parameter, int defaultValue) {
         if (additionalParameters.containsKey(parameter)) {
             return Integer.parseInt(additionalParameters.get(parameter));
         }
-        return 0;
+        return defaultValue;
     }
 
     /**
      * Get a format specific additional parameter, converted to a float if present,
      * or a default value otherwise
-     * @param parameter to look for (case insensitive)
+     * @param parameter to look for
      * @param defaultValue if the parameter is not set
      * @return either the value associated with the parameter or the default value, as a float
      */
