@@ -17,8 +17,8 @@ public class ZipFileHeader extends SlicedFileHeader {
     private static final String DEFAULT_END_GCODE = "M106 S0;\n" +
             "G1 Z150 F25;\n" +
             "M18;";
-    private static final String START_GCODE_FORMAT = ";START_GCODE_BEGIN\n%s\n;START_GCODE_END";
-    private static final String END_GCODE_FORMAT = ";END_GCODE_BEGIN\n%s\n;END_GCODE_END";
+    private static final String START_GCODE_FORMAT = ";START_GCODE_BEGIN\n%s\n;START_GCODE_END\n";
+    private static final String END_GCODE_FORMAT = ";END_GCODE_BEGIN\n%s\n;END_GCODE_END\n";
     private static final String LAYER_GCODE_FORMAT = ";LAYER_START:%d\n" +
             ";currPos:%d\n" +
             "M6054 \"%d.png\";show Image\n" +
@@ -28,7 +28,7 @@ public class ZipFileHeader extends SlicedFileHeader {
             "M106 S255;light on\n" +
             "G4 P%d;\n" +
             "M106 S0; light off\n" +
-            ";LAYER_END";
+            ";LAYER_END\n";
     //A list of valid config.ini keys which are _not_ covered by 'core' values
     private static final List<String> KNOWN_ADDITIONAL_KEYS = Arrays.asList(
             "fileName",

@@ -34,6 +34,7 @@ import photon.file.parts.photon.PhotonFile;
 import photon.file.parts.sl1.Sl1File;
 import photon.file.SlicedFile;
 import photon.file.parts.EFileType;
+import photon.file.parts.zip.ZipFile;
 
 import javax.swing.*;
 import java.awt.*;
@@ -142,7 +143,8 @@ public class SaveDialog extends JDialog {
                     case PhotonS:
                         throw new UnsupportedOperationException("Not yet implemented");
                     case Zip:
-                        throw new UnsupportedOperationException("Not yet implemented");
+                        outputFile = new ZipFile().fromSlicedFile(photonFile);
+                        break;
                     case Photon:
                         if (photonFile.getType() == EFileType.Cbddlp) {
                             outputFile = photonFile;

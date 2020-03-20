@@ -266,6 +266,7 @@ public class PhotonFilePreview {
     }
 
     public int[] getImageData() {
+        if(imageData == null && rawImageData != null) decodeImageData();
         return imageData;
     }
 
