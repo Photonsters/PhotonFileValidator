@@ -259,7 +259,7 @@ public class SaveDialog extends JDialog {
         }
         int i = 1;
         while ((new File(path + File.separatorChar + name + "-" + i + ext)).exists()) i++;
-        return name + "-" + i + ext;
+        return name + "-" + i + "." + ext;
     }
 
     private float getFloat(String str) {
