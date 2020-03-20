@@ -120,7 +120,7 @@ public class PhotonFilePreview {
        if( imageData == null ) decodeImageData();
        BufferedImage result = new BufferedImage(resolutionX, resolutionY, BufferedImage.TYPE_INT_RGB);
        WritableRaster raster = result.getRaster();
-       raster.setPixels(0,0,resolutionX,resolutionY, imageData);
+       raster.setDataElements(0,0,resolutionX,resolutionY, imageData);
        imageData = null;
        return result;
     }
