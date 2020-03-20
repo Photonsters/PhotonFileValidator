@@ -5,6 +5,7 @@ import photon.file.parts.PhotonFileLayer;
 
 import java.io.*;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 public class Sl1FileHeader extends SlicedFileHeader {
@@ -99,32 +100,33 @@ public class Sl1FileHeader extends SlicedFileHeader {
                 case "printervariant":
                 case "prusaslicerversion":
                 case "usedmaterial":
-                    // TODO:: add these and save them on non-conversions
+                    additionalParameters.put(components[0], components[1]);
                     break;
                 default:
                     throw new IllegalArgumentException("Unknown key in config.ini: " + line);
             }
         }
 
-        // TODO:: add v2 support.
         version = 1;
     }
 
     public void write(OutputStream output) throws IOException {
-        String outputString = "action = print\n"
-                + String.format("jobDir = %s\n", jobName)
-                + String.format("expTime = %f\n", exposureTimeSeconds)
-                + String.format("expTimeFirst = %f\n", exposureBottomTimeSeconds)
-                + String.format("layerHeight = %f\n", layerHeightMilimeter)
+        String outputString = String.format("jobDir = %s\n", jobName)
+                + String.format("expTime = %.2f\n", exposureTimeSeconds)
+                + String.format("expTimeFirst = %.2f\n", exposureBottomTimeSeconds)
+                + String.format("layerHeight = %.3f\n", layerHeightMilimeter)
                 + String.format("numFade = %d\n", bottomLayers)
                 + String.format("NumFast = %d\n", numberOfLayers)
-                + "numSlow = 0\n";
+                + String.format("PrintTime = %d\n", printTimeSeconds);
         output.write(outputString.getBytes());
+        for(Map.Entry<String, String> entry: additionalParameters.entrySet()) {
+            output.write(String.format("%s = %s\n",entry.getKey(),entry.getValue()).getBytes());
+        };
     }
 
     @Override
     public void unLink() {
-
+        /* no-op */
     }
 
     public SlicedFileHeader fromIFileHeader(SlicedFileHeader other) {

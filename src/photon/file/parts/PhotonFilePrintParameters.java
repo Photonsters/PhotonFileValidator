@@ -66,6 +66,19 @@ public class PhotonFilePrintParameters {
         header.setParam(BOTTOM_LAYER_COUNT_KEY, String.valueOf(ds.readInt()));
     }
 
+    static public void initializePrintParameters(SlicedFileHeader header, int bottomLayerCount) {
+        header.setParam(BOTTOM_LIFT_DISTANCE_KEY, String.valueOf(DEFAULT_DISTANCE));
+        header.setParam(BOTTOM_LIFT_SPEED_KEY, String.valueOf(DEFAULT_SPEED));
+        header.setParam(LIFT_DISTANCE_KEY, String.valueOf(DEFAULT_DISTANCE));
+        header.setParam(LIFT_SPEED_KEY, String.valueOf(DEFAULT_SPEED));
+        header.setParam(RETRACT_SPEED_KEY, String.valueOf(DEFAULT_SPEED));
+        header.setParam(VOLUME_KEY, "0.0");
+        header.setParam(WEIGHT_KEY, "0.0");
+        header.setParam(COST_KEY, "0.0");
+        header.setParam(BOTTOM_LIGHT_OFF_DELAY_KEY, String.valueOf(DEFAULT_LIGHT_OFF_DELAY));
+        header.setParam(LIGHT_OFF_DELAY_KEY, String.valueOf(DEFAULT_LIGHT_OFF_DELAY));
+        header.setParam(BOTTOM_LAYER_COUNT_KEY, String.valueOf(bottomLayerCount));
+    }
 
 
 

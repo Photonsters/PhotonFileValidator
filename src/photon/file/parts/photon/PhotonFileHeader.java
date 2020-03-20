@@ -236,7 +236,7 @@ public class PhotonFileHeader extends SlicedFileHeader {
         antiAliasingLevel = 1;
         lightPWM = 255;
         bottomLightPWM = 255;
-        additionalParameters.put("bottomLayerCount", String.valueOf(getBottomLayers()));
+        PhotonFilePrintParameters.initializePrintParameters(this, getBottomLayers());
     }
 
     public boolean hasAA() {

@@ -233,7 +233,7 @@ public class SaveDialog extends JDialog {
                         PhotonFilePrintParameters.DEFAULT_DISTANCE)));
         bottomLiftSpeed.setText(String.format("%.1f",
                 header.getFloatParamOrDefault(PhotonFilePrintParameters.BOTTOM_LIFT_SPEED_KEY,
-                        PhotonFilePrintParameters.DEFAULT_SPEED))));
+                        PhotonFilePrintParameters.DEFAULT_SPEED)));
         liftingDistance.setText(String.format("%.1f",
                 header.getFloatParamOrDefault(PhotonFilePrintParameters.LIFT_DISTANCE_KEY,
                         PhotonFilePrintParameters.DEFAULT_DISTANCE)));
