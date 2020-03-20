@@ -97,9 +97,4 @@ public class PhotonsFileHeader  extends SlicedFileHeader {
     public void unLink() {
 
     }
-
-    @Override
-    public SlicedFileHeader fromIFileHeader(SlicedFileHeader other) {
-        throw new IllegalArgumentException("Not implemented");
-    }
 }

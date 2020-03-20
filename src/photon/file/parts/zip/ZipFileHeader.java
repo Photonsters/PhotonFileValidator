@@ -186,10 +186,10 @@ public class ZipFileHeader extends SlicedFileHeader {
             liftSpeed = getFloatOrDefault("normalLayerLiftSpeed", PhotonFilePrintParameters.DEFAULT_SPEED);
             lightOffTime = getFloatOrDefault("lightOffTime", PhotonFilePrintParameters.DEFAULT_LIGHT_OFF_DELAY);
         }
-        String result = String.format(";LAYER_START:%d\n;currPos:%f\n", layerNumber, curHeight)
+        String result = String.format(";LAYER_START:%d\n;currPos:%s\n", layerNumber, SlicedFileHeader.formatFloat(curHeight))
                 + String.format("M6054 \"%d.png\";show Image\n", layerNumber + 1);
-            result += String.format("G0 Z%f F%d;\n", liftHeight + curHeight, (int)liftSpeed);
-            result += String.format("G0 Z%f F%d;\n", curHeight + layerHeightMilimeter, (int)dropSpeed);
+            result += String.format("G0 Z%s F%d;\n", SlicedFileHeader.formatFloat(liftHeight + curHeight), (int)liftSpeed);
+            result += String.format("G0 Z%s F%d;\n", SlicedFileHeader.formatFloat(curHeight + layerHeightMilimeter), (int)dropSpeed);
             result += String.format("G4 P%d;\n", (int)(lightOffTime*1000));
             // TODO:: Allow for different light strengths.
             result += "M106 S255;light on\n";
@@ -247,9 +247,5 @@ public class ZipFileHeader extends SlicedFileHeader {
     @Override
     public void unLink() {
         // no-op
-    }
-
-    public SlicedFileHeader fromIFileHeader(SlicedFileHeader other) {
-        return new ZipFileHeader(other);
     }
 }

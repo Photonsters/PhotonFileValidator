@@ -150,10 +150,6 @@ public class Sl1FileHeader extends SlicedFileHeader {
         /* no-op */
     }
 
-    public SlicedFileHeader fromIFileHeader(SlicedFileHeader other) {
-        return new Sl1FileHeader(other);
-    }
-
     void setResolutionX(int x) {
         resolutionX = x;
     }
@@ -161,7 +157,4 @@ public class Sl1FileHeader extends SlicedFileHeader {
     void setResolutionY(int y) {
         resolutionY = y;
     }
-
-        
-
 }

@@ -205,10 +205,6 @@ public class PhotonFileHeader extends SlicedFileHeader {
     public void unLink() {
     }
 
-    public SlicedFileHeader fromIFileHeader(SlicedFileHeader other) {
-        return new PhotonFileHeader(other);
-    }
-
     public int getPrintParametersOffsetAddress() {
         return printParametersOffsetAddress;
     }

@@ -13,6 +13,27 @@ import java.util.List;
  * subclasses are expected to add their own as needed.
  */
 abstract public class SlicedFileHeader extends HashMap<String, String> {
+
+    /**
+     * Tidies up a float to remove trailing 0s.
+     * @param in float to format
+     * @return the float, formatted as a string, without trailing 0s
+     */
+    public static String formatFloat(float in) {
+        // This is not the fastest of code, but it _does_ work and will be called rarely enough.
+        String result = String.valueOf(in);
+        int idx=0;
+        while( idx < result.length() && result.charAt(idx)!='.') idx++;
+        idx+=2;
+        if( idx >= result.length() ) return result; // nothing to chop
+
+        while( idx < result.length() && result.charAt(idx)!='0') idx++;
+        if( idx >= result.length() ) return result; // nothing to chop
+
+        result = result.substring(0, idx);
+        return result;
+    }
+
     protected float layerHeightMilimeter;
     protected float exposureTimeSeconds;
     protected float exposureBottomTimeSeconds;
@@ -185,7 +206,4 @@ abstract public class SlicedFileHeader extends HashMap<String, String> {
      * Free up any allocated objects to save on ram when we force GC.
      */
     abstract public void unLink();
-
-    abstract public SlicedFileHeader fromIFileHeader(SlicedFileHeader other);
-
 }
