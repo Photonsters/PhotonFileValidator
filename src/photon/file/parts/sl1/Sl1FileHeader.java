@@ -4,6 +4,7 @@ import photon.file.SlicedFileHeader;
 import photon.file.parts.PhotonFileLayer;
 
 import java.io.*;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -11,9 +12,23 @@ import java.util.regex.Pattern;
 public class Sl1FileHeader extends SlicedFileHeader {
 
     private static Pattern linePattern = Pattern.compile("\\s*=\\s*");
+    //A list of valid config.ini keys which are _not_ covered by 'core' values
+    private static final List<String> KNOWN_ADDITIONAL_KEYS = Arrays.asList(
+            "action",
+            "fileCreationTimestamp",
+            "materialName",
+            "printerProfile",
+            "printProfile",
+            "printerModel",
+            "printerVariant",
+            "prusaSlicerVersion",
+            "usedMaterial"
+    );
 
     // This is used as the base of the image filenames.
     private String jobName;
+    // A count of slow layers. Whatever that is (_not_ bottom layers). I've only ever seen it be 0.
+    private int numberOfSlowLayers;
 
 
     public String getJobName() {
@@ -43,10 +58,10 @@ public class Sl1FileHeader extends SlicedFileHeader {
 
     public Sl1FileHeader(InputStream entry) throws IOException {
         BufferedReader headerStream = new BufferedReader(new InputStreamReader(entry));
-        while( headerStream.ready()) {
+        while (headerStream.ready()) {
             String line = headerStream.readLine();
             String[] components = linePattern.split(line);
-            if( components.length != 2 ) {
+            if (components.length != 2) {
                 throw new IllegalArgumentException("Unparsable line:" + line + " in config.ini");
             }
             /* Sample of config.ini
@@ -68,42 +83,39 @@ public class Sl1FileHeader extends SlicedFileHeader {
              * prusaSlicerVersion = PrusaSlicer-2.1.1+win64-201912101512
              * usedMaterial = 0.782136
              */
-            switch(components[0].toLowerCase()) {
-                case "jobdir":
+            switch (components[0]) {
+                case "jobDir":
                     jobName = components[1];
-                    break;
-                case "layerheight":
+                    continue;
+                case "layerHeight":
                     layerHeightMilimeter = Float.parseFloat(components[1]);
-                    break;
-                case "exptime":
+                    continue;
+                case "expTime":
                     exposureTimeSeconds = Float.parseFloat(components[1]);
-                    break;
-                case "exptimefirst":
+                    continue;
+                case "expTimeFirst":
                     exposureBottomTimeSeconds = Float.parseFloat(components[1]);
-                    break;
-                case "numfade":
+                    continue;
+                case "numFade":
                     bottomLayers = Integer.parseInt(components[1]);
-                    break;
-                case "numfast":
+                    continue;
+                case "numFast":
                     numberOfLayers = Integer.parseInt(components[1]);
-                    break;
-                case "printtime":
-                    printTimeSeconds = (int)Float.parseFloat(components[1]);
-                    break;
-                case "numslow":
-                case "action":
-                case "filecreationtimestamp":
-                case "materialname":
-                case "printerprofile":
-                case "printprofile":
-                case "printermodel":
-                case "printervariant":
-                case "prusaslicerversion":
-                case "usedmaterial":
-                    additionalParameters.put(components[0], components[1]);
-                    break;
+                    continue;
+                case "numSlow":
+                    numberOfSlowLayers = Integer.parseInt(components[1]);
+                    continue;
+                case "printTime":
+                    printTimeSeconds = (int) Float.parseFloat(components[1]);
+                    continue;
                 default:
-                    throw new IllegalArgumentException("Unknown key in config.ini: " + line);
+                    // no-op - handled below.
+                    break;
+            }
+            if( KNOWN_ADDITIONAL_KEYS.contains(components[0]) ) {
+                additionalParameters.put(components[0], components[1]);
+            } else {
+                throw new IllegalArgumentException("Unknown key in config.ini: " + line);
             }
         }
 
@@ -116,12 +128,16 @@ public class Sl1FileHeader extends SlicedFileHeader {
                 + String.format("expTimeFirst = %.2f\n", exposureBottomTimeSeconds)
                 + String.format("layerHeight = %.3f\n", layerHeightMilimeter)
                 + String.format("numFade = %d\n", bottomLayers)
-                + String.format("NumFast = %d\n", numberOfLayers)
-                + String.format("PrintTime = %d\n", printTimeSeconds);
+                + String.format("numFast = %d\n", numberOfLayers)
+                + String.format("numSlow = %d\n", numberOfSlowLayers)
+                + String.format("printTime = %d\n", printTimeSeconds);
         output.write(outputString.getBytes());
-        for(Map.Entry<String, String> entry: additionalParameters.entrySet()) {
-            output.write(String.format("%s = %s\n",entry.getKey(),entry.getValue()).getBytes());
-        };
+        for (Map.Entry<String, String> entry : additionalParameters.entrySet()) {
+            if( KNOWN_ADDITIONAL_KEYS.contains(entry.getKey()) ) {
+                output.write(String.format("%s = %s\n", entry.getKey(), entry.getValue()).getBytes());
+            }
+        }
+        ;
     }
 
     @Override
