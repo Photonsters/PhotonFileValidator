@@ -56,8 +56,8 @@ public class ZipFileHeader extends SlicedFileHeader {
     public ZipFileHeader(SlicedFileHeader other) {
         super(other);
         for (String key : KNOWN_ADDITIONAL_KEYS) {
-            if (other.hasParam(key)) {
-                additionalParameters.put(key, other.getParam(key));
+            if (other.containsKey(key)) {
+                put(key, other.get(key));
             }
         }
         start_gcode = DEFAULT_START_GCODE;
@@ -151,7 +151,7 @@ public class ZipFileHeader extends SlicedFileHeader {
                     break;
             }
             if (KNOWN_ADDITIONAL_KEYS.contains(components[0])) {
-                additionalParameters.put(components[0], components[1]);
+                put(components[0], components[1]);
             } else {
                 throw new IllegalArgumentException("Unknown key in config.ini: " + line);
             }
@@ -171,20 +171,20 @@ public class ZipFileHeader extends SlicedFileHeader {
         // TODO:: standardise additional parameters
         float liftHeight, exposureTimeS, liftSpeed, dropSpeed, lightOffTime;
 
-        dropSpeed = getFloatParamOrDefault("normalDropSpeed", PhotonFilePrintParameters.DEFAULT_SPEED);
+        dropSpeed = getFloatOrDefault("normalDropSpeed", PhotonFilePrintParameters.DEFAULT_SPEED);
 
         if (layerNumber < bottomLayers) {
             // TODO:: extract these to constants
-            liftHeight = getFloatParamOrDefault("bottomLayerLiftHeight", PhotonFilePrintParameters.DEFAULT_DISTANCE);
+            liftHeight = getFloatOrDefault("bottomLayerLiftHeight", PhotonFilePrintParameters.DEFAULT_DISTANCE);
             exposureTimeS = exposureBottomTimeSeconds;
-            liftSpeed = getFloatParamOrDefault("bottomLayerLiftSpeed", PhotonFilePrintParameters.DEFAULT_SPEED);
-            lightOffTime = getFloatParamOrDefault("bottomLightOffTime", PhotonFilePrintParameters.DEFAULT_LIGHT_OFF_DELAY);
+            liftSpeed = getFloatOrDefault("bottomLayerLiftSpeed", PhotonFilePrintParameters.DEFAULT_SPEED);
+            lightOffTime = getFloatOrDefault("bottomLightOffTime", PhotonFilePrintParameters.DEFAULT_LIGHT_OFF_DELAY);
 
         } else {
-            liftHeight = getFloatParamOrDefault("normalLayerLiftHeight", PhotonFilePrintParameters.DEFAULT_DISTANCE);
+            liftHeight = getFloatOrDefault("normalLayerLiftHeight", PhotonFilePrintParameters.DEFAULT_DISTANCE);
             exposureTimeS = exposureTimeSeconds;
-            liftSpeed = getFloatParamOrDefault("normalLayerLiftSpeed", PhotonFilePrintParameters.DEFAULT_SPEED);
-            lightOffTime = getFloatParamOrDefault("lightOffTime", PhotonFilePrintParameters.DEFAULT_LIGHT_OFF_DELAY);
+            liftSpeed = getFloatOrDefault("normalLayerLiftSpeed", PhotonFilePrintParameters.DEFAULT_SPEED);
+            lightOffTime = getFloatOrDefault("lightOffTime", PhotonFilePrintParameters.DEFAULT_LIGHT_OFF_DELAY);
         }
         String result = String.format(";LAYER_START:%d\n;currPos:%f\n", layerNumber, curHeight)
                 + String.format("M6054 \"%d.png\";show Image\n", layerNumber + 1);
@@ -211,7 +211,7 @@ public class ZipFileHeader extends SlicedFileHeader {
                 + String.format(";estimatedPrintTime:%d\n", printTimeSeconds);
         output.write(outputString.getBytes());
 
-        for (Map.Entry<String, String> entry : additionalParameters.entrySet()) {
+        for (Map.Entry<String, String> entry : entrySet()) {
             if (KNOWN_ADDITIONAL_KEYS.contains(entry.getKey())) {
                 output.write(String.format(";%s:%s\n", entry.getKey(), entry.getValue()).getBytes());
             }

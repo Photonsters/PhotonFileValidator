@@ -79,7 +79,7 @@ public class PhotonFileHeader extends SlicedFileHeader {
         bottomLightPWM = 255;
         machineInfoSize = MACHINE_INFO_SIZE;
 
-        additionalParameters.put("bottomLayerCount", String.valueOf(getBottomLayers()));
+        put("bottomLayerCount", String.valueOf(getBottomLayers()));
         PhotonFileMachineInfo.initializeMachineInfo("Photon", MACHINE_INFO_SIZE, this);
 
     }
@@ -291,11 +291,4 @@ public class PhotonFileHeader extends SlicedFileHeader {
         PhotonFilePrintParameters.initializePrintParameters(getPrintParametersOffsetAddress(), file, this);
         PhotonFileMachineInfo.initializeMachineInfo(getMachineInfoOffsetAddress(), getMachineInfoSize(), file, this);
     }
-
-    /**
-     * Get the entire map of additional parameters.
-     * This is mostly a transitional function for things which created machine / print parameter objects.
-     * @return a map of parameters to values
-     */
-    public Map<String, String> getAdditionalParameters() { return additionalParameters; }
 }

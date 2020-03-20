@@ -53,47 +53,47 @@ public class PhotonFilePrintParameters {
         byte[] data = Arrays.copyOfRange(file, parametersPos, parametersPos + getByteSize());
         PhotonInputStream ds = new PhotonInputStream(new ByteArrayInputStream(data));
         
-        header.setParam(BOTTOM_LIFT_DISTANCE_KEY, String.valueOf(ds.readFloat()));
-        header.setParam(BOTTOM_LIFT_SPEED_KEY, String.valueOf(ds.readFloat()));
-        header.setParam(LIFT_DISTANCE_KEY, String.valueOf(ds.readFloat()));
-        header.setParam(LIFT_SPEED_KEY, String.valueOf(ds.readFloat()));
-        header.setParam(RETRACT_SPEED_KEY, String.valueOf(ds.readFloat()));
-        header.setParam(VOLUME_KEY, String.valueOf(ds.readFloat()));
-        header.setParam(WEIGHT_KEY, String.valueOf(ds.readFloat()));
-        header.setParam(COST_KEY, String.valueOf(ds.readFloat()));
-        header.setParam(BOTTOM_LIGHT_OFF_DELAY_KEY, String.valueOf(ds.readFloat()));
-        header.setParam(LIGHT_OFF_DELAY_KEY, String.valueOf(ds.readFloat()));
-        header.setParam(BOTTOM_LAYER_COUNT_KEY, String.valueOf(ds.readInt()));
+        header.put(BOTTOM_LIFT_DISTANCE_KEY, String.valueOf(ds.readFloat()));
+        header.put(BOTTOM_LIFT_SPEED_KEY, String.valueOf(ds.readFloat()));
+        header.put(LIFT_DISTANCE_KEY, String.valueOf(ds.readFloat()));
+        header.put(LIFT_SPEED_KEY, String.valueOf(ds.readFloat()));
+        header.put(RETRACT_SPEED_KEY, String.valueOf(ds.readFloat()));
+        header.put(VOLUME_KEY, String.valueOf(ds.readFloat()));
+        header.put(WEIGHT_KEY, String.valueOf(ds.readFloat()));
+        header.put(COST_KEY, String.valueOf(ds.readFloat()));
+        header.put(BOTTOM_LIGHT_OFF_DELAY_KEY, String.valueOf(ds.readFloat()));
+        header.put(LIGHT_OFF_DELAY_KEY, String.valueOf(ds.readFloat()));
+        header.put(BOTTOM_LAYER_COUNT_KEY, String.valueOf(ds.readInt()));
     }
 
     static public void initializePrintParameters(SlicedFileHeader header, int bottomLayerCount) {
-        header.setParam(BOTTOM_LIFT_DISTANCE_KEY, String.valueOf(DEFAULT_DISTANCE));
-        header.setParam(BOTTOM_LIFT_SPEED_KEY, String.valueOf(DEFAULT_SPEED));
-        header.setParam(LIFT_DISTANCE_KEY, String.valueOf(DEFAULT_DISTANCE));
-        header.setParam(LIFT_SPEED_KEY, String.valueOf(DEFAULT_SPEED));
-        header.setParam(RETRACT_SPEED_KEY, String.valueOf(DEFAULT_SPEED));
-        header.setParam(VOLUME_KEY, "0.0");
-        header.setParam(WEIGHT_KEY, "0.0");
-        header.setParam(COST_KEY, "0.0");
-        header.setParam(BOTTOM_LIGHT_OFF_DELAY_KEY, String.valueOf(DEFAULT_LIGHT_OFF_DELAY));
-        header.setParam(LIGHT_OFF_DELAY_KEY, String.valueOf(DEFAULT_LIGHT_OFF_DELAY));
-        header.setParam(BOTTOM_LAYER_COUNT_KEY, String.valueOf(bottomLayerCount));
+        header.put(BOTTOM_LIFT_DISTANCE_KEY, String.valueOf(DEFAULT_DISTANCE));
+        header.put(BOTTOM_LIFT_SPEED_KEY, String.valueOf(DEFAULT_SPEED));
+        header.put(LIFT_DISTANCE_KEY, String.valueOf(DEFAULT_DISTANCE));
+        header.put(LIFT_SPEED_KEY, String.valueOf(DEFAULT_SPEED));
+        header.put(RETRACT_SPEED_KEY, String.valueOf(DEFAULT_SPEED));
+        header.put(VOLUME_KEY, "0.0");
+        header.put(WEIGHT_KEY, "0.0");
+        header.put(COST_KEY, "0.0");
+        header.put(BOTTOM_LIGHT_OFF_DELAY_KEY, String.valueOf(DEFAULT_LIGHT_OFF_DELAY));
+        header.put(LIGHT_OFF_DELAY_KEY, String.valueOf(DEFAULT_LIGHT_OFF_DELAY));
+        header.put(BOTTOM_LAYER_COUNT_KEY, String.valueOf(bottomLayerCount));
     }
 
 
 
     static public void save(PhotonOutputStream os, SlicedFileHeader header) throws Exception {
-        os.writeFloat(header.getFloatParam(BOTTOM_LIFT_DISTANCE_KEY));
-        os.writeFloat(header.getFloatParam(BOTTOM_LIFT_SPEED_KEY));
-        os.writeFloat(header.getFloatParam(LIFT_DISTANCE_KEY));
-        os.writeFloat(header.getFloatParam(LIFT_SPEED_KEY));
-        os.writeFloat(header.getFloatParam(RETRACT_SPEED_KEY));
-        os.writeFloat(header.getFloatParam(VOLUME_KEY));
-        os.writeFloat(header.getFloatParam(WEIGHT_KEY));
-        os.writeFloat(header.getFloatParam(COST_KEY));
-        os.writeFloat(header.getFloatParam(BOTTOM_LIGHT_OFF_DELAY_KEY));
-        os.writeFloat(header.getFloatParam(LIGHT_OFF_DELAY_KEY));
-        os.writeFloat(header.getIntParam(BOTTOM_LAYER_COUNT_KEY));
+        os.writeFloat(header.getFloat(BOTTOM_LIFT_DISTANCE_KEY));
+        os.writeFloat(header.getFloat(BOTTOM_LIFT_SPEED_KEY));
+        os.writeFloat(header.getFloat(LIFT_DISTANCE_KEY));
+        os.writeFloat(header.getFloat(LIFT_SPEED_KEY));
+        os.writeFloat(header.getFloat(RETRACT_SPEED_KEY));
+        os.writeFloat(header.getFloat(VOLUME_KEY));
+        os.writeFloat(header.getFloat(WEIGHT_KEY));
+        os.writeFloat(header.getFloat(COST_KEY));
+        os.writeFloat(header.getFloat(BOTTOM_LIGHT_OFF_DELAY_KEY));
+        os.writeFloat(header.getFloat(LIGHT_OFF_DELAY_KEY));
+        os.writeFloat(header.getInt(BOTTOM_LAYER_COUNT_KEY));
         // and some padding.
         os.writeInt(0);
         os.writeInt(0);

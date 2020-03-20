@@ -176,13 +176,13 @@ public class SaveDialog extends JDialog {
                 if (outputFile.getVersion() == 1) {
                     outputFile.changeToVersion2();
                 }
-                header.setParam(PhotonFilePrintParameters.BOTTOM_LIFT_DISTANCE_KEY, bottomLiftDistance.getText());
-                header.setParam(PhotonFilePrintParameters.BOTTOM_LIFT_SPEED_KEY, bottomLiftSpeed.getText());
-                header.setParam(PhotonFilePrintParameters.LIFT_DISTANCE_KEY, liftingDistance.getText());
-                header.setParam(PhotonFilePrintParameters.LIFT_SPEED_KEY, liftingSpeed.getText());
-                header.setParam(PhotonFilePrintParameters.RETRACT_SPEED_KEY, retractSpeed.getText());
-                header.setParam(PhotonFilePrintParameters.BOTTOM_LIGHT_OFF_DELAY_KEY, bottomLightOffDelay.getText());
-                header.setParam(PhotonFilePrintParameters.LIGHT_OFF_DELAY_KEY, lightOffDelay.getText());
+                header.put(PhotonFilePrintParameters.BOTTOM_LIFT_DISTANCE_KEY, bottomLiftDistance.getText());
+                header.put(PhotonFilePrintParameters.BOTTOM_LIFT_SPEED_KEY, bottomLiftSpeed.getText());
+                header.put(PhotonFilePrintParameters.LIFT_DISTANCE_KEY, liftingDistance.getText());
+                header.put(PhotonFilePrintParameters.LIFT_SPEED_KEY, liftingSpeed.getText());
+                header.put(PhotonFilePrintParameters.RETRACT_SPEED_KEY, retractSpeed.getText());
+                header.put(PhotonFilePrintParameters.BOTTOM_LIGHT_OFF_DELAY_KEY, bottomLightOffDelay.getText());
+                header.put(PhotonFilePrintParameters.LIGHT_OFF_DELAY_KEY, lightOffDelay.getText());
             }
             outputFile.adjustLayerSettings();
             if (fixZcheck.isSelected()) {
@@ -231,25 +231,25 @@ public class SaveDialog extends JDialog {
         SlicedFileHeader header = photonFile.getHeader();
 
         bottomLiftDistance.setText(String.format("%.1f",
-                header.getFloatParamOrDefault(PhotonFilePrintParameters.BOTTOM_LIFT_DISTANCE_KEY,
+                header.getFloatOrDefault(PhotonFilePrintParameters.BOTTOM_LIFT_DISTANCE_KEY,
                         PhotonFilePrintParameters.DEFAULT_DISTANCE)));
         bottomLiftSpeed.setText(String.format("%.1f",
-                header.getFloatParamOrDefault(PhotonFilePrintParameters.BOTTOM_LIFT_SPEED_KEY,
+                header.getFloatOrDefault(PhotonFilePrintParameters.BOTTOM_LIFT_SPEED_KEY,
                         PhotonFilePrintParameters.DEFAULT_SPEED)));
         liftingDistance.setText(String.format("%.1f",
-                header.getFloatParamOrDefault(PhotonFilePrintParameters.LIFT_DISTANCE_KEY,
+                header.getFloatOrDefault(PhotonFilePrintParameters.LIFT_DISTANCE_KEY,
                         PhotonFilePrintParameters.DEFAULT_DISTANCE)));
         liftingSpeed.setText(String.format("%.1f",
-                header.getFloatParamOrDefault(PhotonFilePrintParameters.LIFT_SPEED_KEY,
+                header.getFloatOrDefault(PhotonFilePrintParameters.LIFT_SPEED_KEY,
                         PhotonFilePrintParameters.DEFAULT_SPEED)));
         retractSpeed.setText(String.format("%.1f",
-                header.getFloatParamOrDefault(PhotonFilePrintParameters.RETRACT_SPEED_KEY,
+                header.getFloatOrDefault(PhotonFilePrintParameters.RETRACT_SPEED_KEY,
                         PhotonFilePrintParameters.DEFAULT_SPEED)));
         bottomLightOffDelay.setText(String.format("%.1f",
-                header.getFloatParamOrDefault(PhotonFilePrintParameters.BOTTOM_LIGHT_OFF_DELAY_KEY,
+                header.getFloatOrDefault(PhotonFilePrintParameters.BOTTOM_LIGHT_OFF_DELAY_KEY,
                         PhotonFilePrintParameters.DEFAULT_LIGHT_OFF_DELAY)));
         lightOffDelay.setText(String.format("%.1f",
-                header.getFloatParamOrDefault(PhotonFilePrintParameters.LIGHT_OFF_DELAY_KEY,
+                header.getFloatOrDefault(PhotonFilePrintParameters.LIGHT_OFF_DELAY_KEY,
                         PhotonFilePrintParameters.DEFAULT_LIGHT_OFF_DELAY)));
     }
 

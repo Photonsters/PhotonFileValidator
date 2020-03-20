@@ -94,20 +94,20 @@ public class InformationDialog extends JDialog {
 
 
             fileHeader.setText("File version " + photonFile.getVersion());
-            if (photonFileHeader.hasParam("cost")) {
-                fileCost.setText(String.format("%8.4f $", photonFileHeader.getFloatParam("cost")));
+            if (photonFileHeader.containsKey("cost")) {
+                fileCost.setText(String.format("%8.4f $", photonFileHeader.getFloat("cost")));
             } else {
                 fileCost.setText("");
             }
 
-            if (photonFileHeader.hasParam("weight")) {
-                fileWeight.setText(String.format("%8.4f $", photonFile.getPhotonFileHeader().getFloatParam("weight")));
+            if (photonFileHeader.containsKey("weight")) {
+                fileWeight.setText(String.format("%8.4f $", photonFile.getPhotonFileHeader().getFloat("weight")));
             } else {
                 fileWeight.setText("");
             }
 
-            if (photonFileHeader.hasParam("volume")) {
-                fileVolume.setText(String.format("%8.4f $", photonFile.getPhotonFileHeader().getFloatParam("volume")));
+            if (photonFileHeader.containsKey("volume")) {
+                fileVolume.setText(String.format("%8.4f $", photonFile.getPhotonFileHeader().getFloat("volume")));
             } else {
                 fileVolume.setText("");
             }

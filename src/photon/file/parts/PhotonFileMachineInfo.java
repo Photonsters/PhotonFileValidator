@@ -37,13 +37,13 @@ public class PhotonFileMachineInfo {
 	public final static String SIZE_KEY = "machineInfoSize";
 
     static public void initializeMachineInfo(String machineName, int size, SlicedFileHeader header) {
-		header.setParam(NAME_KEY, machineName);
-		header.setParam(SIZE_KEY, String.valueOf(size));
+		header.put(NAME_KEY, machineName);
+		header.put(SIZE_KEY, String.valueOf(size));
 	}
 
     static public void initializeMachineInfo(int address, int byteSize, byte[] file, SlicedFileHeader header) throws Exception {
 		int machineNameAddress, machineNameSize;
-		header.setParam(SIZE_KEY, String.valueOf(byteSize));
+		header.put(SIZE_KEY, String.valueOf(byteSize));
 
     	if (byteSize > 0) {
 	        byte[] data = Arrays.copyOfRange(file, address, address + byteSize);
@@ -56,14 +56,14 @@ public class PhotonFileMachineInfo {
 	        }
 	
 	        byte[] machineName = Arrays.copyOfRange(file, machineNameAddress, machineNameAddress + machineNameSize);
-			header.setParam(NAME_KEY, new String(machineName));
+			header.put(NAME_KEY, new String(machineName));
     	}
     }
 
     static public void save(PhotonOutputStream os, int startAddress, SlicedFileHeader header) throws Exception {
-    	int infoByteSize = header.getIntParam(SIZE_KEY);
+    	int infoByteSize = header.getInt(SIZE_KEY);
     	if (infoByteSize > 0) {
-    		byte[] machineName = header.getParam(NAME_KEY).getBytes();
+    		byte[] machineName = header.get(NAME_KEY).getBytes();
     		for(int i=0; i<7; i++) os.writeInt(0);
 	    	os.writeInt(startAddress + infoByteSize);
 	    	os.writeInt(machineName.length);
@@ -74,6 +74,6 @@ public class PhotonFileMachineInfo {
 
     static public int getByteSize(SlicedFileHeader header)
 	{
-        return header.getIntParam(SIZE_KEY) + header.getParam(NAME_KEY).getBytes().length;
+        return header.getInt(SIZE_KEY) + header.get(NAME_KEY).getBytes().length;
     }
 }

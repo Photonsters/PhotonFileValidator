@@ -5,13 +5,14 @@ import photon.file.ui.Text;
 
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
- * The base class for a sliced file. Implements the basic fields that are a minimum for a sliced file.
+ * The base class for a sliced file.
+ * Implements the basic fields that are a minimum for a sliced file.
+ * Extends HashMap to store additional fields, with a bunch of bonus accessors to preconvert values.
  * subclasses are expected to add their own as needed.
  */
-abstract public class SlicedFileHeader {
+abstract public class SlicedFileHeader extends HashMap<String, String> {
     protected float layerHeightMilimeter;
     protected float exposureTimeSeconds;
     protected float exposureBottomTimeSeconds;
@@ -31,11 +32,6 @@ abstract public class SlicedFileHeader {
     protected int headerSize;
 
     /**
-     * A store of all the additional, format specific parameters.
-     */
-    protected Map<String, String> additionalParameters;
-
-    /**
      * Get a short description of the file. used in the titlebar
      *
      * @return a description of this file.
@@ -49,6 +45,7 @@ abstract public class SlicedFileHeader {
     }
 
     public SlicedFileHeader(SlicedFileHeader other) {
+        super();
         layerHeightMilimeter = other.layerHeightMilimeter;
         exposureTimeSeconds = other.exposureTimeSeconds;
         exposureBottomTimeSeconds = other.exposureBottomTimeSeconds;
@@ -62,52 +59,23 @@ abstract public class SlicedFileHeader {
         buildAreaX = other.buildAreaX;
         buildAreaY = other.buildAreaY;
         headerSize = other.headerSize;
-        // Note the default type _does_ not have any additional parameters.
-        additionalParameters = new HashMap<>();
     }
 
     // Default constructor for children
     protected SlicedFileHeader() {
-        additionalParameters = new HashMap<>();
+        super();
     }
 
     // Accessor functions.
     // These are mostly getters, but setters have been added where needed by the code.
 
     /**
-     * Get a format specific additional parameter.
-     * @param parameter to look for
-     * @return the value for the parameter, or NULL if not present
-     */
-    public String getParam(String parameter) {
-        return additionalParameters.get(parameter);
-    }
-    /**
-     * Get a format specific additional parameter, with a default if it is missing
-     * @param parameter to look for.
-     * @param defaultValue to return if parameter does not exist
-     * @return the value for the parameter, or defaultValue if not present
-     */
-    public String getParamOrDefault(String parameter, String defaultValue) {
-        return additionalParameters.getOrDefault(parameter, defaultValue);
-    }
-
-    /**
-     * Check if the file has the specified parameter
-     * @param parameter to check for
-     * @return true iff it has been set for this file
-     */
-    public boolean hasParam(String parameter) {
-        return additionalParameters.containsKey(parameter);
-    }
-
-    /**
      * Get a format specific additional parameter, converted to a float
      * @param parameter to look for.
      * @return the value as a float, or 0.0 if it is not set.
      */
-    public Float getFloatParam(String parameter) {
-        return getFloatParamOrDefault(parameter, 0f);
+    public Float getFloat(String parameter) {
+        return getFloatOrDefault(parameter, 0f);
     }
 
     /**
@@ -115,8 +83,8 @@ abstract public class SlicedFileHeader {
      * @param parameter to look for.
      * @return the value as a int, or 0 if it is not set.
      */
-    public int getIntParam(String parameter) {
-        return getIntParamOrDefault(parameter, 0);
+    public int getInt(String parameter) {
+        return getIntOrDefault(parameter, 0);
     }
 
     /**
@@ -126,9 +94,9 @@ abstract public class SlicedFileHeader {
      * @param defaultValue if the parameter is not set
      * @return either the value associated with the parameter or the default value, as an int
      */
-    public int getIntParamOrDefault(String parameter, int defaultValue) {
-        if (additionalParameters.containsKey(parameter)) {
-            return Integer.parseInt(additionalParameters.get(parameter));
+    public int getIntOrDefault(String parameter, int defaultValue) {
+        if (containsKey(parameter)) {
+            return Integer.parseInt(get(parameter));
         }
         return defaultValue;
     }
@@ -140,21 +108,12 @@ abstract public class SlicedFileHeader {
      * @param defaultValue if the parameter is not set
      * @return either the value associated with the parameter or the default value, as a float
      */
-    public Float getFloatParamOrDefault(String parameter, Float defaultValue) {
-        if( additionalParameters.containsKey(parameter) )
+    public Float getFloatOrDefault(String parameter, Float defaultValue) {
+        if( containsKey(parameter) )
         {
-            return Float.parseFloat(additionalParameters.get(parameter));
+            return Float.parseFloat(get(parameter));
         }
         return defaultValue;
-    }
-
-    /**
-     * Set a given additional parameter.
-     * @param parameter to set
-     * @param value to set
-     */
-    public void setParam(String parameter, String value) {
-        additionalParameters.put(parameter, value);
     }
 
     public int getNumberOfLayers() { return numberOfLayers; }

@@ -40,8 +40,8 @@ public class Sl1FileHeader extends SlicedFileHeader {
         super(other);
         jobName = "SL1";
         for(String key : KNOWN_ADDITIONAL_KEYS) {
-            if( other.hasParam(key) ) {
-                additionalParameters.put(key, other.getParam(key));
+            if( other.containsKey(key) ) {
+                put(key, other.get(key));
             }
         }
     }
@@ -118,7 +118,7 @@ public class Sl1FileHeader extends SlicedFileHeader {
                     break;
             }
             if( KNOWN_ADDITIONAL_KEYS.contains(components[0]) ) {
-                additionalParameters.put(components[0], components[1]);
+                put(components[0], components[1]);
             } else {
                 throw new IllegalArgumentException("Unknown key in config.ini: " + line);
             }
@@ -137,7 +137,7 @@ public class Sl1FileHeader extends SlicedFileHeader {
                 + String.format("numSlow = %d\n", numberOfSlowLayers)
                 + String.format("printTime = %d\n", printTimeSeconds);
         output.write(outputString.getBytes());
-        for (Map.Entry<String, String> entry : additionalParameters.entrySet()) {
+        for (Map.Entry<String, String> entry : entrySet()) {
             if( KNOWN_ADDITIONAL_KEYS.contains(entry.getKey()) ) {
                 output.write(String.format("%s = %s\n", entry.getKey(), entry.getValue()).getBytes());
             }
@@ -161,5 +161,7 @@ public class Sl1FileHeader extends SlicedFileHeader {
     void setResolutionY(int y) {
         resolutionY = y;
     }
+
+        
 
 }
