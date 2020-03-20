@@ -5,7 +5,7 @@ import photon.file.parts.EFileType;
 import photon.file.parts.IPhotonProgress;
 import photon.file.parts.PhotonFileLayer;
 import photon.file.parts.PhotonFilePreview;
-import photon.file.parts.sl1.Sl1FileHeader;
+
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -106,7 +106,7 @@ public class ZipFile extends SlicedFile {
         BufferedImage image;
         String name;
         for (int i = 0; i < layers.size(); i++) {
-            name = String.format("%d.png", ((Sl1FileHeader) fileHeader).getJobName(), i);
+            name = String.format("%d.png", i);
             layerEntry = new ZipEntry(name);
             image = layers.get(i).getLayer().getImage();
             zos.putNextEntry(layerEntry);
