@@ -39,6 +39,11 @@ public class Sl1FileHeader extends SlicedFileHeader {
     public Sl1FileHeader(SlicedFileHeader other) {
         super(other);
         jobName = "SL1";
+        for(String key : KNOWN_ADDITIONAL_KEYS) {
+            if( other.hasParam(key) ) {
+                additionalParameters.put(key, other.getParam(key));
+            }
+        }
     }
 
     @Override
