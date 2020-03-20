@@ -24,50 +24,69 @@
 
 package photon.file.parts;
 
+import photon.file.SlicedFileHeader;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Map;
 
 public class PhotonFilePrintParameters {
-    
-    public PhotonFilePrintParameters() {};
+    public final static String BOTTOM_LIFT_DISTANCE_KEY = "bottomLiftDistance";
+    public final static String BOTTOM_LIFT_SPEED_KEY = "bottomLiftSpeed";
+    public final static String LIFT_DISTANCE_KEY = "LiftDistance";
+    public final static String LIFT_SPEED_KEY = "LiftSpeed";
+    public final static String RETRACT_SPEED_KEY = "retractSpeed";
+    public final static String VOLUME_KEY = "volume";
+    public final static String WEIGHT_KEY = "weight";
+    public final static String COST_KEY = "cost";
+    public final static String BOTTOM_LIGHT_OFF_DELAY_KEY = "bottomLightOffDelay";
+    public final static String LIGHT_OFF_DELAY_KEY = "lightOffDelay";
+    public final static String BOTTOM_LAYER_COUNT_KEY = "bottomLayerCount";
 
-    public PhotonFilePrintParameters(int parametersPos, byte[] file, Map<String,String> paramMap) throws IOException {
+
+    public static final float DEFAULT_DISTANCE = 5.0f;
+    public static final float DEFAULT_SPEED = 300.0f;
+    public static final float DEFAULT_LIGHT_OFF_DELAY = 0.0f;
+
+
+    static public void initalizePrintParameters(int parametersPos, byte[] file, SlicedFileHeader header) throws IOException {
         byte[] data = Arrays.copyOfRange(file, parametersPos, parametersPos + getByteSize());
         PhotonInputStream ds = new PhotonInputStream(new ByteArrayInputStream(data));
-
-        paramMap.put("bottomLiftDistance", String.valueOf(ds.readFloat()));
-        paramMap.put("bottomLiftSpeed", String.valueOf(ds.readFloat()));
-        paramMap.put("LiftDistance", String.valueOf(ds.readFloat()));
-        paramMap.put("liftSpeed", String.valueOf(ds.readFloat()));
-        paramMap.put("retractSpeed", String.valueOf(ds.readFloat()));
-        paramMap.put("volume", String.valueOf(ds.readFloat()));
-        paramMap.put("weight", String.valueOf(ds.readFloat()));
-        paramMap.put("cost", String.valueOf(ds.readFloat()));
-        paramMap.put("bottomLightOffDelay", String.valueOf(ds.readFloat()));
-        paramMap.put("bottomLayerCount", String.valueOf(ds.readInt()));
+        
+        header.setParam(BOTTOM_LIFT_DISTANCE_KEY, String.valueOf(ds.readFloat()));
+        header.setParam(BOTTOM_LIFT_SPEED_KEY, String.valueOf(ds.readFloat()));
+        header.setParam(LIFT_DISTANCE_KEY, String.valueOf(ds.readFloat()));
+        header.setParam(LIFT_SPEED_KEY, String.valueOf(ds.readFloat()));
+        header.setParam(RETRACT_SPEED_KEY, String.valueOf(ds.readFloat()));
+        header.setParam(VOLUME_KEY, String.valueOf(ds.readFloat()));
+        header.setParam(WEIGHT_KEY, String.valueOf(ds.readFloat()));
+        header.setParam(COST_KEY, String.valueOf(ds.readFloat()));
+        header.setParam(BOTTOM_LIGHT_OFF_DELAY_KEY, String.valueOf(ds.readFloat()));
+        header.setParam(LIGHT_OFF_DELAY_KEY, String.valueOf(ds.readFloat()));
+        header.setParam(BOTTOM_LAYER_COUNT_KEY, String.valueOf(ds.readInt()));
     }
 
 
-    public void save(PhotonOutputStream os, Map<String, String> paramMap) throws Exception {
-        os.writeFloat(Float.parseFloat(paramMap.get("bottomLiftDistance")));
-        os.writeFloat(Float.parseFloat(paramMap.get("bottomLiftSpeed")));
-        os.writeFloat(Float.parseFloat(paramMap.get("LiftDistance")));
-        os.writeFloat(Float.parseFloat(paramMap.get("liftSpeed")));
-        os.writeFloat(Float.parseFloat(paramMap.get("retractSpeed")));
-        os.writeFloat(Float.parseFloat(paramMap.get("volume")));
-        os.writeFloat(Float.parseFloat(paramMap.get("weight")));
-        os.writeFloat(Float.parseFloat(paramMap.get("cost")));
-        os.writeFloat(Float.parseFloat(paramMap.get("bottomLightOffDelay")));
-        os.writeInt(Integer.parseInt(paramMap.get("bottomLayerCount")));
+    static public void save(PhotonOutputStream os, SlicedFileHeader header) throws Exception {
+        os.writeFloat(header.getFloatParam(BOTTOM_LIFT_DISTANCE_KEY));
+        os.writeFloat(header.getFloatParam(BOTTOM_LIFT_SPEED_KEY));
+        os.writeFloat(header.getFloatParam(LIFT_DISTANCE_KEY));
+        os.writeFloat(header.getFloatParam(LIFT_SPEED_KEY));
+        os.writeFloat(header.getFloatParam(RETRACT_SPEED_KEY));
+        os.writeFloat(header.getFloatParam(VOLUME_KEY));
+        os.writeFloat(header.getFloatParam(WEIGHT_KEY));
+        os.writeFloat(header.getFloatParam(COST_KEY));
+        os.writeFloat(header.getFloatParam(BOTTOM_LIGHT_OFF_DELAY_KEY));
+        os.writeFloat(header.getFloatParam(LIGHT_OFF_DELAY_KEY));
+        os.writeFloat(header.getIntParam(BOTTOM_LAYER_COUNT_KEY));
+        // and some padding.
         os.writeInt(0);
         os.writeInt(0);
         os.writeInt(0);
         os.writeInt(0);
     }
 
-    public int getByteSize() {
+    static public int getByteSize() {
         return 4+4 +4+4+4 +4+4+4 +4+4+4 +4+4+4+4;
     }
 }

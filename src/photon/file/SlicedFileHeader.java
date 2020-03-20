@@ -76,15 +76,15 @@ abstract public class SlicedFileHeader {
 
     /**
      * Get a format specific additional parameter.
-     * @param parameter to look for - note this is case insensitive
+     * @param parameter to look for
      * @return the value for the parameter, or NULL if not present
      */
     public String getParam(String parameter) {
-        return additionalParameters.get(parameter.toLowerCase());
+        return additionalParameters.get(parameter);
     }
     /**
      * Get a format specific additional parameter, with a default if it is missing
-     * @param parameter to look for - note this is case insensitive
+     * @param parameter to look for.
      * @param defaultValue to return if parameter does not exist
      * @return the value for the parameter, or defaultValue if not present
      */
@@ -103,11 +103,23 @@ abstract public class SlicedFileHeader {
 
     /**
      * Get a format specific additional parameter, converted to a float
-     * @param parameter to look for (case insensitive).
+     * @param parameter to look for.
      * @return the value as a float, or 0.0 if it is not set.
      */
     public Float getFloatParam(String parameter) {
         return getFloatParamOrDefault(parameter, 0f);
+    }
+
+    /**
+     * Get a format specific additional parameter, converted to an int
+     * @param parameter to look for.
+     * @return the value as a int, or 0 if it is not set.
+     */
+    public int getIntParam(String parameter) {
+        if (additionalParameters.containsKey(parameter)) {
+            return Integer.parseInt(additionalParameters.get(parameter));
+        }
+        return 0;
     }
 
     /**
@@ -130,7 +142,7 @@ abstract public class SlicedFileHeader {
      * @param parameter to set
      * @param value to set
      */
-    public void setAdditionalParameters(String parameter, String value) {
+    public void setParam(String parameter, String value) {
         additionalParameters.put(parameter, value);
     }
 

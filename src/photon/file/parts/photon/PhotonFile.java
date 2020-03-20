@@ -76,13 +76,14 @@ public class PhotonFile extends SlicedFile {
 
         int parametersPos = 0;
         int machineInfoPos = 0;
+        PhotonFileHeader photonFileHeader = (PhotonFileHeader)fileHeader;
         if (fileHeader.getVersion() > 1) {
             parametersPos = layerDefinitionPos;
-            if (((PhotonFileHeader)fileHeader).photonFileMachineInfo.getByteSize() > 0) {
-	            machineInfoPos = parametersPos + ((PhotonFileHeader)fileHeader).photonFilePrintParameters.getByteSize();
-                layerDefinitionPos = machineInfoPos + ((PhotonFileHeader)fileHeader).photonFileMachineInfo.getByteSize();
+            if (PhotonFileMachineInfo.getByteSize(fileHeader) > 0) {
+	            machineInfoPos = parametersPos + PhotonFilePrintParameters.getByteSize();
+                layerDefinitionPos = machineInfoPos + PhotonFileMachineInfo.getByteSize(fileHeader);
             } else {
-                layerDefinitionPos = parametersPos + ((PhotonFileHeader)fileHeader).photonFilePrintParameters.getByteSize();
+                layerDefinitionPos = parametersPos + PhotonFilePrintParameters.getByteSize();
             }
         }
 
@@ -91,14 +92,13 @@ public class PhotonFile extends SlicedFile {
 
         PhotonOutputStream os = new PhotonOutputStream(outputStream);
 
-        ((PhotonFileHeader)fileHeader).save(os, previewOnePos, previewTwoPos, layerDefinitionPos, parametersPos, machineInfoPos);
+        photonFileHeader.save(os, previewOnePos, previewTwoPos, layerDefinitionPos, parametersPos, machineInfoPos);
         previewOne.save(os, previewOnePos);
         previewTwo.save(os, previewTwoPos);
 
         if (fileHeader.getVersion() > 1) {
-            PhotonFileHeader photonFileHeader = (PhotonFileHeader)fileHeader;
-            photonFileHeader.photonFilePrintParameters.save(os, photonFileHeader.getAdditionalParameters());
-            photonFileHeader.photonFileMachineInfo.save(os, machineInfoPos);
+            PhotonFilePrintParameters.save(os, photonFileHeader);
+            PhotonFileMachineInfo.save(os, machineInfoPos, photonFileHeader);
         }
 
         // Optimize order for speed read on photon

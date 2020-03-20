@@ -40,13 +40,6 @@ public class PhotonFileHeader extends SlicedFileHeader {
     static final int MACHINE_INFO_SIZE = 76;
     static final int BED_Z_DIMENSIONS = 150;
 
-    public static final float DEFAULT_BOTTOM_LIFT_DISTANCE = 5.0f;
-    public static final float DEFAULT_BOTTOM_LIFT_SPEED = 300.0f;
-    public static final float DEFAULT_LIFT_DISTANCE = 5.0f;
-    public static final float DEFAULT_LIFT_SPEED = 300.0f;
-    public static final float DEFAULT_RETRACT_SPEED = 300.0f;
-
-
     private int header1;
     private float bedZmm;
     private int unknown1;
@@ -71,10 +64,6 @@ public class PhotonFileHeader extends SlicedFileHeader {
     private int machineInfoOffsetAddress;
     private int machineInfoSize;
 
-
-    public PhotonFilePrintParameters photonFilePrintParameters;
-    public PhotonFileMachineInfo photonFileMachineInfo;
-
     public PhotonFileHeader(SlicedFileHeader other) {
         super(other);
         // Note we don't bother setting the addresses as they will be calculated on save.
@@ -90,9 +79,8 @@ public class PhotonFileHeader extends SlicedFileHeader {
         bottomLightPWM = 255;
         machineInfoSize = MACHINE_INFO_SIZE;
 
-        photonFilePrintParameters = new PhotonFilePrintParameters();
         additionalParameters.put("bottomLayerCount", String.valueOf(getBottomLayers()));
-        photonFileMachineInfo = new PhotonFileMachineInfo("Photon", MACHINE_INFO_SIZE);
+        PhotonFileMachineInfo.initializeMachineInfo("Photon", MACHINE_INFO_SIZE, this);
 
     }
 
@@ -249,7 +237,6 @@ public class PhotonFileHeader extends SlicedFileHeader {
         lightPWM = 255;
         bottomLightPWM = 255;
         additionalParameters.put("bottomLayerCount", String.valueOf(getBottomLayers()));
-        photonFilePrintParameters = new PhotonFilePrintParameters();
     }
 
     public boolean hasAA() {
@@ -301,8 +288,8 @@ public class PhotonFileHeader extends SlicedFileHeader {
     }
 
     public void readParameters(byte[] file) throws Exception {
-        photonFilePrintParameters = new PhotonFilePrintParameters(getPrintParametersOffsetAddress(), file, additionalParameters);
-        photonFileMachineInfo = new PhotonFileMachineInfo(getMachineInfoOffsetAddress(), getMachineInfoSize(), file);
+        PhotonFilePrintParameters.initalizePrintParameters(getPrintParametersOffsetAddress(), file, this);
+        PhotonFileMachineInfo.initializeMachineInfo(getMachineInfoOffsetAddress(), getMachineInfoSize(), file, this);
     }
 
     /**
