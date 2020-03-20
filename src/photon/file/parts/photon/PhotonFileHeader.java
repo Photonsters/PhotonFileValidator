@@ -288,7 +288,7 @@ public class PhotonFileHeader extends SlicedFileHeader {
     }
 
     public void readParameters(byte[] file) throws Exception {
-        PhotonFilePrintParameters.initalizePrintParameters(getPrintParametersOffsetAddress(), file, this);
+        PhotonFilePrintParameters.initializePrintParameters(getPrintParametersOffsetAddress(), file, this);
         PhotonFileMachineInfo.initializeMachineInfo(getMachineInfoOffsetAddress(), getMachineInfoSize(), file, this);
     }
 

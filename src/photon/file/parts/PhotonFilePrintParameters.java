@@ -49,7 +49,7 @@ public class PhotonFilePrintParameters {
     public static final float DEFAULT_LIGHT_OFF_DELAY = 0.0f;
 
 
-    static public void initalizePrintParameters(int parametersPos, byte[] file, SlicedFileHeader header) throws IOException {
+    static public void initializePrintParameters(int parametersPos, byte[] file, SlicedFileHeader header) throws IOException {
         byte[] data = Arrays.copyOfRange(file, parametersPos, parametersPos + getByteSize());
         PhotonInputStream ds = new PhotonInputStream(new ByteArrayInputStream(data));
         
@@ -65,6 +65,8 @@ public class PhotonFilePrintParameters {
         header.setParam(LIGHT_OFF_DELAY_KEY, String.valueOf(ds.readFloat()));
         header.setParam(BOTTOM_LAYER_COUNT_KEY, String.valueOf(ds.readInt()));
     }
+
+
 
 
     static public void save(PhotonOutputStream os, SlicedFileHeader header) throws Exception {
