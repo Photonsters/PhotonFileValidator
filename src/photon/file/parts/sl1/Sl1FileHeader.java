@@ -136,7 +136,7 @@ public class Sl1FileHeader extends SlicedFileHeader {
                     put(EParameter.prusaSlicerVersion, components[1]);
                     continue;
                 case "usedMaterial":
-                    put(EParameter.volume, components[1]);
+                    put(EParameter.volume, Float.parseFloat(components[1]));
                     continue;
                 default:
                     throw new IllegalArgumentException("Unknown key in config.ini: " + line);
