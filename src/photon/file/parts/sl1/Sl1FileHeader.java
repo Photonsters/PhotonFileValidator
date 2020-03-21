@@ -1,6 +1,7 @@
 package photon.file.parts.sl1;
 
 import photon.file.SlicedFileHeader;
+import photon.file.parts.EParameter;
 import photon.file.parts.PhotonFileLayer;
 
 import java.io.*;
@@ -10,40 +11,38 @@ import java.util.Map;
 import java.util.regex.Pattern;
 
 public class Sl1FileHeader extends SlicedFileHeader {
+    private static String DEFAULT_JOB_NAME = "sl1";
+    private static String DEFAULT_ACTION = "print";
+    private static String DEFAULT_TIMESTAMP = "2020-01-01 at 00:00:01 UTC";
+    private static String DEFAULT_MATERIAL = "resin";
+    private static int DEFAULT_SLOW = 0;
+    private static String DEFAULT_PRINT_PROFILE = "normal";
+    private static String DEFAULT_MODEL = "sl1";
+    private static String DEFAULT_PRINTER_PROFILE = "photon";
+    private static String DEFAULT_PRINTER_VARIANT = "default";
+    private static String DEFAULT_SLICER_VERSION = "PrusaSlicer";
+
 
     private static Pattern linePattern = Pattern.compile("\\s*=\\s*");
-    //A list of valid config.ini keys which are _not_ covered by 'core' values
-    private static final List<String> KNOWN_ADDITIONAL_KEYS = Arrays.asList(
-            "action",
-            "fileCreationTimestamp",
-            "materialName",
-            "printerProfile",
-            "printProfile",
-            "printerModel",
-            "printerVariant",
-            "prusaSlicerVersion",
-            "usedMaterial"
-    );
-
-    // This is used as the base of the image filenames.
-    private String jobName;
-    // A count of slow layers. Whatever that is (_not_ bottom layers). I've only ever seen it be 0.
-    private int numberOfSlowLayers;
-
 
     public String getJobName() {
-        return jobName;
+        return getString(EParameter.jobName);
     }
 
 
     public Sl1FileHeader(SlicedFileHeader other) {
         super(other);
-        jobName = "SL1";
-        for(String key : KNOWN_ADDITIONAL_KEYS) {
-            if( other.containsKey(key) ) {
-                put(key, other.get(key));
-            }
-        }
+        putIfMissing(EParameter.jobName, DEFAULT_JOB_NAME);
+        putIfMissing(EParameter.action, DEFAULT_ACTION);
+        putIfMissing(EParameter.fileCreationTimestamp, DEFAULT_TIMESTAMP);
+        putIfMissing(EParameter.slowLayerCount, DEFAULT_SLOW);
+        putIfMissing(EParameter.materialName, DEFAULT_MATERIAL);
+        putIfMissing(EParameter.printerProfile, DEFAULT_PRINTER_PROFILE);
+        putIfMissing(EParameter.printProfile, DEFAULT_PRINT_PROFILE);
+        putIfMissing(EParameter.machineName, DEFAULT_MODEL);
+        putIfMissing(EParameter.prusaSlicerVersion, DEFAULT_SLICER_VERSION);
+        putIfMissing(EParameter.printerVariant, DEFAULT_PRINTER_VARIANT);
+        putIfMissing(EParameter.volume, 0.0f);
     }
 
     @Override
@@ -53,13 +52,11 @@ public class Sl1FileHeader extends SlicedFileHeader {
 
     @Override
     public int getAALevels() {
-        return 0;
+        return 1;
     }
 
     @Override
-    public void setAALevels(int levels, List<PhotonFileLayer> layers) {
-
-    }
+    public void setAALevels(int levels, List<PhotonFileLayer> layers) {}
 
     public Sl1FileHeader(InputStream entry) throws IOException {
         BufferedReader headerStream = new BufferedReader(new InputStreamReader(entry));
@@ -90,59 +87,82 @@ public class Sl1FileHeader extends SlicedFileHeader {
              */
             switch (components[0]) {
                 case "jobDir":
-                    jobName = components[1];
+                    put(EParameter.jobName, components[1]);
                     continue;
                 case "layerHeight":
-                    layerHeightMilimeter = Float.parseFloat(components[1]);
+                    put(EParameter.layerHeightMM, components[1]);
                     continue;
                 case "expTime":
-                    exposureTimeSeconds = Float.parseFloat(components[1]);
+                    put(EParameter.exposureTimeS, Float.parseFloat(components[1]));
                     continue;
                 case "expTimeFirst":
-                    exposureBottomTimeSeconds = Float.parseFloat(components[1]);
+                    put(EParameter.bottomExposureTimeS, Float.parseFloat(components[1]));
                     continue;
                 case "numFade":
-                    bottomLayers = Integer.parseInt(components[1]);
+                    put(EParameter.bottomLayerCount, Integer.parseInt(components[1]));
                     continue;
                 case "numFast":
-                    numberOfLayers = Integer.parseInt(components[1]);
+                    put(EParameter.layerCount, Integer.parseInt(components[1]));
                     continue;
                 case "numSlow":
-                    numberOfSlowLayers = Integer.parseInt(components[1]);
+                    put(EParameter.slowLayerCount, Integer.parseInt(components[1]));
                     continue;
                 case "printTime":
-                    printTimeSeconds = (int) Float.parseFloat(components[1]);
+                    put(EParameter.printTimeS, Integer.parseInt(components[1]));
+                    continue;
+                case "action":
+                    put(EParameter.action, components[1]);
+                    continue;
+                case "fileCreationTimestamp":
+                    put(EParameter.fileCreationTimestamp, components[1]);
+                    continue;
+                case "materialName":
+                    put(EParameter.materialName, components[1]);
+                    continue;
+                case "printerProfile":
+                    put(EParameter.printerProfile, components[1]);
+                    continue;
+                case "printProfile":
+                    put(EParameter.printProfile, components[1]);
+                    continue;
+                case "printerModel":
+                    put(EParameter.machineName, components[1]);
+                    continue;
+                case "printerVariant":
+                    put(EParameter.printerVariant, components[1]);
+                    continue;
+                case "prusaSlicerVersion":
+                    put(EParameter.prusaSlicerVersion, components[1]);
+                    continue;
+                case "usedMaterial":
+                    put(EParameter.volume, components[1]);
                     continue;
                 default:
-                    // no-op - handled below.
-                    break;
-            }
-            if( KNOWN_ADDITIONAL_KEYS.contains(components[0]) ) {
-                put(components[0], components[1]);
-            } else {
-                throw new IllegalArgumentException("Unknown key in config.ini: " + line);
+                    throw new IllegalArgumentException("Unknown key in config.ini: " + line);
             }
         }
-
-        version = 1;
     }
 
     public void write(OutputStream output) throws IOException {
-        String outputString = String.format("jobDir = %s\n", jobName)
-                + String.format("expTime = %.2f\n", exposureTimeSeconds)
-                + String.format("expTimeFirst = %.2f\n", exposureBottomTimeSeconds)
-                + String.format("layerHeight = %.3f\n", layerHeightMilimeter)
-                + String.format("numFade = %d\n", bottomLayers)
-                + String.format("numFast = %d\n", numberOfLayers)
-                + String.format("numSlow = %d\n", numberOfSlowLayers)
-                + String.format("printTime = %d\n", printTimeSeconds);
+        String outputString = String.format("action = %s\n", getString(EParameter.action))
+                + String.format("jobDir = %s\n", getString(EParameter.jobName))
+                + String.format("expTime = %.2f\n", getFloat(EParameter.exposureTimeS))
+                + String.format("expTimeFirst = %.2f\n", getFloat(EParameter.bottomExposureTimeS))
+                + String.format("fileCreationTimestamp = %s\n", getString(EParameter.fileCreationTimestamp))
+                + String.format("layerHeight = %.3f\n", getFloat(EParameter.layerHeightMM))
+                + String.format("materialName = %s\n", getString(EParameter.materialName))
+                + String.format("numFade = %d\n", getInt(EParameter.bottomLayerCount))
+                + String.format("numFast = %d\n", getInt(EParameter.layerCount))
+                + String.format("numSlow = %d\n", getInt(EParameter.slowLayerCount))
+                + String.format("printProfile = %s\n", getString(EParameter.printProfile))
+                + String.format("printTime = %f\n", getFloat(EParameter.printTimeS))
+                + String.format("printerModel = %s\n", getString(EParameter.machineName))
+                + String.format("printerProfile = %s\n", getString(EParameter.printerProfile))
+                + String.format("printerVariant = %s\n", getString(EParameter.printerVariant))
+                + String.format("prusaSlicerVersion = %s\n", getString(EParameter.prusaSlicerVersion))
+                + String.format("usedMaterial = %f\n", getFloat(EParameter.volume));
         output.write(outputString.getBytes());
-        for (Map.Entry<String, String> entry : entrySet()) {
-            if( KNOWN_ADDITIONAL_KEYS.contains(entry.getKey()) ) {
-                output.write(String.format("%s = %s\n", entry.getKey(), entry.getValue()).getBytes());
-            }
-        }
-        ;
+        //TODO:: WRITE THE REST
     }
 
     @Override
@@ -150,11 +170,8 @@ public class Sl1FileHeader extends SlicedFileHeader {
         /* no-op */
     }
 
-    void setResolutionX(int x) {
-        resolutionX = x;
-    }
-
-    void setResolutionY(int y) {
-        resolutionY = y;
+    @Override
+    public boolean isMirrored() {
+        return false;
     }
 }

@@ -33,26 +33,23 @@ import java.util.Arrays;
  * by bn on 01/07/2018.
  */
 public class PhotonFileMachineInfo {
-	public final static String NAME_KEY = "machineName";
-	public final static String SIZE_KEY = "machineInfoSize";
-
 	/**
 	 * Check if the header has all the fields required for a machineinfo block
 	 * @param header to check
 	 * @return true iff the header has all the required fields.
 	 */
 	static public boolean hasMachineInfo(SlicedFileHeader header) {
-		return header.containsKey(NAME_KEY) && header.containsKey(SIZE_KEY);
+		return header.has(EParameter.machineInfoSize) && header.has(EParameter.machineName);
 	}
 
     static public void initializeMachineInfo(String machineName, int size, SlicedFileHeader header) {
-		header.put(NAME_KEY, machineName);
-		header.put(SIZE_KEY, String.valueOf(size));
+		header.put(EParameter.machineName, machineName);
+		header.put(EParameter.machineInfoSize, size);
 	}
 
     static public void initializeMachineInfo(int address, int byteSize, byte[] file, SlicedFileHeader header) throws Exception {
 		int machineNameAddress, machineNameSize;
-		header.put(SIZE_KEY, String.valueOf(byteSize));
+		header.put(EParameter.machineInfoSize, byteSize);
 
     	if (byteSize > 0) {
 	        byte[] data = Arrays.copyOfRange(file, address, address + byteSize);
@@ -65,15 +62,15 @@ public class PhotonFileMachineInfo {
 	        }
 	
 	        byte[] machineName = Arrays.copyOfRange(file, machineNameAddress, machineNameAddress + machineNameSize);
-			header.put(NAME_KEY, new String(machineName));
+			header.put(EParameter.machineName, new String(machineName));
     	}
     }
 
     static public void save(PhotonOutputStream os, int startAddress, SlicedFileHeader header) throws Exception {
     	// TODO:: VALIDATE
-    	int infoByteSize = header.getInt(SIZE_KEY);
+    	int infoByteSize = header.getInt(EParameter.machineInfoSize);
     	if (infoByteSize > 0) {
-    		byte[] machineName = header.get(NAME_KEY).getBytes();
+    		byte[] machineName = header.getString(EParameter.machineName).getBytes();
     		for(int i=0; i<7; i++) os.writeInt(0);
 	    	os.writeInt(startAddress + infoByteSize);
 	    	os.writeInt(machineName.length);
@@ -84,6 +81,6 @@ public class PhotonFileMachineInfo {
 
     static public int getByteSize(SlicedFileHeader header)
 	{
-        return header.getInt(SIZE_KEY) + header.get(NAME_KEY).getBytes().length;
+        return header.getInt(EParameter.machineInfoSize) + header.getString(EParameter.machineName).getBytes().length;
     }
 }

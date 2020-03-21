@@ -321,7 +321,7 @@ public abstract class SlicedFile {
             if (i < fileHeader.getBottomLayers()) {
                 layer.setLayerExposure(fileHeader.getBottomExposureTimeSeconds());
             } else {
-                layer.setLayerExposure(fileHeader.getNormalExposure());
+                layer.setLayerExposure(fileHeader.getExposureTimeSeconds());
             }
             layer.setLayerOffTimeSeconds(fileHeader.getOffTimeSeconds());
         }
@@ -471,7 +471,7 @@ public abstract class SlicedFile {
     }
 
     public int getVersion() {
-        return fileHeader.getVersion();
+        return fileHeader.getInt(EParameter.version);
     }
 
     public boolean hasAA() {
@@ -483,7 +483,7 @@ public abstract class SlicedFile {
     }
 
     public void changeToVersion2() {
-        fileHeader.setFileVersion(2);
+        fileHeader.put(EParameter.version, 2);
     }
 
     // only call this when recalculating AA levels

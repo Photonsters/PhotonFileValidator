@@ -1,10 +1,7 @@
 package photon.file.parts.sl1;
 
 import photon.file.SlicedFile;
-import photon.file.parts.EFileType;
-import photon.file.parts.IPhotonProgress;
-import photon.file.parts.PhotonFileLayer;
-import photon.file.parts.PhotonLayer;
+import photon.file.parts.*;
 import photon.file.parts.sl1.Sl1FileHeader;
 
 import javax.imageio.ImageIO;
@@ -46,8 +43,8 @@ public class Sl1File extends SlicedFile {
         }
         InputStream firstLayerIS = zf.getInputStream(firstLayerEntry);
         BufferedImage firstLayerImg = ImageIO.read(firstLayerIS);
-        header.setResolutionX(firstLayerImg.getWidth());
-        header.setResolutionY(firstLayerImg.getHeight());
+        header.put(EParameter.resolutionX, firstLayerImg.getWidth());
+        header.put(EParameter.resolutionY, firstLayerImg.getHeight());
 
         // While _currently_ prusaslicer puts the layers in the zip in numeric order,
         // there is no point in assuming it, nor that .entries() will load them in any order

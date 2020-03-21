@@ -31,22 +31,9 @@ import java.io.IOException;
 import java.util.Arrays;
 
 public class PhotonFilePrintParameters {
-    public final static String BOTTOM_LIFT_DISTANCE_KEY = "bottomLiftDistance";
-    public final static String BOTTOM_LIFT_SPEED_KEY = "bottomLiftSpeed";
-    public final static String LIFT_DISTANCE_KEY = "LiftDistance";
-    public final static String LIFT_SPEED_KEY = "LiftSpeed";
-    public final static String RETRACT_SPEED_KEY = "retractSpeed";
-    public final static String VOLUME_KEY = "volume";
-    public final static String WEIGHT_KEY = "weight";
-    public final static String COST_KEY = "cost";
-    public final static String BOTTOM_LIGHT_OFF_DELAY_KEY = "bottomLightOffDelay";
-    public final static String LIGHT_OFF_DELAY_KEY = "lightOffDelay";
-    public final static String BOTTOM_LAYER_COUNT_KEY = "bottomLayerCount";
-
-
     public static final float DEFAULT_DISTANCE = 5.0f;
     public static final float DEFAULT_SPEED = 300.0f;
-    public static final float DEFAULT_LIGHT_OFF_DELAY = 0.0f;
+    public static final float DEFAULT_LIGHT_OFF_TIME = 0.0f;
 
     /**
      * Check if the header has all the fields required for a print parameters block
@@ -54,66 +41,66 @@ public class PhotonFilePrintParameters {
      * @return true iff the header has all the required fields.
      */
     static public boolean hasPrintParameters(SlicedFileHeader header) {
-        return header.containsKey(BOTTOM_LIFT_DISTANCE_KEY)
-                && header.containsKey(BOTTOM_LIFT_SPEED_KEY)
-                && header.containsKey(LIFT_DISTANCE_KEY)
-                && header.containsKey(LIFT_SPEED_KEY)
-                && header.containsKey(RETRACT_SPEED_KEY)
-                && header.containsKey(VOLUME_KEY)
-                && header.containsKey(WEIGHT_KEY)
-                && header.containsKey(COST_KEY)
-                && header.containsKey(BOTTOM_LIGHT_OFF_DELAY_KEY)
-                && header.containsKey(LIGHT_OFF_DELAY_KEY)
-                && header.containsKey(BOTTOM_LAYER_COUNT_KEY);
+        return header.has(EParameter.bottomLiftDistance)
+                && header.has(EParameter.bottomLiftSpeed)
+                && header.has(EParameter.liftDistance)
+                && header.has(EParameter.liftSpeed)
+                && header.has(EParameter.retractSpeed)
+                && header.has(EParameter.volume)
+                && header.has(EParameter.weight)
+                && header.has(EParameter.cost)
+                && header.has(EParameter.bottomLightOffTimeS)
+                && header.has(EParameter.lightOffTimeS)
+                && header.has(EParameter.bottomLayerCount);
     }
 
     static public void initializePrintParameters(int parametersPos, byte[] file, SlicedFileHeader header) throws IOException {
         byte[] data = Arrays.copyOfRange(file, parametersPos, parametersPos + getByteSize());
         PhotonInputStream ds = new PhotonInputStream(new ByteArrayInputStream(data));
-        
-        header.put(BOTTOM_LIFT_DISTANCE_KEY, String.valueOf(ds.readFloat()));
-        header.put(BOTTOM_LIFT_SPEED_KEY, String.valueOf(ds.readFloat()));
-        header.put(LIFT_DISTANCE_KEY, String.valueOf(ds.readFloat()));
-        header.put(LIFT_SPEED_KEY, String.valueOf(ds.readFloat()));
-        header.put(RETRACT_SPEED_KEY, String.valueOf(ds.readFloat()));
-        header.put(VOLUME_KEY, String.valueOf(ds.readFloat()));
-        header.put(WEIGHT_KEY, String.valueOf(ds.readFloat()));
-        header.put(COST_KEY, String.valueOf(ds.readFloat()));
-        header.put(BOTTOM_LIGHT_OFF_DELAY_KEY, String.valueOf(ds.readFloat()));
-        header.put(LIGHT_OFF_DELAY_KEY, String.valueOf(ds.readFloat()));
+        header.put(EParameter.bottomLiftDistance, ds.readFloat());
+        header.put(EParameter.bottomLiftSpeed, ds.readFloat());
+        header.put(EParameter.liftDistance, ds.readFloat());
+        header.put(EParameter.liftSpeed, ds.readFloat());
+        header.put(EParameter.retractSpeed, ds.readFloat());
+        header.put(EParameter.volume, ds.readFloat());
+        header.put(EParameter.weight, ds.readFloat());
+        header.put(EParameter.cost, ds.readFloat());
+        header.put(EParameter.bottomLightOffTimeS, ds.readFloat());
+        header.put(EParameter.lightOffTimeS, ds.readFloat());
     }
 
     static public void initializePrintParameters(SlicedFileHeader header ) {
-        header.put(BOTTOM_LIFT_DISTANCE_KEY, String.valueOf(DEFAULT_DISTANCE));
-        header.put(BOTTOM_LIFT_SPEED_KEY, String.valueOf(DEFAULT_SPEED));
-        header.put(LIFT_DISTANCE_KEY, String.valueOf(DEFAULT_DISTANCE));
-        header.put(LIFT_SPEED_KEY, String.valueOf(DEFAULT_SPEED));
-        header.put(RETRACT_SPEED_KEY, String.valueOf(DEFAULT_SPEED));
-        header.put(VOLUME_KEY, "0.0");
-        header.put(WEIGHT_KEY, "0.0");
-        header.put(COST_KEY, "0.0");
-        header.put(BOTTOM_LIGHT_OFF_DELAY_KEY, String.valueOf(DEFAULT_LIGHT_OFF_DELAY));
-        header.put(LIGHT_OFF_DELAY_KEY, String.valueOf(DEFAULT_LIGHT_OFF_DELAY));
+        header.put(EParameter.bottomLiftDistance, DEFAULT_DISTANCE);
+        header.put(EParameter.bottomLiftSpeed, DEFAULT_SPEED);
+        header.put(EParameter.liftDistance, DEFAULT_DISTANCE);
+        header.put(EParameter.liftSpeed, DEFAULT_SPEED);
+        header.put(EParameter.retractSpeed, DEFAULT_SPEED);
+        header.put(EParameter.volume, 0.0f);
+        header.put(EParameter.weight, 0.0f);
+        header.put(EParameter.cost, 0.0f);
+        header.put(EParameter.bottomLightOffTimeS, DEFAULT_LIGHT_OFF_TIME);
+        header.put(EParameter.lightOffTimeS, DEFAULT_LIGHT_OFF_TIME);
     }
 
 
 
     static public void save(PhotonOutputStream os, SlicedFileHeader header) throws Exception {
         // TODO:: VALIDATE? Really could do with logging.
-        os.writeFloat(header.getFloatOrDefault(BOTTOM_LIFT_DISTANCE_KEY, PhotonFilePrintParameters.DEFAULT_DISTANCE));
-        os.writeFloat(header.getFloatOrDefault(BOTTOM_LIFT_SPEED_KEY, PhotonFilePrintParameters.DEFAULT_SPEED ));
+        os.writeFloat(header.getFloat(EParameter.bottomLiftDistance));
+        os.writeFloat(header.getFloat(EParameter.bottomLiftSpeed));
 
-        os.writeFloat(header.getFloatOrDefault(LIFT_DISTANCE_KEY, PhotonFilePrintParameters.DEFAULT_DISTANCE));
-        os.writeFloat(header.getFloatOrDefault(LIFT_SPEED_KEY, PhotonFilePrintParameters.DEFAULT_SPEED));
-        os.writeFloat(header.getFloatOrDefault(RETRACT_SPEED_KEY, PhotonFilePrintParameters.DEFAULT_SPEED));
+        os.writeFloat(header.getFloat(EParameter.liftDistance));
+        os.writeFloat(header.getFloat(EParameter.liftSpeed));
+        os.writeFloat(header.getFloat(EParameter.retractSpeed));
 
-        os.writeFloat(header.getFloatOrDefault(VOLUME_KEY, 0f));
-        os.writeFloat(header.getFloatOrDefault(WEIGHT_KEY, 0f));
-        os.writeFloat(header.getFloatOrDefault(COST_KEY, 0f));
+        os.writeFloat(header.getFloat(EParameter.volume));
+        os.writeFloat(header.getFloat(EParameter.weight));
+        os.writeFloat(header.getFloat(EParameter.cost));
 
-        os.writeFloat(header.getFloatOrDefault(BOTTOM_LIGHT_OFF_DELAY_KEY, PhotonFilePrintParameters.DEFAULT_LIGHT_OFF_DELAY));
-        os.writeFloat(header.getFloatOrDefault(LIGHT_OFF_DELAY_KEY, PhotonFilePrintParameters.DEFAULT_LIGHT_OFF_DELAY));
-        os.writeInt(header.getBottomLayers());
+        os.writeFloat(header.getFloat(EParameter.bottomLightOffTimeS));
+        os.writeFloat(header.getFloat(EParameter.lightOffTimeS));
+        os.writeInt(header.getInt(EParameter.bottomLayerCount));
+
         // and some padding.
         os.writeInt(0);
         os.writeInt(0);

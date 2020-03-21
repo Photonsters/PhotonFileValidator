@@ -29,7 +29,6 @@ import photon.file.parts.*;
 
 import java.io.ByteArrayInputStream;
 import java.util.List;
-import java.util.Map;
 
 /**
  *  by bn on 30/06/2018.
@@ -39,46 +38,25 @@ public class PhotonFileHeader extends SlicedFileHeader {
     static final int PARAMETERS_SIZE = 60;
     static final int MACHINE_INFO_SIZE = 76;
     static final int BED_Z_DIMENSIONS = 150;
-
-    private int header1;
-    private float bedZmm;
-    private int unknown1;
-    private int unknown2;
-    private int unknown3;
-
-    private int previewOneOffsetAddress;
-    private int layersDefinitionOffsetAddress;
-
-    private int previewTwoOffsetAddress;
-
-    private PhotonProjectType projectType;
-
-    private int printParametersOffsetAddress;
-    private int printParametersSize;
-    private int antiAliasingLevel;
-
-    private short lightPWM;
-    private short bottomLightPWM;
-
-    private int unknown4;
-    private int machineInfoOffsetAddress;
-    private int machineInfoSize;
+    static final int DEFAULT_PWM = 255;
 
     public PhotonFileHeader(SlicedFileHeader other) {
         super(other);
-        putAll(other);
+
         // Note we don't bother setting the addresses as they will be calculated on save.
-        header1 = MAGIC_NUMBER;
-        version = 2;
-        bedZmm = BED_Z_DIMENSIONS;
-        projectType = PhotonProjectType.lcdMirror;
+        put(EParameter.magicHeader, MAGIC_NUMBER);
+        // only create V2 files.
+        put(EParameter.version, 2);
 
-        printParametersSize = PARAMETERS_SIZE;
-        antiAliasingLevel = other.getAALevels();
+        putIfMissing(EParameter.bedZMM, BED_Z_DIMENSIONS);
+        putIfMissing(EParameter.projectType, PhotonProjectType.lcdMirror);
 
-        lightPWM = 255;
-        bottomLightPWM = 255;
-        machineInfoSize = MACHINE_INFO_SIZE;
+        put(EParameter.parametersSize, PARAMETERS_SIZE);
+        putIfMissing(EParameter.antialiasingLevel, other.getAALevels());
+
+        putIfMissing(EParameter.lightPWM, DEFAULT_PWM);
+        putIfMissing(EParameter.bottomLightPWM, DEFAULT_PWM);
+        put(EParameter.machineInfoSize, MACHINE_INFO_SIZE);
 
         if( !PhotonFileMachineInfo.hasMachineInfo(this) ) {
             PhotonFileMachineInfo.initializeMachineInfo("Photon", MACHINE_INFO_SIZE, this);
@@ -91,152 +69,154 @@ public class PhotonFileHeader extends SlicedFileHeader {
     public PhotonFileHeader(byte[] file) throws Exception {
         PhotonInputStream ds = new PhotonInputStream(new ByteArrayInputStream(file));
 
-        header1 = ds.readInt();
-        version = ds.readInt();
+        put(EParameter.magicHeader, ds.readInt());
+        put(EParameter.version, ds.readInt());
 
-        buildAreaX = ds.readFloat();
-        buildAreaY = ds.readFloat();
-        bedZmm = ds.readFloat();
+        put(EParameter.bedXMM, ds.readFloat());
+        put(EParameter.bedYMM, ds.readFloat());
+        put(EParameter.bedZMM, ds.readFloat());
 
-        unknown1 = ds.readInt();
-        unknown2 = ds.readInt();
-        unknown3 = ds.readInt();
+        // padding - TODO:: should we save?
+        ds.readInt();
+        ds.readInt();
+        ds.readInt();
 
-        layerHeightMilimeter = ds.readFloat();
-        exposureTimeSeconds = ds.readFloat();
-        exposureBottomTimeSeconds = ds.readFloat();
+        put(EParameter.layerHeightMM, ds.readFloat());
+        put(EParameter.exposureTimeS, ds.readFloat());
+        put(EParameter.bottomExposureTimeS, ds.readFloat());
 
-        offTimeSeconds = ds.readFloat();
-        bottomLayers = ds.readInt();
+        put(EParameter.lightOffTimeS, ds.readFloat());
+        put(EParameter.bottomLayerCount, ds.readInt());
 
-        resolutionX = ds.readInt();
-        resolutionY = ds.readInt();
+        put(EParameter.resolutionX, ds.readInt());
+        put(EParameter.resolutionY, ds.readInt());
 
-        previewOneOffsetAddress = ds.readInt();
-        layersDefinitionOffsetAddress = ds.readInt();
+        put(EParameter.previewOneAddress, ds.readInt());
+        put(EParameter.layersAddress, ds.readInt());
 
-        numberOfLayers = ds.readInt();
+        put(EParameter.layerCount, ds.readInt());
 
-        previewTwoOffsetAddress = ds.readInt();
-        printTimeSeconds = ds.readInt();
+        put(EParameter.previewTwoAddress, ds.readInt());
+        put(EParameter.printTimeS, ds.readInt());
 
-        projectType = PhotonProjectType.find(ds.readInt());
+        put(EParameter.projectType, PhotonProjectType.find(ds.readInt()));
 
-        printParametersOffsetAddress = ds.readInt();
-        printParametersSize = ds.readInt();
-        antiAliasingLevel = ds.readInt();
+        put(EParameter.parametersAddress, ds.readInt());
+        put(EParameter.parametersSize, ds.readInt());
+        put(EParameter.antialiasingLevel, ds.readInt());
 
-        lightPWM = ds.readShort();
-        bottomLightPWM = ds.readShort();
+        put(EParameter.lightPWM, ds.readShort());
+        put(EParameter.bottomLightPWM, ds.readShort());
 
-        unknown4 = ds.readInt();
-        machineInfoOffsetAddress = ds.readInt();
-        if (version>1) {
-            machineInfoSize = ds.readInt();
+        ds.readInt();
+        if( getVersion() > 1) {
+            put(EParameter.machineInfoAddress, ds.readInt());
+            put(EParameter.machineInfoSize, ds.readInt());
         }
     }
 
     public int getByteSize() {
-        return 4+4 + 4+4+4 + 4+4+4 + 4+4+4 + 4+4 + 4+4 + 4+4 + 4 + 4+4 + 4 + 4+4+4 +2+2 +4+4+ (version>1?4:0);
+        return 4+4 + 4+4+4 + 4+4+4 + 4+4+4 + 4+4 + 4+4 + 4+4 + 4 + 4+4 + 4 + 4+4+4 +2+2 +4+4+ (getVersion()>1?4:0);
     }
 
     public void save(PhotonOutputStream os, int previewOnePos, int previewTwoPos, int layerDefinitionPos, int parametersPos, int machineInfoPos) throws Exception {
-        previewOneOffsetAddress = previewOnePos;
-        previewTwoOffsetAddress = previewTwoPos;
-        layersDefinitionOffsetAddress = layerDefinitionPos;
-        printParametersOffsetAddress = parametersPos;
-        machineInfoOffsetAddress = machineInfoPos;
+        put(EParameter.previewOneAddress, previewOnePos);
+        put(EParameter.previewTwoAddress, previewTwoPos);
+        put(EParameter.layersAddress, layerDefinitionPos);
+        put(EParameter.parametersAddress, parametersPos);
+        put(EParameter.machineInfoAddress, machineInfoPos);
 
-        os.writeInt(header1);
-        os.writeInt(version);
+        os.writeInt(getInt(EParameter.magicHeader));
+        os.writeInt(getVersion());
 
-        os.writeFloat(buildAreaX);
-        os.writeFloat(buildAreaY);
-        os.writeFloat(bedZmm);
+        os.writeFloat(getFloat(EParameter.bedXMM));
+        os.writeFloat(getFloat(EParameter.bedYMM));
+        os.writeFloat(getFloat(EParameter.bedZMM));
 
-        os.writeInt(unknown1);
-        os.writeInt(unknown2);
-        os.writeInt(unknown3);
+        // write padding
+        os.writeInt(0);
+        os.writeInt(0);
+        os.writeInt(0);
 
-        os.writeFloat(layerHeightMilimeter);
-        os.writeFloat(exposureTimeSeconds);
-        os.writeFloat(exposureBottomTimeSeconds);
+        os.writeFloat(getLayerHeight());
+        os.writeFloat(getExposureTimeSeconds());
+        os.writeFloat(getBottomExposureTimeSeconds());
 
-        os.writeFloat(offTimeSeconds);
-        os.writeInt(bottomLayers);
+        os.writeFloat(getOffTimeSeconds());
+        os.writeInt(getBottomLayers());
 
-        os.writeInt(resolutionX);
-        os.writeInt(resolutionY);
+        os.writeInt(getResolutionX());
+        os.writeInt(getResolutionY());
 
-        os.writeInt(previewOneOffsetAddress);
-        os.writeInt(layersDefinitionOffsetAddress);
+        os.writeInt(getPreviewOneOffsetAddress());
+        os.writeInt(getLayersDefinitionOffsetAddress());
 
-        os.writeInt(numberOfLayers);
+        os.writeInt(getNumberOfLayers());
 
-        os.writeInt(previewTwoOffsetAddress);
-        os.writeInt(printTimeSeconds);
+        os.writeInt(getPreviewTwoOffsetAddress());
+        os.writeInt(getPrintTimeSeconds());
 
-        os.writeInt(projectType.getProjectID());
+        os.writeInt(((PhotonProjectType)get(EParameter.projectType)).getProjectID());
 
-        os.writeInt(printParametersOffsetAddress);
-        os.writeInt(printParametersSize);
-        os.writeInt(antiAliasingLevel);
+        os.writeInt(getPrintParametersOffsetAddress());
+        os.writeInt(getInt(EParameter.parametersSize));
+        os.writeInt(getInt(EParameter.antialiasingLevel));
 
-        os.writeShort(lightPWM);
-        os.writeShort(bottomLightPWM);
+        os.writeShort(getShort(EParameter.lightPWM));
+        os.writeShort(getShort(EParameter.bottomLightPWM));
 
-        os.writeInt(unknown4);
-        os.writeInt(machineInfoOffsetAddress);
-        if (version>1) {
-            os.writeInt(machineInfoSize);
+        os.writeInt(0);
+        if (getVersion()>1) {
+            os.writeInt(getMachineInfoOffsetAddress());
+            os.writeInt(getMachineInfoSize());
+        } else {
+            // yes they added 1 byte to the header for v2, despite having 4 bytes of padding availiable.
+            os.writeInt(0);
         }
     }
 
+    public int getVersion() {
+        return getInt(EParameter.version);
+    }
 
     public int getPreviewOneOffsetAddress() {
-        return previewOneOffsetAddress;
+        return getInt(EParameter.previewOneAddress);
     }
 
     public int getPreviewTwoOffsetAddress() {
-        return previewTwoOffsetAddress;
+        return getInt(EParameter.previewTwoAddress);
     }
 
-
     public int getLayersDefinitionOffsetAddress() {
-        return layersDefinitionOffsetAddress;
+        return getInt(EParameter.layersAddress);
     }
 
     public void unLink() {
     }
 
     public int getPrintParametersOffsetAddress() {
-        return printParametersOffsetAddress;
+        return getInt(EParameter.parametersAddress);
     }
 
     public int getMachineInfoOffsetAddress() {
-    	return machineInfoOffsetAddress;
+    	return getInt(EParameter.machineInfoAddress);
     }
     
     public int getMachineInfoSize() {
-    	return machineInfoSize;
+    	return getInt(EParameter.machineInfoSize);
     }
 
-    //TODO:: this should probably be removed in favour of getAALevels
-    public int getAntiAliasingLevel() {
-        return antiAliasingLevel;
-    }
 
     public void setAntiAliasingLevel(int antiAliasingLevel) {
-        this.antiAliasingLevel = antiAliasingLevel;
+        put(EParameter.antialiasingLevel, antiAliasingLevel);
     }
 
-    @Override
     public void setFileVersion(int i) {
-        version = i;
-        antiAliasingLevel = 1;
-        lightPWM = 255;
-        bottomLightPWM = 255;
-        if( version == 2) {
+        put(EParameter.version, i);
+        setAntiAliasingLevel(1);
+        put(EParameter.lightPWM, 255);
+        put(EParameter.bottomLightPWM, 255);
+        if( i == 2) {
             if (!PhotonFilePrintParameters.hasPrintParameters(this)) {
                 PhotonFilePrintParameters.initializePrintParameters(this);
             }
@@ -247,22 +227,22 @@ public class PhotonFileHeader extends SlicedFileHeader {
     }
 
     public boolean hasAA() {
-        return (getVersion()>1 && getAntiAliasingLevel()>1);
+        return getAALevels() > 1;
     }
 
     public int getAALevels() {
         if (getVersion()>1) {
-            return getAntiAliasingLevel();
+            return getInt(EParameter.antialiasingLevel);
         }
         return 1;
     }
 
     public void setAALevels(int levels, List<PhotonFileLayer> layers) {
         if (getVersion()>1) {
-            if (levels < getAntiAliasingLevel()) {
+            if (levels < getAALevels()) {
                 reduceAaLevels(levels, layers);
             }
-            if (levels > getAntiAliasingLevel()) {
+            if (levels > getAALevels()) {
                 increaseAaLevels(levels, layers);
             }
         }
@@ -288,10 +268,8 @@ public class PhotonFileHeader extends SlicedFileHeader {
         setAntiAliasingLevel(levels);
     }
 
-
-    @Override
     public boolean isMirrored() {
-        return projectType == PhotonProjectType.lcdMirror;
+        return get(EParameter.projectType) == PhotonProjectType.lcdMirror;
     }
 
     public void readParameters(byte[] file) throws Exception {

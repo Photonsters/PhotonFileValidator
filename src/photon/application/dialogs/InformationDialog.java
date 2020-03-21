@@ -29,6 +29,7 @@ import com.intellij.uiDesigner.core.GridLayoutManager;
 import com.intellij.uiDesigner.core.Spacer;
 import photon.file.SlicedFile;
 import photon.file.SlicedFileHeader;
+import photon.file.parts.EParameter;
 
 import javax.swing.*;
 import java.awt.*;
@@ -70,8 +71,8 @@ public class InformationDialog extends JDialog {
         if (photonFile != null) {
             SlicedFileHeader photonFileHeader = photonFile.getPhotonFileHeader();
 
-            buildAreaX.setText(String.format("%8.2f mm", photonFileHeader.getBuildAreaX()));
-            buildAreaY.setText(String.format("%8.2f mm", photonFileHeader.getBuildAreaY()));
+            buildAreaX.setText(String.format("%8.2f mm", photonFileHeader.getFloat(EParameter.bedXMM)));
+            buildAreaY.setText(String.format("%8.2f mm", photonFileHeader.getFloat(EParameter.bedYMM)));
 
             resolutionX.setText(String.format("%8d px", photonFileHeader.getResolutionX()));
             resolutionY.setText(String.format("%8d px", photonFileHeader.getResolutionY()));
@@ -79,8 +80,8 @@ public class InformationDialog extends JDialog {
             layerHeight.setText(String.format("%.2f mm", photonFileHeader.getLayerHeight()));
             pixels.setText(String.format("%,d px", photonFile.getPixels()));
 
-            float xmmPx = photonFileHeader.getBuildAreaX() / photonFileHeader.getResolutionX();
-            float ymmPx = photonFileHeader.getBuildAreaY() / photonFileHeader.getResolutionY();
+            float xmmPx = photonFileHeader.getFloat(EParameter.bedXMM) / photonFileHeader.getResolutionX();
+            float ymmPx = photonFileHeader.getFloat(EParameter.bedYMM) / photonFileHeader.getResolutionY();
             float mm3Px = xmmPx * ymmPx * photonFileHeader.getLayerHeight();
             float mm3 = mm3Px * photonFile.getPixels();
             float cm3 = mm3 / 1000;
@@ -94,20 +95,20 @@ public class InformationDialog extends JDialog {
 
 
             fileHeader.setText("File version " + photonFile.getVersion());
-            if (photonFileHeader.containsKey("cost")) {
-                fileCost.setText(String.format("%8.4f $", photonFileHeader.getFloat("cost")));
+            if (photonFileHeader.has(EParameter.cost)) {
+                fileCost.setText(String.format("%8.4f $", photonFileHeader.getFloat(EParameter.cost)));
             } else {
                 fileCost.setText("");
             }
 
-            if (photonFileHeader.containsKey("weight")) {
-                fileWeight.setText(String.format("%8.4f $", photonFile.getPhotonFileHeader().getFloat("weight")));
+            if (photonFileHeader.has(EParameter.weight)) {
+                fileWeight.setText(String.format("%8.4f $", photonFile.getPhotonFileHeader().getFloat(EParameter.weight)));
             } else {
                 fileWeight.setText("");
             }
 
-            if (photonFileHeader.containsKey("volume")) {
-                fileVolume.setText(String.format("%8.4f $", photonFile.getPhotonFileHeader().getFloat("volume")));
+            if (photonFileHeader.has(EParameter.volume)) {
+                fileVolume.setText(String.format("%8.4f $", photonFile.getPhotonFileHeader().getFloat(EParameter.volume)));
             } else {
                 fileVolume.setText("");
             }

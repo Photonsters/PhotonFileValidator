@@ -75,15 +75,17 @@ public class PhotonFile extends SlicedFile {
     protected void writeFile(OutputStream outputStream) throws Exception {
         int antiAliasLevel = fileHeader.getAALevels();
 
+        PhotonFileHeader photonFileHeader = (PhotonFileHeader)fileHeader;
+
         int headerPos = 0;
-        int previewOnePos = headerPos + fileHeader.getByteSize();
+        int previewOnePos = headerPos + photonFileHeader.getByteSize();
         int previewTwoPos = previewOnePos + previewOne.getByteSize();
         int layerDefinitionPos = previewTwoPos + previewTwo.getByteSize();
 
         int parametersPos = 0;
         int machineInfoPos = 0;
-        PhotonFileHeader photonFileHeader = (PhotonFileHeader)fileHeader;
-        if (fileHeader.getVersion() > 1) {
+
+        if (photonFileHeader.getVersion() > 1) {
             parametersPos = layerDefinitionPos;
             if (PhotonFileMachineInfo.getByteSize(fileHeader) > 0) {
 	            machineInfoPos = parametersPos + PhotonFilePrintParameters.getByteSize();
@@ -102,7 +104,7 @@ public class PhotonFile extends SlicedFile {
         previewOne.save(os, previewOnePos);
         previewTwo.save(os, previewTwoPos);
 
-        if (fileHeader.getVersion() > 1) {
+        if (photonFileHeader.getVersion() > 1) {
             PhotonFilePrintParameters.save(os, photonFileHeader);
             PhotonFileMachineInfo.save(os, machineInfoPos, photonFileHeader);
         }

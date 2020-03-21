@@ -252,7 +252,7 @@ public class PhotonFileLayer {
 
         int antiAliasLevel = 1;
         if (photonFileHeader.getVersion() > 1) {
-            antiAliasLevel = photonFileHeader.getAntiAliasingLevel();
+            antiAliasLevel = photonFileHeader.getAALevels();
         }
 
         int layerCount = photonFileHeader.getNumberOfLayers();
@@ -377,7 +377,7 @@ public class PhotonFileLayer {
             layer.packedLayerImage = photonLayer.packLayerImage();
             layer.isCalculated = true;
 
-            if (photonFileHeader.getVersion() > 1) {
+            if (photonFileHeader.hasAA()) {
                 for (PhotonFileLayer aaFileLayer : layer.antiAliasLayers) {
                     ArrayList<BitSet> aaUnpackedImage = aaFileLayer.unpackImage(photonFileHeader.getResolutionX(), photonFileHeader.getResolutionY());
                     PhotonLayer aaPhotonLayer = new PhotonLayer(photonFileHeader.getResolutionX(), photonFileHeader.getResolutionY());

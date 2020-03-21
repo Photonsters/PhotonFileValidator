@@ -32,6 +32,10 @@ import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.util.List;
 
+/**
+ * PhotonS file support.
+ * This is utterly incomplete.
+ */
 public class PhotonsFileHeader  extends SlicedFileHeader {
 
     private int fileVersion;
@@ -96,5 +100,10 @@ public class PhotonsFileHeader  extends SlicedFileHeader {
     @Override
     public void unLink() {
 
+    }
+
+    @Override
+    public boolean isMirrored() {
+        return false;
     }
 }
