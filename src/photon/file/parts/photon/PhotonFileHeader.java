@@ -37,8 +37,8 @@ public class PhotonFileHeader extends SlicedFileHeader {
     static final int MAGIC_NUMBER = 318570521;
     static final int PARAMETERS_SIZE = 60;
     static final int MACHINE_INFO_SIZE = 76;
-    static final int BED_Z_DIMENSIONS = 150;
-    static final int DEFAULT_PWM = 255;
+    static final float BED_Z_DIMENSIONS = 150.0f;
+    static final short DEFAULT_PWM = 255;
 
     public PhotonFileHeader(SlicedFileHeader other) {
         super(other);
@@ -57,6 +57,9 @@ public class PhotonFileHeader extends SlicedFileHeader {
         putIfMissing(EParameter.lightPWM, DEFAULT_PWM);
         putIfMissing(EParameter.bottomLightPWM, DEFAULT_PWM);
         put(EParameter.machineInfoSize, MACHINE_INFO_SIZE);
+
+        // check the print time!
+        forceParameterToInt(EParameter.printTimeS);
 
         if( !PhotonFileMachineInfo.hasMachineInfo(this) ) {
             PhotonFileMachineInfo.initializeMachineInfo("Photon", MACHINE_INFO_SIZE, this);
@@ -154,7 +157,7 @@ public class PhotonFileHeader extends SlicedFileHeader {
         os.writeInt(getNumberOfLayers());
 
         os.writeInt(getPreviewTwoOffsetAddress());
-        os.writeInt(getPrintTimeSeconds());
+        os.writeInt(getInt(EParameter.printTimeS));
 
         os.writeInt(((PhotonProjectType)get(EParameter.projectType)).getProjectID());
 

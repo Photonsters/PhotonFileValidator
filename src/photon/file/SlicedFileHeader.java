@@ -52,7 +52,7 @@ abstract public class SlicedFileHeader {
 
     public SlicedFileHeader(SlicedFileHeader other) {
         super();
-        values.putAll(other.values);
+        values = new HashMap<>(other.values);
     }
 
     // Default constructor for children
@@ -177,8 +177,6 @@ abstract public class SlicedFileHeader {
         put(EParameter.lightOffTimeS, offTimeSeconds);
     }
 
-    public int getPrintTimeSeconds() { return getInt(EParameter.printTimeS); }
-
     abstract public boolean hasAA();
     //TODO:: move to an AA supporting subclass?
     abstract public int getAALevels();
@@ -194,4 +192,22 @@ abstract public class SlicedFileHeader {
      * @return true iff the images need to be mirrrored.
      */
     public abstract boolean isMirrored();
+
+    public void forceParameterToInt(EParameter parameter) {
+        try{
+            int tmp = getInt(parameter);
+        } catch (ClassCastException e) {
+            // its a float.
+            put(parameter, (int)getFloat(parameter));
+        }
+    }
+
+    public void forceParameterToFloat(EParameter parameter) {
+        try{
+            float tmp = getInt(parameter);
+        } catch (ClassCastException e) {
+            // its an int.
+            put(parameter, (float)getInt(parameter));
+        }
+    }
 }

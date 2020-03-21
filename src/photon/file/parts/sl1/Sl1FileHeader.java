@@ -43,6 +43,7 @@ public class Sl1FileHeader extends SlicedFileHeader {
         putIfMissing(EParameter.prusaSlicerVersion, DEFAULT_SLICER_VERSION);
         putIfMissing(EParameter.printerVariant, DEFAULT_PRINTER_VARIANT);
         putIfMissing(EParameter.volume, 0.0f);
+        forceParameterToFloat(EParameter.printTimeS);
     }
 
     @Override
@@ -90,7 +91,7 @@ public class Sl1FileHeader extends SlicedFileHeader {
                     put(EParameter.jobName, components[1]);
                     continue;
                 case "layerHeight":
-                    put(EParameter.layerHeightMM, components[1]);
+                    put(EParameter.layerHeightMM, Float.parseFloat(components[1]));
                     continue;
                 case "expTime":
                     put(EParameter.exposureTimeS, Float.parseFloat(components[1]));
@@ -108,7 +109,7 @@ public class Sl1FileHeader extends SlicedFileHeader {
                     put(EParameter.slowLayerCount, Integer.parseInt(components[1]));
                     continue;
                 case "printTime":
-                    put(EParameter.printTimeS, Integer.parseInt(components[1]));
+                    put(EParameter.printTimeS, Float.parseFloat(components[1]));
                     continue;
                 case "action":
                     put(EParameter.action, components[1]);

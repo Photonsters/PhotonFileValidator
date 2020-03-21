@@ -236,16 +236,16 @@ public class SaveDialog extends JDialog {
                         PhotonFilePrintParameters.DEFAULT_DISTANCE)));
         bottomLiftSpeed.setText(String.format("%.1f",
                 header.getFloatOrDefault(EParameter.bottomLiftSpeed,
-                        PhotonFilePrintParameters.DEFAULT_SPEED)));
+                        PhotonFilePrintParameters.DEFAULT_LIFT_SPEED)));
         liftingDistance.setText(String.format("%.1f",
                 header.getFloatOrDefault(EParameter.liftDistance,
                         PhotonFilePrintParameters.DEFAULT_DISTANCE)));
         liftingSpeed.setText(String.format("%.1f",
                 header.getFloatOrDefault(EParameter.liftSpeed,
-                        PhotonFilePrintParameters.DEFAULT_SPEED)));
+                        PhotonFilePrintParameters.DEFAULT_LIFT_SPEED)));
         retractSpeed.setText(String.format("%.1f",
                 header.getFloatOrDefault(EParameter.retractSpeed,
-                        PhotonFilePrintParameters.DEFAULT_SPEED)));
+                        PhotonFilePrintParameters.DEFAULT_RETRACT_SPEED)));
         bottomLightOffDelay.setText(String.format("%.1f",
                 header.getFloatOrDefault(EParameter.bottomLightOffTimeS,
                         PhotonFilePrintParameters.DEFAULT_LIGHT_OFF_TIME)));

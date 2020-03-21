@@ -32,7 +32,8 @@ import java.util.Arrays;
 
 public class PhotonFilePrintParameters {
     public static final float DEFAULT_DISTANCE = 5.0f;
-    public static final float DEFAULT_SPEED = 300.0f;
+    public static final float DEFAULT_LIFT_SPEED = 65.0f;
+    public static final float DEFAULT_RETRACT_SPEED = 150.0f;
     public static final float DEFAULT_LIGHT_OFF_TIME = 0.0f;
 
     /**
@@ -71,10 +72,10 @@ public class PhotonFilePrintParameters {
 
     static public void initializePrintParameters(SlicedFileHeader header ) {
         header.put(EParameter.bottomLiftDistance, DEFAULT_DISTANCE);
-        header.put(EParameter.bottomLiftSpeed, DEFAULT_SPEED);
+        header.put(EParameter.bottomLiftSpeed, DEFAULT_LIFT_SPEED);
         header.put(EParameter.liftDistance, DEFAULT_DISTANCE);
-        header.put(EParameter.liftSpeed, DEFAULT_SPEED);
-        header.put(EParameter.retractSpeed, DEFAULT_SPEED);
+        header.put(EParameter.liftSpeed, DEFAULT_LIFT_SPEED);
+        header.put(EParameter.retractSpeed, DEFAULT_RETRACT_SPEED);
         header.put(EParameter.volume, 0.0f);
         header.put(EParameter.weight, 0.0f);
         header.put(EParameter.cost, 0.0f);
