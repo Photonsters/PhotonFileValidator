@@ -43,6 +43,9 @@ public class PhotonFile extends SlicedFile {
     final static int PREVIEW_SMALL_X = 200;
     final static int PREVIEW_SMALL_Y = 125;
 
+    // mostly debug.
+    private boolean isValid = false;
+
     public PhotonFile readFromFile(File file, IPhotonProgress iPhotonProgress) throws Exception {
         byte[] fileData = getBinaryData(file);
         iPhotonProgress.showInfo("Reading Photon file header information...");
@@ -56,11 +59,14 @@ public class PhotonFile extends SlicedFile {
         if (photonFileHeader.getVersion() > 1) {
             iPhotonProgress.showInfo("Reading Print parameters information...");
             photonFileHeader.readParameters(fileData);
+            isValid = PhotonFileMachineInfo.hasMachineInfo(photonFileHeader)
+                && PhotonFilePrintParameters.hasPrintParameters(photonFileHeader);
+        } else {
+            isValid = true;
         }
         iPhotonProgress.showInfo("Reading photon layers information...");
         layers = PhotonFileLayer.readLayers(photonFileHeader, fileData, margin, iPhotonProgress);
         resetMarginAndIslandInfo();
-
         return this;
     }
 
@@ -163,6 +169,8 @@ public class PhotonFile extends SlicedFile {
         islandLayers = input.getIslandLayers();
         margin = input.getMargin();
         marginLayers = input.getMarginLayers();
+        isValid = PhotonFileMachineInfo.hasMachineInfo(fileHeader)
+                && PhotonFilePrintParameters.hasPrintParameters(fileHeader);
         return this;
     }
 

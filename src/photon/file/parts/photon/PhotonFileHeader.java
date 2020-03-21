@@ -66,6 +66,7 @@ public class PhotonFileHeader extends SlicedFileHeader {
 
     public PhotonFileHeader(SlicedFileHeader other) {
         super(other);
+        putAll(other);
         // Note we don't bother setting the addresses as they will be calculated on save.
         header1 = MAGIC_NUMBER;
         version = 2;
@@ -79,9 +80,12 @@ public class PhotonFileHeader extends SlicedFileHeader {
         bottomLightPWM = 255;
         machineInfoSize = MACHINE_INFO_SIZE;
 
-        put("bottomLayerCount", String.valueOf(getBottomLayers()));
-        PhotonFileMachineInfo.initializeMachineInfo("Photon", MACHINE_INFO_SIZE, this);
-
+        if( !PhotonFileMachineInfo.hasMachineInfo(this) ) {
+            PhotonFileMachineInfo.initializeMachineInfo("Photon", MACHINE_INFO_SIZE, this);
+        }
+        if( !PhotonFilePrintParameters.hasPrintParameters(this) ){
+            PhotonFilePrintParameters.initializePrintParameters( this);
+        }
     }
 
     public PhotonFileHeader(byte[] file) throws Exception {
@@ -232,7 +236,14 @@ public class PhotonFileHeader extends SlicedFileHeader {
         antiAliasingLevel = 1;
         lightPWM = 255;
         bottomLightPWM = 255;
-        PhotonFilePrintParameters.initializePrintParameters(this, getBottomLayers());
+        if( version == 2) {
+            if (!PhotonFilePrintParameters.hasPrintParameters(this)) {
+                PhotonFilePrintParameters.initializePrintParameters(this);
+            }
+            if (!PhotonFileMachineInfo.hasMachineInfo(this)) {
+                PhotonFileMachineInfo.initializeMachineInfo("Photon", MACHINE_INFO_SIZE, this);
+            }
+        }
     }
 
     public boolean hasAA() {

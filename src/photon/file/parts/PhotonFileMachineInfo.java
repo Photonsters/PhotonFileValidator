@@ -36,6 +36,15 @@ public class PhotonFileMachineInfo {
 	public final static String NAME_KEY = "machineName";
 	public final static String SIZE_KEY = "machineInfoSize";
 
+	/**
+	 * Check if the header has all the fields required for a machineinfo block
+	 * @param header to check
+	 * @return true iff the header has all the required fields.
+	 */
+	static public boolean hasMachineInfo(SlicedFileHeader header) {
+		return header.containsKey(NAME_KEY) && header.containsKey(SIZE_KEY);
+	}
+
     static public void initializeMachineInfo(String machineName, int size, SlicedFileHeader header) {
 		header.put(NAME_KEY, machineName);
 		header.put(SIZE_KEY, String.valueOf(size));
@@ -61,6 +70,7 @@ public class PhotonFileMachineInfo {
     }
 
     static public void save(PhotonOutputStream os, int startAddress, SlicedFileHeader header) throws Exception {
+    	// TODO:: VALIDATE
     	int infoByteSize = header.getInt(SIZE_KEY);
     	if (infoByteSize > 0) {
     		byte[] machineName = header.get(NAME_KEY).getBytes();

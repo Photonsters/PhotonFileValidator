@@ -48,6 +48,24 @@ public class PhotonFilePrintParameters {
     public static final float DEFAULT_SPEED = 300.0f;
     public static final float DEFAULT_LIGHT_OFF_DELAY = 0.0f;
 
+    /**
+     * Check if the header has all the fields required for a print parameters block
+     * @param header to check
+     * @return true iff the header has all the required fields.
+     */
+    static public boolean hasPrintParameters(SlicedFileHeader header) {
+        return header.containsKey(BOTTOM_LIFT_DISTANCE_KEY)
+                && header.containsKey(BOTTOM_LIFT_SPEED_KEY)
+                && header.containsKey(LIFT_DISTANCE_KEY)
+                && header.containsKey(LIFT_SPEED_KEY)
+                && header.containsKey(RETRACT_SPEED_KEY)
+                && header.containsKey(VOLUME_KEY)
+                && header.containsKey(WEIGHT_KEY)
+                && header.containsKey(COST_KEY)
+                && header.containsKey(BOTTOM_LIGHT_OFF_DELAY_KEY)
+                && header.containsKey(LIGHT_OFF_DELAY_KEY)
+                && header.containsKey(BOTTOM_LAYER_COUNT_KEY);
+    }
 
     static public void initializePrintParameters(int parametersPos, byte[] file, SlicedFileHeader header) throws IOException {
         byte[] data = Arrays.copyOfRange(file, parametersPos, parametersPos + getByteSize());
@@ -63,10 +81,9 @@ public class PhotonFilePrintParameters {
         header.put(COST_KEY, String.valueOf(ds.readFloat()));
         header.put(BOTTOM_LIGHT_OFF_DELAY_KEY, String.valueOf(ds.readFloat()));
         header.put(LIGHT_OFF_DELAY_KEY, String.valueOf(ds.readFloat()));
-        header.put(BOTTOM_LAYER_COUNT_KEY, String.valueOf(ds.readInt()));
     }
 
-    static public void initializePrintParameters(SlicedFileHeader header, int bottomLayerCount) {
+    static public void initializePrintParameters(SlicedFileHeader header ) {
         header.put(BOTTOM_LIFT_DISTANCE_KEY, String.valueOf(DEFAULT_DISTANCE));
         header.put(BOTTOM_LIFT_SPEED_KEY, String.valueOf(DEFAULT_SPEED));
         header.put(LIFT_DISTANCE_KEY, String.valueOf(DEFAULT_DISTANCE));
@@ -77,23 +94,26 @@ public class PhotonFilePrintParameters {
         header.put(COST_KEY, "0.0");
         header.put(BOTTOM_LIGHT_OFF_DELAY_KEY, String.valueOf(DEFAULT_LIGHT_OFF_DELAY));
         header.put(LIGHT_OFF_DELAY_KEY, String.valueOf(DEFAULT_LIGHT_OFF_DELAY));
-        header.put(BOTTOM_LAYER_COUNT_KEY, String.valueOf(bottomLayerCount));
     }
 
 
 
     static public void save(PhotonOutputStream os, SlicedFileHeader header) throws Exception {
-        os.writeFloat(header.getFloat(BOTTOM_LIFT_DISTANCE_KEY));
-        os.writeFloat(header.getFloat(BOTTOM_LIFT_SPEED_KEY));
-        os.writeFloat(header.getFloat(LIFT_DISTANCE_KEY));
-        os.writeFloat(header.getFloat(LIFT_SPEED_KEY));
-        os.writeFloat(header.getFloat(RETRACT_SPEED_KEY));
-        os.writeFloat(header.getFloat(VOLUME_KEY));
-        os.writeFloat(header.getFloat(WEIGHT_KEY));
-        os.writeFloat(header.getFloat(COST_KEY));
-        os.writeFloat(header.getFloat(BOTTOM_LIGHT_OFF_DELAY_KEY));
-        os.writeFloat(header.getFloat(LIGHT_OFF_DELAY_KEY));
-        os.writeFloat(header.getInt(BOTTOM_LAYER_COUNT_KEY));
+        // TODO:: VALIDATE? Really could do with logging.
+        os.writeFloat(header.getFloatOrDefault(BOTTOM_LIFT_DISTANCE_KEY, PhotonFilePrintParameters.DEFAULT_DISTANCE));
+        os.writeFloat(header.getFloatOrDefault(BOTTOM_LIFT_SPEED_KEY, PhotonFilePrintParameters.DEFAULT_SPEED ));
+
+        os.writeFloat(header.getFloatOrDefault(LIFT_DISTANCE_KEY, PhotonFilePrintParameters.DEFAULT_DISTANCE));
+        os.writeFloat(header.getFloatOrDefault(LIFT_SPEED_KEY, PhotonFilePrintParameters.DEFAULT_SPEED));
+        os.writeFloat(header.getFloatOrDefault(RETRACT_SPEED_KEY, PhotonFilePrintParameters.DEFAULT_SPEED));
+
+        os.writeFloat(header.getFloatOrDefault(VOLUME_KEY, 0f));
+        os.writeFloat(header.getFloatOrDefault(WEIGHT_KEY, 0f));
+        os.writeFloat(header.getFloatOrDefault(COST_KEY, 0f));
+
+        os.writeFloat(header.getFloatOrDefault(BOTTOM_LIGHT_OFF_DELAY_KEY, PhotonFilePrintParameters.DEFAULT_LIGHT_OFF_DELAY));
+        os.writeFloat(header.getFloatOrDefault(LIGHT_OFF_DELAY_KEY, PhotonFilePrintParameters.DEFAULT_LIGHT_OFF_DELAY));
+        os.writeInt(header.getBottomLayers());
         // and some padding.
         os.writeInt(0);
         os.writeInt(0);
