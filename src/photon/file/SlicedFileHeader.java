@@ -193,7 +193,7 @@ abstract public class SlicedFileHeader {
      */
     public abstract boolean isMirrored();
 
-    public void forceParameterToInt(EParameter parameter) {
+    protected void forceParameterToInt(EParameter parameter) {
         try{
             int tmp = getInt(parameter);
         } catch (ClassCastException e) {
@@ -202,12 +202,26 @@ abstract public class SlicedFileHeader {
         }
     }
 
-    public void forceParameterToFloat(EParameter parameter) {
+    protected void forceParameterToFloat(EParameter parameter) {
         try{
             float tmp = getInt(parameter);
         } catch (ClassCastException e) {
             // its an int.
             put(parameter, (float)getInt(parameter));
         }
+    }
+
+    /**
+     * This will return the estimated print time in whole seconds.
+     * @return estimated print time, in seconds.
+     */
+    public int getPrintTimeSeconds() {
+        int result;
+        try {
+            result = getInt(EParameter.printTimeS);
+        } catch (ClassCastException e) {
+            result = (int)getFloat(EParameter.printTimeS);
+        }
+        return result;
     }
 }
