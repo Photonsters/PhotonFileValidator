@@ -124,6 +124,9 @@ abstract public class SlicedFileHeader {
         return values.getOrDefault(parameter, defaultValue);
     }
 
+    public short getShortOrDefault(EParameter parameter, short defaultValue) {
+        return (short)values.getOrDefault(parameter, defaultValue);
+    }
     public short getShort(EParameter parameter) { return (short)values.get(parameter); }
 
     public void put(EParameter parameter, Object value) {
@@ -204,7 +207,7 @@ abstract public class SlicedFileHeader {
 
     protected void forceParameterToFloat(EParameter parameter) {
         try{
-            float tmp = getInt(parameter);
+            float tmp = getFloat(parameter);
         } catch (ClassCastException e) {
             // its an int.
             put(parameter, (float)getInt(parameter));

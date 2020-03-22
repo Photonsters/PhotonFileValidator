@@ -3,6 +3,7 @@ package photon.file.parts.zip;
 import photon.file.SlicedFileHeader;
 import photon.file.parts.EParameter;
 import photon.file.parts.PhotonFileLayer;
+import photon.file.parts.PhotonFilePrintParameters;
 import photon.file.parts.PhotonProjectType;
 
 import java.io.*;
@@ -23,6 +24,11 @@ public class ZipFileHeader extends SlicedFileHeader {
         super(other);
         putIfMissing(EParameter.startGCode, DEFAULT_START_GCODE);
         putIfMissing(EParameter.endGCode, DEFAULT_END_GCODE);
+        putIfMissing(EParameter.fileName, "default?"); // TODO: pass this in?
+
+        putIfMissing(EParameter.bottomLightPWM, EParameter.DEFAULT_PWM);
+        putIfMissing(EParameter.lightPWM, EParameter.DEFAULT_PWM);
+        forceParameterToFloat(EParameter.printTimeS);
         // TODO:: add rest of expected fields.
     }
 
@@ -144,7 +150,7 @@ public class ZipFileHeader extends SlicedFileHeader {
      */
     private byte[] generateLayerGcode(int layerNumber) {
         float curHeight = layerNumber * getFloat(EParameter.layerHeightMM);
-        // TODO:: standardise additional parameters
+
         float liftHeight, exposureTimeS, liftSpeed, dropSpeed, lightOffTime;
         int lightPWM;
 
@@ -155,13 +161,13 @@ public class ZipFileHeader extends SlicedFileHeader {
             exposureTimeS = getFloat(EParameter.bottomExposureTimeS);
             liftSpeed = getFloat(EParameter.bottomLiftSpeed);
             lightOffTime = getFloat(EParameter.bottomLightOffTimeS);
-            lightPWM = getIntOrDefault(EParameter.bottomLightPWM, 255);
+            lightPWM = getShortOrDefault(EParameter.bottomLightPWM, EParameter.DEFAULT_PWM);
         } else {
             liftHeight = getFloat(EParameter.liftDistance);
             exposureTimeS = getFloat(EParameter.exposureTimeS);
             liftSpeed = getFloat(EParameter.liftSpeed);
             lightOffTime = getFloat(EParameter.lightOffTimeS);
-            lightPWM = getIntOrDefault(EParameter.lightPWM, 255);
+            lightPWM = getShortOrDefault(EParameter.lightPWM, EParameter.DEFAULT_PWM);
         }
         String result = String.format(";LAYER_START:%d\n;currPos:%s\n", layerNumber, SlicedFileHeader.formatFloat(curHeight))
                 + String.format("M6054 \"%d.png\";show Image\n", layerNumber + 1);
@@ -185,7 +191,7 @@ public class ZipFileHeader extends SlicedFileHeader {
                 + String.format(";bottomLayCount:%d\n", getInt(EParameter.bottomLayerCount))
                 + String.format(";bottomLayerCount:%d\n",  getInt(EParameter.bottomLayerCount))
                 + String.format(";totalLayer:%d\n",  getInt(EParameter.layerCount))
-                + String.format(";estimatedPrintTime:%d\n",  getInt(EParameter.printTimeS));
+                + String.format(";estimatedPrintTime:%f\n",  getFloat(EParameter.printTimeS));
         output.write(outputString.getBytes());
 
         // Now the fun bit - we actually have to write the GCODE

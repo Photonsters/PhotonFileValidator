@@ -71,6 +71,9 @@ public enum EParameter {
     // price << cost
     // normalDropSpeed << retractSpeed
     startGCode,
-    endGCode
+    endGCode;
     // mirror < projectType
+
+    // Default values for fields.
+    public static final short DEFAULT_PWM = 255;
 }

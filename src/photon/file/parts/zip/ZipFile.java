@@ -105,6 +105,7 @@ public class ZipFile extends SlicedFile {
         ZipEntry layerEntry;
         BufferedImage image;
         String name;
+
         for (int i = 0; i < layers.size(); i++) {
             name = String.format("%d.png", i);
             layerEntry = new ZipEntry(name);

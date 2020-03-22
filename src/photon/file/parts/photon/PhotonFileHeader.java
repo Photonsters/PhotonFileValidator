@@ -38,7 +38,6 @@ public class PhotonFileHeader extends SlicedFileHeader {
     static final int PARAMETERS_SIZE = 60;
     static final int MACHINE_INFO_SIZE = 76;
     static final float BED_Z_DIMENSIONS = 150.0f;
-    static final short DEFAULT_PWM = 255;
 
     public PhotonFileHeader(SlicedFileHeader other) {
         super(other);
@@ -54,8 +53,8 @@ public class PhotonFileHeader extends SlicedFileHeader {
         put(EParameter.parametersSize, PARAMETERS_SIZE);
         putIfMissing(EParameter.antialiasingLevel, other.getAALevels());
 
-        putIfMissing(EParameter.lightPWM, DEFAULT_PWM);
-        putIfMissing(EParameter.bottomLightPWM, DEFAULT_PWM);
+        putIfMissing(EParameter.lightPWM, EParameter.DEFAULT_PWM);
+        putIfMissing(EParameter.bottomLightPWM, EParameter.DEFAULT_PWM);
         put(EParameter.machineInfoSize, MACHINE_INFO_SIZE);
 
         // check the print time!
