@@ -50,56 +50,59 @@ public class BinaryImage {
     }
 
     public void erode(int size, boolean useSquare) {
-        int ptr = ox + oy * stride;
 
-        byte[] dst = new byte[data.length];
+        if (size > 0) {
+            int ptr = ox + oy * stride;
 
-        int kStride = size * 2 + 1;
-        int kSize = kStride * kStride;
-        int[] kernel = new int[kSize];
-        for (int x = -size; x <= size; ++x) {
-            for  (int y = -size; y <= size; ++y) {
-                if (useSquare || (x * x + y * y <= size * size)) {
-                    kernel[x + size + (y + size) * kStride] = x + y * stride;
+            byte[] dst = new byte[data.length];
+
+            int kStride = size * 2 + 1;
+            int kSize = kStride * kStride;
+            int[] kernel = new int[kSize];
+            for (int x = -size; x <= size; ++x) {
+                for (int y = -size; y <= size; ++y) {
+                    if (useSquare || (x * x + y * y <= size * size)) {
+                        kernel[x + size + (y + size) * kStride] = x + y * stride;
+                    }
                 }
             }
-        }
 
-        /* show the kernel when debugging */
-        /*
-        StringBuilder b = new StringBuilder();
-        for (int y = 0; y < kStride; ++y) {
-            for (int x = 0; x < kStride; ++x) {
-                b.append(kernel[x + y * kStride] == 0 ? '-' : '*');
-            }
-            b.append('\n');
-        }
-        System.out.println(b.toString());
-        */
-
-        // optimization: compact kernel
-        kernel = Arrays.stream(kernel).filter(k -> k != 0).toArray();
-        kSize = kernel.length;
-
-        int h = height;
-        while (--h >= 0) {
-            int w = width;
-            while (--w >= 0) {
-                int kPtr = 0;
-                int kLen = kSize;
-                byte v = (byte) 0xff;
-                while (--kLen >= 0) {
-                    v &= data[ptr + kernel[kPtr++]];
-                    if (v == 0) break;
+            /* show the kernel when debugging */
+            /*
+            StringBuilder b = new StringBuilder();
+            for (int y = 0; y < kStride; ++y) {
+                for (int x = 0; x < kStride; ++x) {
+                    b.append(kernel[x + y * kStride] == 0 ? '-' : '*');
                 }
-                if (v != 0) {
-                    dst[ptr] = v;
-                }
-                ++ptr;
+                b.append('\n');
             }
-            ptr += 2 * ox;
+            System.out.println(b.toString());
+            */
+
+            // optimization: compact kernel
+            kernel = Arrays.stream(kernel).filter(k -> k != 0).toArray();
+            kSize = kernel.length;
+
+            int h = height;
+            while (--h >= 0) {
+                int w = width;
+                while (--w >= 0) {
+                    int kPtr = 0;
+                    int kLen = kSize;
+                    byte v = (byte) 0xff;
+                    while (--kLen >= 0) {
+                        v &= data[ptr + kernel[kPtr++]];
+                        if (v == 0) break;
+                    }
+                    if (v != 0) {
+                        dst[ptr] = v;
+                    }
+                    ++ptr;
+                }
+                ptr += 2 * ox;
+            }
+            data = dst;
         }
-        data = dst;
     }
 
 
