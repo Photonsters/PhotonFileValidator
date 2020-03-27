@@ -103,9 +103,12 @@ public class Sl1FileHeader extends SlicedFileHeader {
                     put(EParameter.bottomLayerCount, Integer.parseInt(components[1]));
                     continue;
                 case "numFast":
-                    put(EParameter.layerCount, Integer.parseInt(components[1]));
+                    int lc = getIntOrDefault(EParameter.layerCount, 0);
+                    put(EParameter.layerCount, lc+Integer.parseInt(components[1]));
                     continue;
                 case "numSlow":
+                    lc = getIntOrDefault(EParameter.layerCount, 0);
+                    put(EParameter.layerCount, lc+Integer.parseInt(components[1]));
                     put(EParameter.slowLayerCount, Integer.parseInt(components[1]));
                     continue;
                 case "printTime":
@@ -153,7 +156,7 @@ public class Sl1FileHeader extends SlicedFileHeader {
                 + String.format("layerHeight = %.3f\n", getFloat(EParameter.layerHeightMM))
                 + String.format("materialName = %s\n", getString(EParameter.materialName))
                 + String.format("numFade = %d\n", getInt(EParameter.bottomLayerCount))
-                + String.format("numFast = %d\n", getInt(EParameter.layerCount))
+                + String.format("numFast = %d\n", getInt(EParameter.layerCount) - getInt(EParameter.slowLayerCount))
                 + String.format("numSlow = %d\n", getInt(EParameter.slowLayerCount))
                 + String.format("printProfile = %s\n", getString(EParameter.printProfile))
                 + String.format("printTime = %f\n", getFloat(EParameter.printTimeS))
