@@ -28,10 +28,13 @@ import photon.file.SlicedFileHeader;
 import photon.file.parts.photon.PhotonFileHeader;
 
 import javax.imageio.ImageIO;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.*;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * by bn on 01/07/2018.
@@ -509,6 +512,49 @@ public class PhotonFileLayer {
 
         }
         return false;
+    }
+
+
+    public BufferedImage getImage() {
+        if ( antiAliasLayers.isEmpty()) {
+            // No aa, just get current image
+            return getLayer().getImage();
+        }
+
+        List<PhotonLayer> layers = new ArrayList<>();
+        layers.add(getLayer());
+        getAntiAlias().stream().forEach(x-> {layers.add(x.getLayer());});
+
+
+        BufferedImage result = new BufferedImage(photonFileHeader.getResolutionX(),
+                photonFileHeader.getResolutionY(),
+                BufferedImage.TYPE_INT_RGB);
+
+        int[] colourArray = new int[layers.size()+1];
+        for (int i = 0; i <= layers.size() ; i++) {
+            float colourDiv = (float)i / layers.size();
+            colourArray[i] = new Color(colourDiv, colourDiv, colourDiv).getRGB();
+        }
+
+        for (int y = 0; y < photonFileHeader.getResolutionY(); y++) {
+            for (int x = 0; x < photonFileHeader.getResolutionX(); x++) {
+                int colour = 0;
+                for (PhotonLayer l: layers) {
+                    // There really has to be a faster way than this.
+                    switch(l.get(x,y)) {
+                        case PhotonLayer.ISLAND:
+                        case PhotonLayer.SUPPORTED:
+                        case PhotonLayer.CONNECTED:
+                            colour += 1;
+                            break;
+                    }
+                }
+                result.setRGB(x, y, colourArray[colour]);
+            }
+        }
+
+        return result;
+
     }
 
     public PhotonLayer getLayer() {

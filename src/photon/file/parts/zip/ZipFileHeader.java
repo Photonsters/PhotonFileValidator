@@ -3,7 +3,6 @@ package photon.file.parts.zip;
 import photon.file.SlicedFileHeader;
 import photon.file.parts.EParameter;
 import photon.file.parts.PhotonFileLayer;
-import photon.file.parts.PhotonFilePrintParameters;
 import photon.file.parts.PhotonProjectType;
 
 import java.io.*;

@@ -100,7 +100,7 @@ public class Sl1File extends SlicedFile {
         for( int i=0; i<layers.size(); i++ ) {
             name = String.format("%s%05d.png",((Sl1FileHeader)fileHeader).getJobName(), i);
             layerEntry = new ZipEntry(name);
-            image = layers.get(i).getLayer().getImage();
+            image = layers.get(i).getImage();
             zos.putNextEntry(layerEntry);
             ImageIO.write(image, "png", zos);
             zos.closeEntry();

@@ -109,7 +109,7 @@ public class ZipFile extends SlicedFile {
         for (int i = 0; i < layers.size(); i++) {
             name = String.format("%d.png", i);
             layerEntry = new ZipEntry(name);
-            image = layers.get(i).getLayer().getImage();
+            image = layers.get(i).getImage();
             zos.putNextEntry(layerEntry);
             ImageIO.write(image, "png", zos);
             zos.closeEntry();
