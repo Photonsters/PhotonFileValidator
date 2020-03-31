@@ -2,12 +2,10 @@ package photon.file.parts.zip;
 
 import photon.file.SlicedFileHeader;
 import photon.file.parts.EParameter;
-import photon.file.parts.PhotonFileLayer;
 import photon.file.parts.PhotonProjectType;
 import photon.file.ui.PhotonAALevel;
 
 import java.io.*;
-import java.util.List;
 
 public class ZipFileHeader extends SlicedFileHeader {
     private static final String DEFAULT_START_GCODE = "G21;\n" +
@@ -229,14 +227,36 @@ public class ZipFileHeader extends SlicedFileHeader {
 
     public void write(OutputStream output) throws IOException {
         // First the core values.
-        String outputString = String.format(";normalExposureTime:%f\n", getFloat(EParameter.exposureTimeS))
-                + String.format(";bottomLayExposureTime:%f\n", getFloat(EParameter.bottomExposureTimeS))
-                + String.format(";bottomLayerExposureTime:%f\n", getFloat(EParameter.bottomExposureTimeS))
-                + String.format(";layerHeight:%.3f\n", getFloat(EParameter.layerHeightMM))
-                + String.format(";bottomLayCount:%d\n", getInt(EParameter.bottomLayerCount))
-                + String.format(";bottomLayerCount:%d\n",  getInt(EParameter.bottomLayerCount))
-                + String.format(";totalLayer:%d\n",  getInt(EParameter.layerCount))
-                + String.format(";estimatedPrintTime:%f\n",  getFloat(EParameter.printTimeS));
+        String outputString =
+                String.format(";fileName:%s\n", get(EParameter.fileName))
+                        + String.format(";machineType:%s\n", get(EParameter.machineName))
+                        + String.format(";estimatedPrintTime:%f\n", getFloat(EParameter.printTimeS))
+                        + String.format(";volume:%f\n", getFloat(EParameter.volume))
+                        + String.format(";resin:%s\n", get(EParameter.materialName))
+                        + String.format(";weight:%f\n", getFloat(EParameter.weight))
+                        + String.format(";price:%f\n", getFloat(EParameter.cost))
+                        + String.format(";layerHeight:%.3f\n", getFloat(EParameter.layerHeightMM))
+                        + String.format(";resolutionX:%d\n", getInt(EParameter.resolutionX))
+                        + String.format(";resolutionY:%d\n", getInt(EParameter.resolutionY))
+                        + String.format(";machineX:%f\n", getFloat(EParameter.bedXMM))
+                        + String.format(";machineY:%f\n", getFloat(EParameter.bedYMM))
+                        + String.format(";machineZ:%f\n", getFloat(EParameter.bedZMM))
+                        + String.format(";projectType:%s\n", get(EParameter.projectType).toString())
+                        + String.format(";normalExposureTime:%f\n", getFloat(EParameter.exposureTimeS))
+                        + String.format(";bottomLayExposureTime:%f\n", getFloat(EParameter.bottomExposureTimeS))
+                        + String.format(";bottomLayerExposureTime:%f\n", getFloat(EParameter.bottomExposureTimeS))
+                        + String.format(";normalDropSpeed:%f\n", getFloat(EParameter.retractSpeed))
+                        + String.format(";normalLayerLiftHeight:%f\n", getFloat(EParameter.liftDistance))
+                        + String.format(";zSlowUpDistance:%f\n", getFloat(EParameter.zSlowUpDistance))
+                        + String.format(";normalLayerLiftSpeed:%f\n", getFloat(EParameter.liftSpeed))
+                        + String.format(";bottomLayCount:%d\n", getInt(EParameter.bottomLayerCount))
+                        + String.format(";bottomLayerCount:%d\n", getInt(EParameter.bottomLayerCount))
+                        + String.format(";mirror:%d\n", ((PhotonProjectType) get(EParameter.projectType)).getProjectID())
+                        + String.format(";totalLayer:%d\n", getInt(EParameter.layerCount))
+                        + String.format(";bottomLayerLiftHeight:%f\n", getFloat(EParameter.bottomLiftDistance))
+                        + String.format(";bottomLayerLiftSpeed:%f\n", getFloat(EParameter.bottomLiftSpeed))
+                        + String.format(";bottomLightOffTime:%f\n", getFloat(EParameter.bottomLightOffTimeS))
+                        + String.format(";lightOffTime:%f\n", getFloat(EParameter.lightOffTimeS));
         output.write(outputString.getBytes());
 
         // Now the fun bit - we actually have to write the GCODE
@@ -257,6 +277,6 @@ public class ZipFileHeader extends SlicedFileHeader {
 
     @Override
     public boolean isMirrored() {
-        return ((PhotonProjectType)get(EParameter.projectType)) == PhotonProjectType.lcdMirror;
+        return ((PhotonProjectType) get(EParameter.projectType)) == PhotonProjectType.lcdMirror;
     }
 }

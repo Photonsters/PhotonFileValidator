@@ -61,4 +61,9 @@ public enum PhotonProjectType {
     public int getProjectID() {
         return projectID;
     }
+
+    @Override
+    public String toString() {
+        return text;
+    }
 }
