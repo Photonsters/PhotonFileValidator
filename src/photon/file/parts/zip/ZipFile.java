@@ -1,10 +1,8 @@
 package photon.file.parts.zip;
 
 import photon.file.SlicedFile;
-import photon.file.parts.EFileType;
-import photon.file.parts.IPhotonProgress;
-import photon.file.parts.PhotonFileLayer;
-import photon.file.parts.PhotonFilePreview;
+import photon.file.parts.*;
+import photon.file.ui.PhotonAALevel;
 
 
 import javax.imageio.ImageIO;
@@ -32,7 +30,7 @@ public class ZipFile extends SlicedFile {
             iPhotonProgress.showInfo("Invalid zip file - no header found.");
             throw new FileNotFoundException("Missing run.gcode");
         }
-        ZipFileHeader header = new ZipFileHeader(zf.getInputStream(headerEntry));
+        ZipFileHeader header = new ZipFileHeader(zf.getInputStream(headerEntry), PhotonAALevel.DEFAULT);
         fileHeader = header;
 
         iPhotonProgress.showInfo("Reading large preview...");
@@ -79,7 +77,8 @@ public class ZipFile extends SlicedFile {
             layerArr[curIndex] = PhotonFileLayer.readLayer(
                     fileHeader.getResolutionX(),
                     fileHeader.getResolutionY(),
-                    zf.getInputStream(entry));
+                    zf.getInputStream(entry),
+                    PhotonAALevel.DEFAULT);
 
             if( curIndex < header.getBottomLayers()) {
                 layerArr[curIndex].setLayerExposure(header.getBottomExposureTimeSeconds());

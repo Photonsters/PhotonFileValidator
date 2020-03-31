@@ -3,18 +3,16 @@ package photon.file.parts.sl1;
 import photon.file.SlicedFileHeader;
 import photon.file.parts.EParameter;
 import photon.file.parts.PhotonFileLayer;
+import photon.file.ui.PhotonAALevel;
 
 import java.io.*;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.regex.Pattern;
 
 public class Sl1FileHeader extends SlicedFileHeader {
     private static String DEFAULT_JOB_NAME = "sl1";
     private static String DEFAULT_ACTION = "print";
     private static String DEFAULT_TIMESTAMP = "2020-01-01 at 00:00:01 UTC";
-    private static String DEFAULT_MATERIAL = "resin";
     private static int DEFAULT_SLOW = 0;
     private static String DEFAULT_PRINT_PROFILE = "normal";
     private static String DEFAULT_MODEL = "sl1";
@@ -36,30 +34,18 @@ public class Sl1FileHeader extends SlicedFileHeader {
         putIfMissing(EParameter.action, DEFAULT_ACTION);
         putIfMissing(EParameter.fileCreationTimestamp, DEFAULT_TIMESTAMP);
         putIfMissing(EParameter.slowLayerCount, DEFAULT_SLOW);
-        putIfMissing(EParameter.materialName, DEFAULT_MATERIAL);
+        putIfMissing(EParameter.materialName, EParameter.DEFAULT_MATERIAL_NAME);
         putIfMissing(EParameter.printerProfile, DEFAULT_PRINTER_PROFILE);
         putIfMissing(EParameter.printProfile, DEFAULT_PRINT_PROFILE);
         putIfMissing(EParameter.machineName, DEFAULT_MODEL);
         putIfMissing(EParameter.prusaSlicerVersion, DEFAULT_SLICER_VERSION);
         putIfMissing(EParameter.printerVariant, DEFAULT_PRINTER_VARIANT);
         putIfMissing(EParameter.volume, 0.0f);
+        putIfMissing(EParameter.antialiasingLevel, PhotonAALevel.NoAntiAlias.levels);
         forceParameterToFloat(EParameter.printTimeS);
     }
 
-    @Override
-    public boolean hasAA() {
-        return false;
-    }
-
-    @Override
-    public int getAALevels() {
-        return 1;
-    }
-
-    @Override
-    public void setAALevels(int levels, List<PhotonFileLayer> layers) {}
-
-    public Sl1FileHeader(InputStream entry) throws IOException {
+    public Sl1FileHeader(InputStream entry, PhotonAALevel aaLevel) throws IOException {
         BufferedReader headerStream = new BufferedReader(new InputStreamReader(entry));
         while (headerStream.ready()) {
             String line = headerStream.readLine();
@@ -67,6 +53,7 @@ public class Sl1FileHeader extends SlicedFileHeader {
             if (components.length != 2) {
                 throw new IllegalArgumentException("Unparsable line:" + line + " in config.ini");
             }
+            put(EParameter.antialiasingLevel, aaLevel.levels);
             /* Sample of config.ini
              * action = print
              * jobDir = 20mm_cube
@@ -169,12 +156,10 @@ public class Sl1FileHeader extends SlicedFileHeader {
         //TODO:: WRITE THE REST
     }
 
-    @Override
     public void unLink() {
         /* no-op */
     }
 
-    @Override
     public boolean isMirrored() {
         return false;
     }

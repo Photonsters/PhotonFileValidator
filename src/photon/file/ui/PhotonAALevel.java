@@ -25,7 +25,7 @@
 package photon.file.ui;
 
 public enum PhotonAALevel {
-    NoAntiAliase (1,1, "No Anti Aliase"),
+    NoAntiAlias(1,1, "No Anti Aliase"),
     AA2 (2, 2, "2 Layers AA"),
     AA4 (3, 4, "4 Layers AA"),
     AA8 (4, 8, "8 Layers AA"),
@@ -49,7 +49,7 @@ public enum PhotonAALevel {
                 return photonAALevel;
             }
         }
-        return NoAntiAliase;
+        return NoAntiAlias;
     }
 
     public static PhotonAALevel findByLevel(int id) {
@@ -58,6 +58,8 @@ public enum PhotonAALevel {
                 return photonAALevel;
             }
         }
-        return NoAntiAliase;
+        return NoAntiAlias;
     }
+
+    final public static PhotonAALevel DEFAULT = AA4;
 }

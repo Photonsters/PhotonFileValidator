@@ -28,7 +28,6 @@ import photon.file.SlicedFileHeader;
 import photon.file.parts.*;
 
 import java.io.ByteArrayInputStream;
-import java.util.List;
 
 /**
  *  by bn on 30/06/2018.
@@ -208,30 +207,7 @@ public class PhotonFileHeader extends SlicedFileHeader {
     	return getInt(EParameter.machineInfoSize);
     }
 
-
-    public void setAntiAliasingLevel(int antiAliasingLevel) {
-        put(EParameter.antialiasingLevel, antiAliasingLevel);
-    }
-
-    public void setFileVersion(int i) {
-        put(EParameter.version, i);
-        setAntiAliasingLevel(1);
-        put(EParameter.lightPWM, 255);
-        put(EParameter.bottomLightPWM, 255);
-        if( i == 2) {
-            if (!PhotonFilePrintParameters.hasPrintParameters(this)) {
-                PhotonFilePrintParameters.initializePrintParameters(this);
-            }
-            if (!PhotonFileMachineInfo.hasMachineInfo(this)) {
-                PhotonFileMachineInfo.initializeMachineInfo("Photon", MACHINE_INFO_SIZE, this);
-            }
-        }
-    }
-
-    public boolean hasAA() {
-        return getAALevels() > 1;
-    }
-
+    @Override
     public int getAALevels() {
         if (getVersion()>1) {
             return getInt(EParameter.antialiasingLevel);
@@ -239,36 +215,6 @@ public class PhotonFileHeader extends SlicedFileHeader {
         return 1;
     }
 
-    public void setAALevels(int levels, List<PhotonFileLayer> layers) {
-        if (getVersion()>1) {
-            if (levels < getAALevels()) {
-                reduceAaLevels(levels, layers);
-            }
-            if (levels > getAALevels()) {
-                increaseAaLevels(levels, layers);
-            }
-        }
-    }
-
-    private void increaseAaLevels(int levels, List<PhotonFileLayer> layers) {
-        // insert base layer to the correct count, as we are to recalc the AA anyway
-        for(PhotonFileLayer photonFileLayer : layers) {
-            while (photonFileLayer.getAntiAlias().size()<(levels-1)) {
-                photonFileLayer.getAntiAlias().add(new PhotonFileLayer(photonFileLayer, this));
-            }
-        }
-        setAntiAliasingLevel(levels);
-    }
-
-    private void reduceAaLevels(int levels, List<PhotonFileLayer> layers) {
-        // delete any layers to the correct count, as we are to recalc the AA anyway
-        for(PhotonFileLayer photonFileLayer : layers) {
-            while (photonFileLayer.getAntiAlias().size()>(levels-1)) {
-                photonFileLayer.getAntiAlias().remove(0);
-            }
-        }
-        setAntiAliasingLevel(levels);
-    }
 
     public boolean isMirrored() {
         return get(EParameter.projectType) == PhotonProjectType.lcdMirror;

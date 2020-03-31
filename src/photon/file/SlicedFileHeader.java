@@ -2,6 +2,7 @@ package photon.file;
 
 import photon.file.parts.EParameter;
 import photon.file.parts.PhotonFileLayer;
+import photon.file.ui.PhotonAALevel;
 import photon.file.ui.Text;
 
 import java.util.HashMap;
@@ -180,11 +181,48 @@ abstract public class SlicedFileHeader {
         put(EParameter.lightOffTimeS, offTimeSeconds);
     }
 
-    abstract public boolean hasAA();
-    //TODO:: move to an AA supporting subclass?
-    abstract public int getAALevels();
-    abstract public void setAALevels(int levels, List<PhotonFileLayer> layers);
+    public boolean hasAA() {
+        return getIntOrDefault(EParameter.antialiasingLevel, PhotonAALevel.NoAntiAlias.levels) > PhotonAALevel.NoAntiAlias.levels;
+    }
 
+    public int getAALevels() {
+        return getIntOrDefault(EParameter.antialiasingLevel, PhotonAALevel.NoAntiAlias.levels);
+    }
+
+    public void setAALevels(int levels, List<PhotonFileLayer> layers) {
+        if (hasAA()) {
+            if (levels < getAALevels()) {
+                reduceAaLevels(levels, layers);
+            }
+            if (levels > getAALevels()) {
+                increaseAaLevels(levels, layers);
+            }
+        }
+    }
+
+    public void setAntiAliasingLevel(int antiAliasingLevel) {
+        put(EParameter.antialiasingLevel, antiAliasingLevel);
+    }
+
+    protected void increaseAaLevels(int levels, List<PhotonFileLayer> layers) {
+        // insert base layer to the correct count, as we are to recalc the AA anyway
+        for(PhotonFileLayer photonFileLayer : layers) {
+            while (photonFileLayer.getAntiAlias().size()<(levels-1)) {
+                photonFileLayer.getAntiAlias().add(new PhotonFileLayer(photonFileLayer, this));
+            }
+        }
+        setAntiAliasingLevel(levels);
+    }
+
+    protected void reduceAaLevels(int levels, List<PhotonFileLayer> layers) {
+        // delete any layers to the correct count, as we are to recalc the AA anyway
+        for(PhotonFileLayer photonFileLayer : layers) {
+            while (photonFileLayer.getAntiAlias().size()>(levels-1)) {
+                photonFileLayer.getAntiAlias().remove(0);
+            }
+        }
+        setAntiAliasingLevel(levels);
+    }
     /**
      * Free up any allocated objects to save on ram when we force GC.
      */

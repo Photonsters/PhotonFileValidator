@@ -3,6 +3,7 @@ package photon.file.parts.sl1;
 import photon.file.SlicedFile;
 import photon.file.parts.*;
 import photon.file.parts.sl1.Sl1FileHeader;
+import photon.file.ui.PhotonAALevel;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -18,6 +19,8 @@ import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
 
 public class Sl1File extends SlicedFile {
+    final static PhotonAALevel DEFAULT_AA_LEVEL = PhotonAALevel.AA4;
+
     @Override
     public SlicedFile readFromFile(File file, IPhotonProgress iPhotonProgress) throws Exception {
         ZipFile zf = new ZipFile(file);
@@ -27,7 +30,7 @@ public class Sl1File extends SlicedFile {
             iPhotonProgress.showInfo("Invalid SL1 file - no header found.");
             throw new FileNotFoundException("Missing config.ini");
         }
-        Sl1FileHeader header = new Sl1FileHeader(zf.getInputStream(headerEntry));
+        Sl1FileHeader header = new Sl1FileHeader(zf.getInputStream(headerEntry), DEFAULT_AA_LEVEL);
 
 
         fileHeader = header;
@@ -69,7 +72,8 @@ public class Sl1File extends SlicedFile {
             layerArr[curIndex] = PhotonFileLayer.readLayer(
                     fileHeader.getResolutionX(),
                     fileHeader.getResolutionY(),
-                    zf.getInputStream(entry));
+                    zf.getInputStream(entry),
+                    DEFAULT_AA_LEVEL);
 
             if( curIndex < header.getBottomLayers()) {
                 layerArr[curIndex].setLayerExposure(header.getBottomExposureTimeSeconds());

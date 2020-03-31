@@ -26,15 +26,15 @@ package photon.file.parts;
 
 import photon.file.SlicedFileHeader;
 import photon.file.parts.photon.PhotonFileHeader;
+import photon.file.ui.PhotonAALevel;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
-import java.util.*;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.*;
 
 /**
  * by bn on 01/07/2018.
@@ -64,6 +64,7 @@ public class PhotonFileLayer {
 
     public void setFileHeader(SlicedFileHeader fileHeader) {
         this.photonFileHeader = fileHeader;
+        antiAliasLayers.forEach(x->x.setFileHeader(fileHeader));
     }
 
     private SlicedFileHeader photonFileHeader;
@@ -87,7 +88,7 @@ public class PhotonFileLayer {
         // blank constructor for filling in later.
     }
 
-    public PhotonFileLayer(PhotonFileLayer photonFileLayer, PhotonFileHeader photonFileHeader) {
+    public PhotonFileLayer(PhotonFileLayer photonFileLayer, SlicedFileHeader photonFileHeader) {
         layerPositionZ = photonFileLayer.layerPositionZ;
         layerExposure = photonFileLayer.layerExposure;
         layerOffTimeSeconds = photonFileLayer.layerOffTimeSeconds;
@@ -226,26 +227,48 @@ public class PhotonFileLayer {
      * @param width of the image
      * @param height of the image
      * @param input stream to read the image from
+     * @param aaLevel The AA level to read the image at
      * @return a PhotonFileLayer of the image
      * @throws Exception on failure
      */
-    public static PhotonFileLayer readLayer(int width, int height, InputStream input) throws Exception {
-        PhotonFileLayer target = new PhotonFileLayer();
+    public static PhotonFileLayer readLayer(int width, int height, InputStream input, PhotonAALevel aaLevel) throws Exception {
+        PhotonFileLayer[] targets = new PhotonFileLayer[aaLevel.levels];
         BufferedImage img = ImageIO.read(input);
+        PhotonLayer[] layers = new PhotonLayer[aaLevel.levels];
+        int[] thresholds = new int[aaLevel.levels];
 
-        PhotonLayer layer = new PhotonLayer(width, height);
-        layer.clear();
-        //TODO:: AA Support
-        // TODO:: This can prbably be a lot faster by using getRaster.getData to access the buffer directly.
+        for (int i = 0; i < aaLevel.levels; i++) {
+            targets[i] = new PhotonFileLayer();
+
+            layers[i] = new PhotonLayer(width, height);
+            layers[i].clear();
+            // +1 on each of these as we want everything to have at least _some_ threshold.
+            thresholds[i] = (int)((float)(i+1) * 255.0f / (aaLevel.levels+1));
+        }
+
+        // TODO:: can we speed this up using .getRaster()? Would need to be pushed inside PhotonLayer I think.
         for( int y=0; y<height; y++) {
             for( int x=0; x<width; x++) {
                 // assume the image is greyscale. TODO:: average the values?
-                if( (img.getRGB(x,y)&0x000000ff) == 0x000000ff)
-                    layer.supported(x,y);
+                int pixel = img.getRGB(x,y) & 0xff;
+                for( int a=0; a<aaLevel.levels; a++ ) {
+                    if (pixel >= thresholds[a]) {
+                        layers[a].supported(x, y);
+                    } else {
+                        break;
+                    }
+                }
             }
         }
-        target.saveLayer(layer);
-        return target;
+        for (int i = 0; i < aaLevel.levels; i++) {
+            targets[i].saveLayer(layers[i]);
+        }
+
+        for (int i = 1; i < aaLevel.levels; i++) {
+            targets[0].addAntiAliasLayer(targets[i]);
+        }
+
+        return targets[0];
     }
 
     public static List<PhotonFileLayer> readLayers(PhotonFileHeader photonFileHeader, byte[] file, int margin, IPhotonProgress iPhotonProgress) throws Exception {

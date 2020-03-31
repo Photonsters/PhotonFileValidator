@@ -4,6 +4,7 @@ import photon.file.SlicedFileHeader;
 import photon.file.parts.EParameter;
 import photon.file.parts.PhotonFileLayer;
 import photon.file.parts.PhotonProjectType;
+import photon.file.ui.PhotonAALevel;
 
 import java.io.*;
 import java.util.List;
@@ -27,14 +28,28 @@ public class ZipFileHeader extends SlicedFileHeader {
 
         putIfMissing(EParameter.bottomLightPWM, EParameter.DEFAULT_PWM);
         putIfMissing(EParameter.lightPWM, EParameter.DEFAULT_PWM);
+        putIfMissing(EParameter.antialiasingLevel, PhotonAALevel.DEFAULT.levels);
+        putIfMissing(EParameter.machineName, "DEFAULT");
+        putIfMissing(EParameter.materialName, "DEFAULT");
+        putIfMissing(EParameter.projectType, PhotonProjectType.lcdMirror);
+        putIfMissing(EParameter.retractSpeed, 0f);
+        putIfMissing(EParameter.zSlowUpDistance, 0f);
+        putIfMissing(EParameter.cost, 0f);
+        putIfMissing(EParameter.volume, 0f);
+        putIfMissing(EParameter.weight, 0f);
+        putIfMissing(EParameter.liftDistance, EParameter.DEFAULT_LIFT_DISTANCE);
+        putIfMissing(EParameter.bottomLiftDistance, EParameter.DEFAULT_LIFT_DISTANCE);
+
         forceParameterToFloat(EParameter.printTimeS);
         // TODO:: add rest of expected fields.
     }
 
-    public ZipFileHeader(InputStream entry) throws IOException {
+    public ZipFileHeader(InputStream entry, PhotonAALevel aaLevel) throws IOException {
         BufferedReader headerStream = new BufferedReader(new InputStreamReader(entry));
         String[] components;
         String gcode_line, line;
+
+        put(EParameter.antialiasingLevel, aaLevel.levels);
 
         while (headerStream.ready()) {
             line = headerStream.readLine();
@@ -85,6 +100,9 @@ public class ZipFileHeader extends SlicedFileHeader {
                 case "machineZ":
                     put(EParameter.bedZMM, Float.parseFloat(components[1]));
                     break;
+                case "machineType":
+                    put(EParameter.machineName, components[1]);
+                    break;
                 case "mirror":
                     boolean isMirrored = Integer.parseInt(components[1]) > 0;
                     if (isMirrored) {
@@ -133,6 +151,34 @@ public class ZipFileHeader extends SlicedFileHeader {
                 case "price":
                     put(EParameter.cost, Float.parseFloat(components[1]));
                     break;
+                case "volume":
+                    put(EParameter.volume, Float.parseFloat(components[1]));
+                    break;
+                case "resin":
+                    put(EParameter.materialName, components[1]);
+                    break;
+                case "weight":
+                    put(EParameter.weight, Float.parseFloat(components[1]));
+                    break;
+                case "projectType":
+                    put(EParameter.projectType, PhotonProjectType.find(components[1]));
+                    break;
+                case "normalLayerLiftHeight":
+                    put(EParameter.liftDistance, Float.parseFloat(components[1]));
+                    break;
+                case "normalLayerLiftSpeed":
+                    put(EParameter.liftSpeed, Float.parseFloat(components[1]));
+                    break;
+                case "bottomLayerLiftHeight":
+                    put(EParameter.bottomLiftDistance, Float.parseFloat(components[1]));
+                    break;
+                case "bottomLayerLiftSpeed":
+                    put(EParameter.bottomLiftSpeed, Float.parseFloat(components[1]));
+                    break;
+                case "bottomLightOffTime":
+                    put(EParameter.bottomLightOffTimeS, Float.parseFloat(components[1]));
+                    break;
+
                 default:
                     throw new IllegalArgumentException("Unknown key in config.ini: " + line);
             }
@@ -203,23 +249,6 @@ public class ZipFileHeader extends SlicedFileHeader {
         output.write(String.format(END_GCODE_FORMAT, getString(EParameter.endGCode)).getBytes());
 
     }
-
-    @Override
-    public boolean hasAA() {
-        // TODO:: implement loading AA
-        return false;
-    }
-
-    @Override
-    public int getAALevels() {
-        return 1;
-    }
-
-    @Override
-    public void setAALevels(int levels, List<PhotonFileLayer> layers) {
-        //noop
-    }
-
 
     @Override
     public void unLink() {

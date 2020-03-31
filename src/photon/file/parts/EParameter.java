@@ -1,5 +1,7 @@
 package photon.file.parts;
 
+import photon.file.ui.PhotonAALevel;
+
 /**
  * Parameters is a holder class for all the known parameter values for all supported file formats.
  * If you are adding a new file format, look for existing equivalent entries first, renaming them
@@ -72,8 +74,17 @@ public enum EParameter {
     // normalDropSpeed << retractSpeed
     startGCode,
     endGCode;
-    // mirror < projectType
+    // mirror < projectType (yes, another dupe)
+    // machineType < machineName
+    // resin < materialname
+    // normalLayerLiftHeight < liftDistance
+    // normalLayerLiftSpeed < liftSpeed
+    // bottomLayerLiftHeight < bottomLiftDistance
+    // bottomLayerLiftSpeed < bottomLiftSpeed
 
     // Default values for fields.
     public static final short DEFAULT_PWM = 255;
+    public static final float DEFAULT_LIFT_DISTANCE = 5.0f;
+    public static final String DEFAULT_MATERIAL_NAME = "resin";
+    public static final String DEFAULT_MACHINE_NAME = "default";
 }
