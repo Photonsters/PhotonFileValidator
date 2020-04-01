@@ -55,13 +55,15 @@ public class Sl1File extends SlicedFile {
 
         Enumeration<? extends ZipEntry> entries = zf.entries();
 
-        Pattern entryPattern = Pattern.compile(header.getJobName() + "0*(\\d+).png");
+        Pattern entryPattern = Pattern.compile("0*(\\d+).png");
         while( entries.hasMoreElements() ){
             ZipEntry entry = entries.nextElement();
-            if( entry.getName().equalsIgnoreCase("config.ini")) {
+            if( entry.getName().equalsIgnoreCase("config.ini")
+                || !entry.getName().startsWith(header.getJobName()) ) {
                 continue;
             }
-            Matcher entryMatcher = entryPattern.matcher(entry.getName());
+
+            Matcher entryMatcher = entryPattern.matcher(entry.getName().substring(header.getJobName().length()));
             if( !entryMatcher.matches() || entryMatcher.group(1) == null) {
                 // TODO:: is this too harsh?
                 throw new IOException("Unexpected file in zip: " + entry.getName() );
