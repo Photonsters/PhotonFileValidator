@@ -38,10 +38,7 @@ import java.io.OutputStream;
 public class PhotonFile extends SlicedFile {
     // Dimensions of the preview images on a photon.
     // While I don't know they _have_ to be this, it doesn't hurt to make them this.
-    final static int PREVIEW_LARGE_X = 400;
-    final static int PREVIEW_LARGE_Y = 300;
-    final static int PREVIEW_SMALL_X = 200;
-    final static int PREVIEW_SMALL_Y = 125;
+
 
     // mostly debug.
     private boolean isValid = false;
@@ -153,17 +150,8 @@ public class PhotonFile extends SlicedFile {
             previewTwo = input.getPreviewTwo();
         } else {
             // need to fake them.
-            // TODO:: Maybe something more interesting than a solid colour?
-            BufferedImage preview = new BufferedImage(PREVIEW_LARGE_X, PREVIEW_LARGE_Y, BufferedImage.TYPE_INT_RGB);
-            Graphics2D graphics2D = preview.createGraphics();
-            graphics2D.setPaint(new Color(255,0,0));
-            graphics2D.fillRect(0,0,PREVIEW_LARGE_X,PREVIEW_LARGE_Y);
-            previewOne = new PhotonFilePreview(preview);
-            preview = new BufferedImage(PREVIEW_SMALL_X, PREVIEW_SMALL_Y, BufferedImage.TYPE_INT_RGB);
-            graphics2D = preview.createGraphics();
-            graphics2D.setPaint(new Color(0,255,0));
-            graphics2D.fillRect(0,0,PREVIEW_SMALL_X,PREVIEW_SMALL_Y);
-            previewTwo = new PhotonFilePreview(preview);
+            previewOne = PhotonFilePreview.getDummyLargePreview();
+            previewTwo = PhotonFilePreview.getDummySmallPreview();
         }
         layers = input.getLayers();
         islandList = input.getIslandList();

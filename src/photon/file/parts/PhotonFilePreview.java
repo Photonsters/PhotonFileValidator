@@ -39,6 +39,11 @@ import java.util.Arrays;
  */
 public class PhotonFilePreview {
     //private static final Logger LOGGER = Logger.getLogger(PhotonFilePreview.class.getName());
+    final static int PREVIEW_LARGE_X = 400;
+    final static int PREVIEW_LARGE_Y = 300;
+    final static int PREVIEW_SMALL_X = 200;
+    final static int PREVIEW_SMALL_Y = 125;
+
     private static final int MAX_RUN_LENGTH = 4095;
     private static final int MAX_RUN_BYTE1 = -2;
     private static final int MAX_RUN_BYTE2 = 63;
@@ -110,6 +115,32 @@ public class PhotonFilePreview {
         imageData = ((DataBufferInt)image.getRaster().getDataBuffer()).getData();
         encodeImageData();
         dataSize = rawImageData.length;
+    }
+
+    /**
+     * Create a dummy preview of the given dimensions and colour.
+     * @param width of the preview
+     * @param height of the preview
+     * @param colour to use
+     */
+    public PhotonFilePreview(int width, int height, Color colour) {
+        BufferedImage preview = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+        Graphics2D graphics2D = preview.createGraphics();
+        graphics2D.setPaint(colour);
+        graphics2D.fillRect(0,0,width,height);
+        resolutionX = width;
+        resolutionY = height;
+        imageData = ((DataBufferInt)preview.getRaster().getDataBuffer()).getData();
+        encodeImageData();
+        dataSize = rawImageData.length;
+    }
+
+    public static PhotonFilePreview getDummyLargePreview() {
+        return new PhotonFilePreview(PREVIEW_LARGE_X, PREVIEW_LARGE_Y, new Color(255,0,0));
+    }
+
+    public static PhotonFilePreview getDummySmallPreview() {
+        return new PhotonFilePreview(PREVIEW_SMALL_X, PREVIEW_SMALL_Y, new Color(0,255,0));
     }
 
     /**

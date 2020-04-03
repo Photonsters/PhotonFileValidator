@@ -106,7 +106,8 @@ public class ZipFile extends SlicedFile {
         String name;
 
         for (int i = 0; i < layers.size(); i++) {
-            name = String.format("%d.png", i);
+            // Zip file layers are numbered from 1.
+            name = String.format("%d.png", i+1);
             layerEntry = new ZipEntry(name);
             image = layers.get(i).getImage();
             zos.putNextEntry(layerEntry);
@@ -134,8 +135,14 @@ public class ZipFile extends SlicedFile {
     @Override
     public SlicedFile fromSlicedFile(SlicedFile input) {
         fileHeader = new ZipFileHeader(input.getHeader());
-        previewOne = input.getPreviewOne();
-        previewTwo = input.getPreviewTwo();
+        if( input.hasPreviews() ) {
+            previewOne = input.getPreviewOne();
+            previewTwo = input.getPreviewTwo();
+        } else {
+            // need to fake them.
+            previewOne = PhotonFilePreview.getDummyLargePreview();
+            previewTwo = PhotonFilePreview.getDummySmallPreview();
+        }
         layers = input.getLayers();
         islandList = input.getIslandList();
         islandLayerCount = input.getIslandLayerCount();
