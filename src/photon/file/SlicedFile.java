@@ -307,10 +307,14 @@ public abstract class SlicedFile {
         }
         fileHeader.unLink();
         fileHeader = null;
-        previewOne.unLink();
-        previewOne = null;
-        previewTwo.unLink();
-        previewTwo = null;
+        if (previewOne != null) {
+            previewOne.unLink();
+            previewOne = null;
+        }
+        if (previewTwo != null) {
+            previewTwo.unLink();
+            previewTwo = null;
+        }
         System.gc();
     }
 

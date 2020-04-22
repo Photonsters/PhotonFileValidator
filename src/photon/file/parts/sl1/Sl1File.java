@@ -10,7 +10,9 @@ import java.awt.image.BufferedImage;
 import java.io.*;
 
 import java.nio.Buffer;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -87,7 +89,8 @@ public class Sl1File extends SlicedFile {
             layerArr[curIndex].setFileHeader(header);
 
         }
-        layers = Arrays.asList(layerArr);
+        layers = new ArrayList<>();
+        Collections.addAll(layers, layerArr);
 
         return this;
     }

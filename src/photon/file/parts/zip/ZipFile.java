@@ -11,7 +11,9 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -89,7 +91,8 @@ public class ZipFile extends SlicedFile {
             layerArr[curIndex].setLayerPositionZ(curIndex * header.getLayerHeight());
             layerArr[curIndex].setFileHeader(header);
         }
-        layers = Arrays.asList(layerArr);
+        layers = new ArrayList<>();
+        Collections.addAll(layers, layerArr);
 
         return this;
     }
