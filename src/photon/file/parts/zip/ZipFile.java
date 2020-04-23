@@ -35,34 +35,27 @@ public class ZipFile extends SlicedFile {
         ZipFileHeader header = new ZipFileHeader(zf.getInputStream(headerEntry), PhotonAALevel.DEFAULT);
         fileHeader = header;
 
-        iPhotonProgress.showInfo("Reading large preview...");
-        ZipEntry entry = zf.getEntry("preview.png");
-        if (entry == null) {
-            iPhotonProgress.showInfo("Invalid zip file - no preview found");
-            throw new FileNotFoundException("Missing preview.png");
-        }
-        previewOne = new PhotonFilePreview(zf.getInputStream(entry));
-
-        iPhotonProgress.showInfo("Reading small preview...");
-        entry = zf.getEntry("preview_cropping.png");
-        if (entry == null) {
-            iPhotonProgress.showInfo("Invalid zip file - no small preview found");
-            throw new FileNotFoundException("Missing preview_cropping.png");
-        }
-        previewTwo = new PhotonFilePreview(zf.getInputStream(entry));
-
         // Don't assume the layers are in any particular order.
         PhotonFileLayer[] layerArr = new PhotonFileLayer[header.getNumberOfLayers()];
 
         Enumeration<? extends ZipEntry> entries = zf.entries();
         Matcher entryMatcher;
         int loaded_layer_count = 0;
+        ZipEntry entry;
         while (entries.hasMoreElements()) {
             entry = entries.nextElement();
             String entryName = entry.getName().toLowerCase();
-            if (entryName.equals("preview.png")
-                    || entryName.equals("preview_cropping.png")
-                    || entryName.equals("run.gcode")) {
+            if (entryName.equals("run.gcode")) {
+                continue;
+            }
+            if (entryName.equals("preview.png")) {
+                iPhotonProgress.showInfo("Reading large preview...");
+                previewOne = new PhotonFilePreview(zf.getInputStream(entry));
+                continue;
+            }
+            if (entryName.equals("preview_cropping.png")) {
+                iPhotonProgress.showInfo("Reading small preview...");
+                previewTwo = new PhotonFilePreview(zf.getInputStream(entry));
                 continue;
             }
             entryMatcher = layerPattern.matcher(entryName);
@@ -157,7 +150,7 @@ public class ZipFile extends SlicedFile {
 
     @Override
     public boolean hasPreviews() {
-        return true;
+        return previewOne != null;
     }
 
     @Override
