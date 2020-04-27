@@ -81,6 +81,10 @@ public class PhotonFileMachineInfo {
 
     static public int getByteSize(SlicedFileHeader header)
 	{
-        return header.getInt(EParameter.machineInfoSize) + header.getString(EParameter.machineName).getBytes().length;
+		int size = header.getIntOrDefault(EParameter.machineInfoSize, 0);
+		if (header.has(EParameter.machineName)) {
+			size += header.getString(EParameter.machineName).getBytes().length;
+		}
+        return size;
     }
 }
