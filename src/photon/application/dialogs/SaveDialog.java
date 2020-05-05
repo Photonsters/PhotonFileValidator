@@ -28,10 +28,14 @@ import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
 import com.intellij.uiDesigner.core.Spacer;
 import photon.application.MainForm;
-import photon.file.PhotonFile;
-import photon.file.parts.IFileHeader;
-import photon.file.parts.photon.PhotonFileHeader;
+import photon.file.SlicedFileHeader;
+import photon.file.parts.EParameter;
 import photon.file.parts.PhotonFilePrintParameters;
+import photon.file.parts.photon.PhotonFile;
+import photon.file.parts.sl1.Sl1File;
+import photon.file.SlicedFile;
+import photon.file.parts.EFileType;
+import photon.file.parts.zip.ZipFile;
 
 import javax.swing.*;
 import java.awt.*;
@@ -67,7 +71,7 @@ public class SaveDialog extends JDialog {
     private JLabel lightOffDelayLabel;
 
     private MainForm mainForm;
-    private PhotonFile photonFile;
+    private SlicedFile photonFile;
     private String path;
 
     public SaveDialog(MainForm mainForm) {
@@ -130,31 +134,62 @@ public class SaveDialog extends JDialog {
     private void onOK() {
         File file = new File(path + File.separatorChar + textName.getText());
         try {
-            IFileHeader header = photonFile.getPhotonFileHeader();
+            EFileType desiredType = EFileType.identifyFile(textName.getText());
+            SlicedFile outputFile = null;
+            if (desiredType != photonFile.getType()) {
+                switch (desiredType) {
+                    case Sl1:
+                        outputFile = new Sl1File().fromSlicedFile(photonFile);
+                        break;
+                    case PhotonS:
+                        throw new UnsupportedOperationException("Not yet implemented");
+                    case Zip:
+                        outputFile = new ZipFile().fromSlicedFile(photonFile);
+                        break;
+                    case Photon:
+                        if (photonFile.getType() == EFileType.Cbddlp) {
+                            outputFile = photonFile;
+                        } else {
+                            outputFile = new PhotonFile().fromSlicedFile(photonFile);
+                        }
+                        break;
+                    case Cbddlp:
+                        if (photonFile.getType() == EFileType.Photon) {
+                            outputFile = photonFile;
+                        } else {
+                            outputFile = new PhotonFile().fromSlicedFile(photonFile);
+                        }
+                        break;
+                }
+            } else {
+                outputFile = photonFile;
+            }
+
+
+            SlicedFileHeader header = outputFile.getPhotonFileHeader();
             header.setExposureTimeSeconds(getFloat(textExposure.getText()));
             header.setOffTimeSeconds(getFloat(textOffTime.getText()));
             header.setExposureBottomTimeSeconds(getFloat(textBottomExposure.getText()));
             header.setBottomLayers(Integer.parseInt(textBottomLayers.getText()));
 
-            if (version2FormatCheckBox.isSelected()) {
-                if (photonFile.getVersion() == 1) {
-                    photonFile.changeToVersion2();
+            // TODO:: migrate this to additional parameters.
+            if (version2FormatCheckBox.isSelected() && outputFile.getType() == EFileType.Photon) {
+                if (outputFile.getVersion() == 1) {
+                    outputFile.changeToVersion2();
                 }
-                PhotonFilePrintParameters parameters = ((PhotonFileHeader) photonFile.getPhotonFileHeader()).photonFilePrintParameters;
-                parameters.bottomLiftDistance = getFloat(bottomLiftDistance.getText());
-                parameters.bottomLiftSpeed = getFloat(bottomLiftSpeed.getText());
-                parameters.liftingDistance = getFloat(liftingDistance.getText());
-                parameters.liftingSpeed = getFloat(liftingSpeed.getText());
-                parameters.retractSpeed = getFloat(retractSpeed.getText());
-                parameters.bottomLightOffDelay = getFloat(bottomLightOffDelay.getText());
-                parameters.lightOffDelay = getFloat(lightOffDelay.getText());
+                header.put(EParameter.bottomLiftDistance, Float.parseFloat(bottomLiftDistance.getText()));
+                header.put(EParameter.bottomLiftSpeed, Float.parseFloat(bottomLiftSpeed.getText()));
+                header.put(EParameter.liftDistance, Float.parseFloat(liftingDistance.getText()));
+                header.put(EParameter.liftSpeed, Float.parseFloat(liftingSpeed.getText()));
+                header.put(EParameter.retractSpeed, Float.parseFloat(retractSpeed.getText()));
+                header.put(EParameter.bottomLightOffTimeS, Float.parseFloat(bottomLightOffDelay.getText()));
+                header.put(EParameter.lightOffTimeS, Float.parseFloat(lightOffDelay.getText()));
             }
-
-            photonFile.adjustLayerSettings();
+            outputFile.adjustLayerSettings();
             if (fixZcheck.isSelected()) {
-                photonFile.fixLayerHeights();
+                outputFile.fixLayerHeights();
             }
-            photonFile.saveFile(file);
+            outputFile.saveFile(file);
             mainForm.setFileName(file);
             mainForm.showFileInformation();
             mainForm.marginInfo.setForeground(Color.decode("#008800"));
@@ -170,17 +205,11 @@ public class SaveDialog extends JDialog {
         dispose();
     }
 
-    public void setInformation(PhotonFile photonFile, String path, String name) {
+    public void setInformation(SlicedFile photonFile, String path, String name) {
         this.photonFile = photonFile;
         this.path = path;
-        if (name.toLowerCase().endsWith(".photon")) {
-            name = makeFileName(path, name.substring(0, name.length() - 7), ".photon");
-        } else if (name.toLowerCase().endsWith(".cbddlp")) {
-            name = makeFileName(path, name.substring(0, name.length() - 7), ".cbddlp");
+        name = makeFileName(path, name.substring(0, name.length() - 7), EFileType.identifyFile(name).getExtension());
 
-        } else {
-            name = name + "1.photon";
-        }
         textName.setText(name);
         textExposure.setText(String.format("%.1f", photonFile.getPhotonFileHeader().getExposureTimeSeconds()));
         textOffTime.setText(String.format("%.1f", photonFile.getPhotonFileHeader().getOffTimeSeconds()));
@@ -194,28 +223,35 @@ public class SaveDialog extends JDialog {
             fixZcheck.setText(String.format("Total Z error is %f mm", drift));
         }
 
-        if (photonFile.getVersion() == 1) {
-            bottomLiftDistance.setText("5.0");
-            bottomLiftSpeed.setText("300.0");
-            liftingDistance.setText("5.0");
-            liftingSpeed.setText("300.0");
-            retractSpeed.setText("300.0");
-            bottomLightOffDelay.setText("0.0");
-            lightOffDelay.setText("0.0");
-        } else {
+        if ((photonFile.getType() == EFileType.Photon || photonFile.getType() == EFileType.Cbddlp)
+                && photonFile.getVersion() == 2) {
             version2FormatCheckBox.setSelected(true);
             version2FormatCheckBox.setEnabled(false);
-            PhotonFilePrintParameters parameters = ((PhotonFileHeader) photonFile.getPhotonFileHeader()).photonFilePrintParameters;
-
-            bottomLiftDistance.setText(String.format("%.1f", parameters.bottomLiftDistance));
-            bottomLiftSpeed.setText(String.format("%.1f", parameters.bottomLiftSpeed));
-            liftingDistance.setText(String.format("%.1f", parameters.liftingDistance));
-            liftingSpeed.setText(String.format("%.1f", parameters.liftingSpeed));
-            retractSpeed.setText(String.format("%.1f", parameters.retractSpeed));
-            bottomLightOffDelay.setText(String.format("%.1f", parameters.bottomLightOffDelay));
-            lightOffDelay.setText(String.format("%.1f", parameters.lightOffDelay));
         }
 
+        SlicedFileHeader header = photonFile.getHeader();
+
+        bottomLiftDistance.setText(String.format("%.1f",
+                header.getFloatOrDefault(EParameter.bottomLiftDistance,
+                        PhotonFilePrintParameters.DEFAULT_DISTANCE)));
+        bottomLiftSpeed.setText(String.format("%.1f",
+                header.getFloatOrDefault(EParameter.bottomLiftSpeed,
+                        PhotonFilePrintParameters.DEFAULT_LIFT_SPEED)));
+        liftingDistance.setText(String.format("%.1f",
+                header.getFloatOrDefault(EParameter.liftDistance,
+                        PhotonFilePrintParameters.DEFAULT_DISTANCE)));
+        liftingSpeed.setText(String.format("%.1f",
+                header.getFloatOrDefault(EParameter.liftSpeed,
+                        PhotonFilePrintParameters.DEFAULT_LIFT_SPEED)));
+        retractSpeed.setText(String.format("%.1f",
+                header.getFloatOrDefault(EParameter.retractSpeed,
+                        PhotonFilePrintParameters.DEFAULT_RETRACT_SPEED)));
+        bottomLightOffDelay.setText(String.format("%.1f",
+                header.getFloatOrDefault(EParameter.bottomLightOffTimeS,
+                        PhotonFilePrintParameters.DEFAULT_LIGHT_OFF_TIME)));
+        lightOffDelay.setText(String.format("%.1f",
+                header.getFloatOrDefault(EParameter.lightOffTimeS,
+                        PhotonFilePrintParameters.DEFAULT_LIGHT_OFF_TIME)));
     }
 
     private String makeFileName(String path, String name, String ext) {
@@ -226,140 +262,12 @@ public class SaveDialog extends JDialog {
         }
         int i = 1;
         while ((new File(path + File.separatorChar + name + "-" + i + ext)).exists()) i++;
-        return name + "-" + i + ext;
+        return name + "-" + i + "." + ext;
     }
 
     private float getFloat(String str) {
         return Float.parseFloat(str.replace(',', '.'));
     }
 
-
-    {
-// GUI initializer generated by IntelliJ IDEA GUI Designer
-// >>> IMPORTANT!! <<<
-// DO NOT EDIT OR ADD ANY CODE HERE!
-        $$$setupUI$$$();
-    }
-
-    /**
-     * Method generated by IntelliJ IDEA GUI Designer
-     * >>> IMPORTANT!! <<<
-     * DO NOT edit this method OR call it in your code!
-     *
-     * @noinspection ALL
-     */
-    private void $$$setupUI$$$() {
-        contentPane = new JPanel();
-        contentPane.setLayout(new com.intellij.uiDesigner.core.GridLayoutManager(2, 1, new Insets(10, 10, 10, 10), -1, -1));
-        final JPanel panel1 = new JPanel();
-        panel1.setLayout(new com.intellij.uiDesigner.core.GridLayoutManager(1, 2, new Insets(0, 0, 0, 0), -1, -1));
-        contentPane.add(panel1, new com.intellij.uiDesigner.core.GridConstraints(1, 0, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_CENTER, com.intellij.uiDesigner.core.GridConstraints.FILL_BOTH, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_SHRINK | com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_GROW, 1, null, null, null, 0, false));
-        final com.intellij.uiDesigner.core.Spacer spacer1 = new com.intellij.uiDesigner.core.Spacer();
-        panel1.add(spacer1, new com.intellij.uiDesigner.core.GridConstraints(0, 0, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_CENTER, com.intellij.uiDesigner.core.GridConstraints.FILL_HORIZONTAL, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_WANT_GROW, 1, null, null, null, 0, false));
-        final JPanel panel2 = new JPanel();
-        panel2.setLayout(new com.intellij.uiDesigner.core.GridLayoutManager(1, 2, new Insets(0, 0, 0, 0), -1, -1));
-        panel1.add(panel2, new com.intellij.uiDesigner.core.GridConstraints(0, 1, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_CENTER, com.intellij.uiDesigner.core.GridConstraints.FILL_BOTH, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_SHRINK | com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_GROW, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_SHRINK | com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
-        buttonOK = new JButton();
-        buttonOK.setText("OK");
-        panel2.add(buttonOK, new com.intellij.uiDesigner.core.GridConstraints(0, 1, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_CENTER, com.intellij.uiDesigner.core.GridConstraints.FILL_HORIZONTAL, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_SHRINK | com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_GROW, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
-        buttonCancel = new JButton();
-        buttonCancel.setText("Cancel");
-        panel2.add(buttonCancel, new com.intellij.uiDesigner.core.GridConstraints(0, 0, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_CENTER, com.intellij.uiDesigner.core.GridConstraints.FILL_HORIZONTAL, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_SHRINK | com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_GROW, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
-        final JPanel panel3 = new JPanel();
-        panel3.setLayout(new com.intellij.uiDesigner.core.GridLayoutManager(9, 4, new Insets(0, 0, 0, 0), -1, -1));
-        contentPane.add(panel3, new com.intellij.uiDesigner.core.GridConstraints(0, 0, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_CENTER, com.intellij.uiDesigner.core.GridConstraints.FILL_BOTH, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_SHRINK | com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_GROW, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_SHRINK | com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
-        final JLabel label1 = new JLabel();
-        label1.setText("Name");
-        panel3.add(label1, new com.intellij.uiDesigner.core.GridConstraints(0, 0, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_WEST, com.intellij.uiDesigner.core.GridConstraints.FILL_NONE, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
-        final com.intellij.uiDesigner.core.Spacer spacer2 = new com.intellij.uiDesigner.core.Spacer();
-        panel3.add(spacer2, new com.intellij.uiDesigner.core.GridConstraints(8, 0, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_CENTER, com.intellij.uiDesigner.core.GridConstraints.FILL_VERTICAL, 1, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
-        textName = new JTextField();
-        panel3.add(textName, new com.intellij.uiDesigner.core.GridConstraints(0, 1, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_WEST, com.intellij.uiDesigner.core.GridConstraints.FILL_HORIZONTAL, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_WANT_GROW, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
-        final JLabel label2 = new JLabel();
-        label2.setText("Exposure");
-        panel3.add(label2, new com.intellij.uiDesigner.core.GridConstraints(1, 0, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_WEST, com.intellij.uiDesigner.core.GridConstraints.FILL_NONE, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
-        final JLabel label3 = new JLabel();
-        label3.setText("Bottom Exposure");
-        panel3.add(label3, new com.intellij.uiDesigner.core.GridConstraints(3, 0, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_WEST, com.intellij.uiDesigner.core.GridConstraints.FILL_NONE, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
-        textExposure = new JTextField();
-        panel3.add(textExposure, new com.intellij.uiDesigner.core.GridConstraints(1, 1, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_WEST, com.intellij.uiDesigner.core.GridConstraints.FILL_HORIZONTAL, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, new Dimension(150, -1), new Dimension(150, -1), new Dimension(150, -1), 0, false));
-        textBottomExposure = new JTextField();
-        panel3.add(textBottomExposure, new com.intellij.uiDesigner.core.GridConstraints(3, 1, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_WEST, com.intellij.uiDesigner.core.GridConstraints.FILL_HORIZONTAL, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, new Dimension(150, -1), new Dimension(150, -1), new Dimension(150, -1), 0, false));
-        final JLabel label4 = new JLabel();
-        label4.setText("Off Time");
-        panel3.add(label4, new com.intellij.uiDesigner.core.GridConstraints(2, 0, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_WEST, com.intellij.uiDesigner.core.GridConstraints.FILL_NONE, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
-        textOffTime = new JTextField();
-        panel3.add(textOffTime, new com.intellij.uiDesigner.core.GridConstraints(2, 1, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_WEST, com.intellij.uiDesigner.core.GridConstraints.FILL_HORIZONTAL, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, new Dimension(150, -1), new Dimension(150, -1), new Dimension(150, -1), 0, false));
-        final JLabel label5 = new JLabel();
-        label5.setText("Bottom Layers");
-        panel3.add(label5, new com.intellij.uiDesigner.core.GridConstraints(4, 0, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_WEST, com.intellij.uiDesigner.core.GridConstraints.FILL_NONE, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
-        textBottomLayers = new JTextField();
-        panel3.add(textBottomLayers, new com.intellij.uiDesigner.core.GridConstraints(4, 1, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_WEST, com.intellij.uiDesigner.core.GridConstraints.FILL_HORIZONTAL, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, new Dimension(150, -1), new Dimension(150, -1), new Dimension(150, -1), 0, false));
-        final JLabel label6 = new JLabel();
-        label6.setText("Fix Z settings");
-        panel3.add(label6, new com.intellij.uiDesigner.core.GridConstraints(5, 0, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_WEST, com.intellij.uiDesigner.core.GridConstraints.FILL_NONE, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
-        fixZcheck = new JCheckBox();
-        fixZcheck.setEnabled(false);
-        fixZcheck.setText("Noting to fix");
-        panel3.add(fixZcheck, new com.intellij.uiDesigner.core.GridConstraints(5, 1, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_WEST, com.intellij.uiDesigner.core.GridConstraints.FILL_NONE, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_SHRINK | com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_GROW, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
-        botomLiftDistanceLabel = new JLabel();
-        botomLiftDistanceLabel.setEnabled(false);
-        botomLiftDistanceLabel.setText("Bottom Lift Distance");
-        panel3.add(botomLiftDistanceLabel, new com.intellij.uiDesigner.core.GridConstraints(1, 2, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_WEST, com.intellij.uiDesigner.core.GridConstraints.FILL_NONE, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
-        bottomLiftSpeedLabel = new JLabel();
-        bottomLiftSpeedLabel.setEnabled(false);
-        bottomLiftSpeedLabel.setText("Bottom Lift Speed");
-        panel3.add(bottomLiftSpeedLabel, new com.intellij.uiDesigner.core.GridConstraints(2, 2, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_WEST, com.intellij.uiDesigner.core.GridConstraints.FILL_NONE, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
-        liftingDistanceLabel = new JLabel();
-        liftingDistanceLabel.setEnabled(false);
-        liftingDistanceLabel.setText("Lifting Distance");
-        panel3.add(liftingDistanceLabel, new com.intellij.uiDesigner.core.GridConstraints(3, 2, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_WEST, com.intellij.uiDesigner.core.GridConstraints.FILL_NONE, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
-        liftingSpeedLabel = new JLabel();
-        liftingSpeedLabel.setEnabled(false);
-        liftingSpeedLabel.setText("Lifting Speed");
-        panel3.add(liftingSpeedLabel, new com.intellij.uiDesigner.core.GridConstraints(4, 2, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_WEST, com.intellij.uiDesigner.core.GridConstraints.FILL_NONE, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
-        retractSpeedLabel = new JLabel();
-        retractSpeedLabel.setEnabled(false);
-        retractSpeedLabel.setText("Retract Speed");
-        panel3.add(retractSpeedLabel, new com.intellij.uiDesigner.core.GridConstraints(5, 2, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_WEST, com.intellij.uiDesigner.core.GridConstraints.FILL_NONE, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
-        bottomLightOffDelayLabel = new JLabel();
-        bottomLightOffDelayLabel.setEnabled(false);
-        bottomLightOffDelayLabel.setText("Bottom Light Off Delay");
-        panel3.add(bottomLightOffDelayLabel, new com.intellij.uiDesigner.core.GridConstraints(6, 2, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_WEST, com.intellij.uiDesigner.core.GridConstraints.FILL_NONE, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
-        lightOffDelayLabel = new JLabel();
-        lightOffDelayLabel.setEnabled(false);
-        lightOffDelayLabel.setText("Light Off Delay");
-        panel3.add(lightOffDelayLabel, new com.intellij.uiDesigner.core.GridConstraints(7, 2, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_WEST, com.intellij.uiDesigner.core.GridConstraints.FILL_NONE, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
-        version2FormatCheckBox = new JCheckBox();
-        version2FormatCheckBox.setSelected(false);
-        version2FormatCheckBox.setText("Version 2 format");
-        panel3.add(version2FormatCheckBox, new com.intellij.uiDesigner.core.GridConstraints(0, 2, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_WEST, com.intellij.uiDesigner.core.GridConstraints.FILL_NONE, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_SHRINK | com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_GROW, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
-        bottomLiftDistance = new JTextField();
-        bottomLiftDistance.setEnabled(false);
-        panel3.add(bottomLiftDistance, new com.intellij.uiDesigner.core.GridConstraints(1, 3, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_WEST, com.intellij.uiDesigner.core.GridConstraints.FILL_HORIZONTAL, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, new Dimension(150, -1), new Dimension(150, -1), new Dimension(150, -1), 0, false));
-        bottomLiftSpeed = new JTextField();
-        bottomLiftSpeed.setEnabled(false);
-        panel3.add(bottomLiftSpeed, new com.intellij.uiDesigner.core.GridConstraints(2, 3, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_WEST, com.intellij.uiDesigner.core.GridConstraints.FILL_HORIZONTAL, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, new Dimension(150, -1), new Dimension(150, -1), new Dimension(150, -1), 0, false));
-        liftingDistance = new JTextField();
-        liftingDistance.setEnabled(false);
-        panel3.add(liftingDistance, new com.intellij.uiDesigner.core.GridConstraints(3, 3, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_WEST, com.intellij.uiDesigner.core.GridConstraints.FILL_HORIZONTAL, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, new Dimension(150, -1), new Dimension(150, -1), new Dimension(150, -1), 0, false));
-        liftingSpeed = new JTextField();
-        liftingSpeed.setEnabled(false);
-        panel3.add(liftingSpeed, new com.intellij.uiDesigner.core.GridConstraints(4, 3, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_WEST, com.intellij.uiDesigner.core.GridConstraints.FILL_HORIZONTAL, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, new Dimension(150, -1), new Dimension(150, -1), new Dimension(150, -1), 0, false));
-        retractSpeed = new JTextField();
-        retractSpeed.setEnabled(false);
-        panel3.add(retractSpeed, new com.intellij.uiDesigner.core.GridConstraints(5, 3, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_WEST, com.intellij.uiDesigner.core.GridConstraints.FILL_HORIZONTAL, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, new Dimension(150, -1), new Dimension(150, -1), new Dimension(150, -1), 0, false));
-        bottomLightOffDelay = new JTextField();
-        bottomLightOffDelay.setEnabled(false);
-        panel3.add(bottomLightOffDelay, new com.intellij.uiDesigner.core.GridConstraints(6, 3, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_WEST, com.intellij.uiDesigner.core.GridConstraints.FILL_HORIZONTAL, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, new Dimension(150, -1), new Dimension(150, -1), new Dimension(150, -1), 0, false));
-        lightOffDelay = new JTextField();
-        lightOffDelay.setEnabled(false);
-        panel3.add(lightOffDelay, new com.intellij.uiDesigner.core.GridConstraints(7, 3, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_WEST, com.intellij.uiDesigner.core.GridConstraints.FILL_HORIZONTAL, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, new Dimension(150, -1), new Dimension(150, -1), new Dimension(150, -1), 0, false));
-    }
-
-    /**
-     * @noinspection ALL
-     */
-    public JComponent $$$getRootComponent$$$() { return contentPane; }
 
 }

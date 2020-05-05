@@ -25,7 +25,6 @@
 package photon.application.utilities;
 
 import photon.application.MainForm;
-import photon.file.PhotonFile;
 import photon.file.parts.IPhotonProgress;
 
 import javax.swing.*;

@@ -31,8 +31,7 @@ import photon.application.render.storage.RotationBaseMatrix;
 import photon.application.utilities.MainUtils;
 import photon.application.utilities.PhotonCalcWorker;
 import photon.application.utilities.PhotonLoadWorker;
-import photon.application.utilities.PhotonPlayWorker;
-import photon.file.PhotonFile;
+import photon.file.SlicedFile;
 import photon.file.parts.PhotonFileLayer;
 import photon.file.parts.PhotonFilePreview;
 import photon.file.parts.PhotonLayer;
@@ -61,7 +60,7 @@ public class BaseForm {
 
     protected String loadedPath;
     protected String loadedFileName;
-    public PhotonFile photonFile;
+    public SlicedFile photonFile;
     public int margin = 0;
     protected int zoom = 0;
 
@@ -72,7 +71,7 @@ public class BaseForm {
         d.setFilenameFilter(new FilenameFilter() {
             @Override
             public boolean accept(File file, String s) {
-                return s.contains(".photon") || s.contains(".cbddlp") || s.contains(".photons");
+                return s.contains(".photon") || s.contains(".cbddlp") || s.contains(".photons") || s.contains(".sl1");
             }
         });
         d.setVisible(true);
@@ -226,24 +225,25 @@ public class BaseForm {
                         me.zoomSlider.setEnabled(false);
                     }
 
+                    if(me.photonFile.hasPreviewLarge()) {
+                        PhotonFilePreview preview = me.photonFile.getPreviewOne();
+                        ((PhotonPreviewImage) me.previewLargePanel).reInit(preview.getResolutionX(), preview.getResolutionY());
+                        ((PhotonPreviewImage) me.previewLargePanel).drawImage(preview);
+                        me.tabbedPane.setEnabledAt(2, true);
+                        me.previewLargeScrollPane.setBorder(border);
+                        me.previewLargeScrollPane.setBackground(Color.decode("#ececec"));
 
-                    PhotonFilePreview preview = me.photonFile.getPreviewOne();
-                    ((PhotonPreviewImage) me.previewLargePanel).reInit(preview.getResolutionX(), preview.getResolutionY());
-                    ((PhotonPreviewImage) me.previewLargePanel).drawImage(preview);
-                    me.tabbedPane.setEnabledAt(2, true);
-                    me.previewLargeScrollPane.setBorder(border);
-                    me.previewLargeScrollPane.setBackground(Color.decode("#ececec"));
-
-                    ScrollUtil.scrollTo(me.previewLargeScrollPane, ScrollPosition.HorizontalCenter);
-                    ScrollUtil.scrollTo(me.previewLargeScrollPane, ScrollPosition.VerticalCenter);
-
-                    preview = me.photonFile.getPreviewTwo();
-                    ((PhotonPreviewImage) me.previewSmallPanel).reInit(preview.getResolutionX(), preview.getResolutionY());
-                    ((PhotonPreviewImage) me.previewSmallPanel).drawImage(preview);
-                    me.tabbedPane.setEnabledAt(3, true);
-                    me.previewSmallScrollPane.setBorder(border);
-                    me.previewSmallScrollPane.setBackground(Color.decode("#ececec"));
-
+                        ScrollUtil.scrollTo(me.previewLargeScrollPane, ScrollPosition.HorizontalCenter);
+                        ScrollUtil.scrollTo(me.previewLargeScrollPane, ScrollPosition.VerticalCenter);
+                    }
+                    if(me.photonFile.hasPreviewSmall()) {
+                        PhotonFilePreview preview = me.photonFile.getPreviewTwo();
+                        ((PhotonPreviewImage) me.previewSmallPanel).reInit(preview.getResolutionX(), preview.getResolutionY());
+                        ((PhotonPreviewImage) me.previewSmallPanel).drawImage(preview);
+                        me.tabbedPane.setEnabledAt(3, true);
+                        me.previewSmallScrollPane.setBorder(border);
+                        me.previewSmallScrollPane.setBackground(Color.decode("#ececec"));
+                    }
                     me.layerSpinner.requestFocus();
                 }
             }

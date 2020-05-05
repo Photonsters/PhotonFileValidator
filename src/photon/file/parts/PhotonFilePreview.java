@@ -24,13 +24,29 @@
 
 package photon.file.parts;
 
+import javax.imageio.ImageIO;
+import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferInt;
+import java.awt.image.WritableRaster;
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Arrays;
 
 /**
  * by bn on 01/07/2018.
  */
 public class PhotonFilePreview {
+    //private static final Logger LOGGER = Logger.getLogger(PhotonFilePreview.class.getName());
+    final static int PREVIEW_LARGE_X = 400;
+    final static int PREVIEW_LARGE_Y = 300;
+    final static int PREVIEW_SMALL_X = 200;
+    final static int PREVIEW_SMALL_Y = 125;
+
+    private static final int MAX_RUN_LENGTH = 4095;
+    private static final int MAX_RUN_BYTE1 = -2;
+    private static final int MAX_RUN_BYTE2 = 63;
     private int resolutionX;
     private int resolutionY;
     private int imageAddress;
@@ -45,10 +61,20 @@ public class PhotonFilePreview {
     private int p3;
     private int p4;
 
+    /*
+    static public void setupLogging() throws IOException {
+        if( logging_setup ) return;
+        LOGGER.setLevel(Level.INFO);
+        FileHandler fh = new FileHandler("output.log");
+        SimpleFormatter sf = new SimpleFormatter();
+        fh.setFormatter(sf);
+        LOGGER.addHandler(fh);
+        logging_setup = true;
+    }*/
+
     public PhotonFilePreview(int previewAddress, byte[] file) throws Exception {
         byte[] data = Arrays.copyOfRange(file, previewAddress, previewAddress + 32);
         PhotonInputStream ds = new PhotonInputStream(new ByteArrayInputStream(data));
-
         resolutionX = ds.readInt();
         resolutionY = ds.readInt();
         imageAddress = ds.readInt();
@@ -59,8 +85,75 @@ public class PhotonFilePreview {
         p4 = ds.readInt();
 
         rawImageData = Arrays.copyOfRange(file, imageAddress, imageAddress + dataSize);
-
         decodeImageData();
+    }
+
+    public PhotonFilePreview(InputStream input) throws IOException {
+        BufferedImage img = ImageIO.read(input);
+        resolutionX = img.getWidth();
+        resolutionY = img.getHeight();
+        BufferedImage rgbImg;
+        if(img.getType() == BufferedImage.TYPE_INT_RGB)
+        {
+            rgbImg = img;
+        } else {
+            // wrong image format, convert it.
+            rgbImg = new BufferedImage(resolutionX, resolutionY, BufferedImage.TYPE_INT_RGB);
+            Graphics graphics = rgbImg.getGraphics();
+            graphics.drawImage(img, 0, 0, null);
+            graphics.dispose();
+        }
+        imageData = ((DataBufferInt)rgbImg.getRaster().getDataBuffer()).getData();
+        encodeImageData();
+        dataSize = rawImageData.length;
+
+    }
+
+    public PhotonFilePreview(BufferedImage image) {
+        resolutionX = image.getWidth();
+        resolutionY = image.getHeight();
+        imageData = ((DataBufferInt)image.getRaster().getDataBuffer()).getData();
+        encodeImageData();
+        dataSize = rawImageData.length;
+    }
+
+    /**
+     * Create a dummy preview of the given dimensions and colour.
+     * @param width of the preview
+     * @param height of the preview
+     * @param colour to use
+     */
+    public PhotonFilePreview(int width, int height, Color colour) {
+        BufferedImage preview = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+        Graphics2D graphics2D = preview.createGraphics();
+        graphics2D.setPaint(colour);
+        graphics2D.fillRect(0,0,width,height);
+        resolutionX = width;
+        resolutionY = height;
+        imageData = ((DataBufferInt)preview.getRaster().getDataBuffer()).getData();
+        encodeImageData();
+        dataSize = rawImageData.length;
+    }
+
+    public static PhotonFilePreview getDummyLargePreview() {
+        return new PhotonFilePreview(PREVIEW_LARGE_X, PREVIEW_LARGE_Y, new Color(255,0,0));
+    }
+
+    public static PhotonFilePreview getDummySmallPreview() {
+        return new PhotonFilePreview(PREVIEW_SMALL_X, PREVIEW_SMALL_Y, new Color(0,255,0));
+    }
+
+    /**
+     * Expand the preview image back out to a buffered image.
+     * @return the image
+     */
+    public BufferedImage getImage() {
+       if( imageData == null ) decodeImageData();
+       BufferedImage result = new BufferedImage(resolutionX, resolutionY, BufferedImage.TYPE_INT_RGB);
+       WritableRaster raster = result.getRaster();
+       raster.setDataElements(0,0,resolutionX,resolutionY, imageData);
+       imageData = null;
+       return result;
     }
 
     public void save(PhotonOutputStream os, int startAddress) throws Exception {
@@ -96,12 +189,102 @@ public class PhotonFilePreview {
             if ((dot & 0x0020) == 0x0020) {
                 repeat += rawImageData[++i] & 0xFF | ((rawImageData[++i] & 0x0F) << 8);
             }
-
             while (repeat > 0) {
-                imageData[d++] = color;
+                try {
+                    imageData[d++] = color;
+                } catch (ArrayIndexOutOfBoundsException e) {
+                    throw new IllegalArgumentException("moo");
+                }
                 repeat--;
             }
         }
+    }
+
+    /**
+     * Calculates a RLE block to add to a preview
+     * @param colour The colour to add in standard 8bit RGB
+     * @param run_Length how many pixels of this colour to add
+     * @param index the index into the byte array of where to add the first value
+     * @param output the byte array to write to
+     * @return the index of the next pixel in the byte array.
+     */
+    private int addRun(int colour, int run_Length, int index, byte[] output) {
+        // scheme is as follows: (yes, 5bit colour)
+        // RRRRRGGGGGXBBBBB
+        // If X is high, then next word is a run length with a max of 4094, stored like this:
+        // 56789ABC....1234
+        // If X is low, this is a single pixel.
+        int blue = (colour & 0xF8) >> 3;
+        int green = (colour & 0xF800 ) >> 5;
+        int red = (colour & 0xF80000 ) >> 8;
+        int dot = red | green | blue| (run_Length > 2 ? 0x20 : 0);
+        byte dotL = (byte)(dot & 0xFF);
+        byte dotR = (byte)((dot & 0xFF00) >> 8);
+
+        if( run_Length == 1 ) {
+            // just one
+            output[index++] = dotL;
+            output[index++] = dotR;
+            return index;
+        }
+
+        if( run_Length == 2) {
+            // weird edge case time! the photon doesn't bother doing RLE for runs of 2
+            // it just outputs two runs of 1. idk why either.
+            output[index++] = dotL;
+            output[index++] = dotR;
+            output[index++] = dotL;
+            output[index++] = dotR;
+            return index;
+        }
+
+        // as we have already implicitly got 1 in the colour word.
+        run_Length--;
+        int full_runs = run_Length / MAX_RUN_LENGTH;
+        int remainder = run_Length % MAX_RUN_LENGTH;
+        for(int i=0; i<full_runs; i++ ) {
+            output[index++] = dotL;
+            output[index++] = dotR;
+            output[index++] = MAX_RUN_BYTE1;
+            output[index++] = MAX_RUN_BYTE2;
+        }
+        if( remainder == 0 ) {
+            // all done
+            return index;
+        }
+        if( remainder == 1 ) {
+            //edge case
+            dotR ^= 0x20;
+        }
+        output[index++] = dotL;
+        output[index++] = dotR;
+        output[index++] = (byte) ((remainder & 0xFF));
+        output[index++] = (byte) ((remainder & 0xF00) >> 8);
+
+        return index;
+    }
+
+    private void encodeImageData() {
+        // allocate for worst case scenario up front - 1 word per pixel
+        byte[] result = new byte[2*resolutionX * resolutionY];
+        int index = 0;
+        int cur_pixel = imageData[0];
+        int repeat = 1;
+        // Genuinely start from 1 as we have set up above.
+        for(int i = 1; i<imageData.length; i++) {
+            if(imageData[i] == cur_pixel) {
+                repeat++;
+                continue;
+            }
+            index = addRun(cur_pixel, repeat, index, result);
+            cur_pixel = imageData[i];
+            repeat = 1;
+        }
+        // close it off
+        index = addRun(cur_pixel, repeat, index, result);
+        // Now we know how much we need.
+        rawImageData = new byte[index];
+        System.arraycopy(result, 0, rawImageData, 0, index);
 
     }
 
@@ -114,6 +297,7 @@ public class PhotonFilePreview {
     }
 
     public int[] getImageData() {
+        if(imageData == null && rawImageData != null) decodeImageData();
         return imageData;
     }
 

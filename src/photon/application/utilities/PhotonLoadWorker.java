@@ -25,7 +25,7 @@
 package photon.application.utilities;
 
 import photon.application.MainForm;
-import photon.file.PhotonFile;
+import photon.file.SlicedFile;
 import photon.file.parts.IPhotonProgress;
 
 import javax.swing.*;
@@ -76,8 +76,8 @@ public class PhotonLoadWorker extends SwingWorker<Integer, String> implements IP
             mainForm.openBtn.setEnabled(true);
             mainForm.saveBtn.setEnabled(true);
             mainForm.informationBtn.setEnabled(true);
-            mainForm.tabPreviewLarge.setEnabled(true);
-            mainForm.tabPreviewSmall.setEnabled(true);
+            mainForm.tabPreviewLarge.setEnabled(mainForm.photonFile.hasPreviewLarge());
+            mainForm.tabPreviewSmall.setEnabled(mainForm.photonFile.hasPreviewSmall());
             mainForm.showFileInformation();
             mainForm.calc();
             mainForm.playButton.setEnabled(true);
@@ -91,9 +91,7 @@ public class PhotonLoadWorker extends SwingWorker<Integer, String> implements IP
     protected Integer doInBackground() throws Exception {
         publish("Loading file...");
         try {
-            mainForm.photonFile = new PhotonFile();
-            mainForm.photonFile.setMargin(mainForm.margin);
-            mainForm.photonFile.readFile(file, this);
+            mainForm.photonFile = SlicedFile.readFile(file, this, mainForm.margin);
             publish("Complete...");
         } catch (Exception e) {
             mainForm.photonFile = null;

@@ -25,67 +25,107 @@
 package photon.file;
 
 import photon.file.parts.*;
-import photon.file.parts.photon.PhotonFileHeader;
-import photon.file.parts.photons.PhotonsFileHeader;
+import photon.file.parts.photon.PhotonFile;
+import photon.file.parts.sl1.PhotonSFile;
+import photon.file.parts.sl1.Sl1File;
+import photon.file.parts.zip.ZipFile;
 
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * by bn on 30/06/2018.
- */
-public class PhotonFile {
-    private IFileHeader iFileHeader;
-    private PhotonFilePreview previewOne;
-    private PhotonFilePreview previewTwo;
-    private List<PhotonFileLayer> layers;
 
-    private StringBuilder islandList;
-    private int islandLayerCount;
-    private ArrayList<Integer> islandLayers;
+public abstract class SlicedFile {
+    protected SlicedFileHeader fileHeader;
+    // TODO:: Should we push these down to those filetypes which have previews?
+    protected PhotonFilePreview previewOne;
+    protected PhotonFilePreview previewTwo;
+    protected List<PhotonFileLayer> layers;
 
-    private int margin;
-    private ArrayList<Integer> marginLayers;
+    protected StringBuilder islandList;
+    protected int islandLayerCount;
+    protected ArrayList<Integer> islandLayers;
 
+    protected int margin;
+    protected ArrayList<Integer> marginLayers;
 
-    public PhotonFile readFile(File file, IPhotonProgress iPhotonProgress) throws Exception {
-        if (file.getName().toLowerCase().endsWith(".photons")) {
-            return readPhotonsFile(getBinaryData(file), iPhotonProgress);
+    /**
+     * Load a file of a supported type, delegating down to the correct implementation
+     * @param file to load
+     * @param iPhotonProgress to report progress back
+     * @param margin the margin size to use
+     * @return a loaded object on success
+     * @throws Exception on failure.
+     */
+    static public SlicedFile readFile(File file, IPhotonProgress iPhotonProgress, int margin) throws Exception {
+        EFileType type = EFileType.identifyFile(file.getName());
+        SlicedFile result;
+        switch(type) {
+            case Photon:
+            case Cbddlp: // actually the same
+                result =  new PhotonFile();
+                break;
+            case PhotonS:
+                result = new PhotonSFile();
+                break;
+            case Sl1:
+                result = new Sl1File();
+                break;
+            case Zip:
+                result = new ZipFile();
+                break;
+            default:
+                throw new UnsupportedOperationException("Unknown file type passed to readFile. This is a bug.");
         }
-        return readFile(getBinaryData(file), iPhotonProgress);
+
+        result.setMargin(margin);
+        result.readFromFile(file, iPhotonProgress);
+        return result;
+    }
+    /**
+     * Load a file of the given type.
+     * @param file File object to load
+     * @param iPhotonProgress For reporting progress back to the UI
+     * @throws Exception on error
+     * @return a loaded object
+     */
+    abstract public SlicedFile readFromFile(File file, IPhotonProgress iPhotonProgress) throws Exception;
+
+    /**
+     * Actually write a file of the given type out.
+     * @param outputStream to write to.
+     * @throws Exception on failure.
+     */
+    abstract protected void writeFile(OutputStream outputStream) throws Exception;
+
+    /**
+     * Convert from one file type to another.
+     * @param input to convert from.
+     * @return self (for builder pattern)
+     */
+    abstract public SlicedFile fromSlicedFile(SlicedFile input);
+
+    /**
+     * Whether this sliced file has associated large preview image
+     * @return true iff it has previews.
+     */
+    public boolean hasPreviewLarge() {
+        return previewOne != null;
     }
 
-    private PhotonFile readPhotonsFile(byte[] file, IPhotonProgress iPhotonProgress) throws Exception {
-        iPhotonProgress.showInfo("Reading Photon S file header information...");
-
-        PhotonsFileHeader photonsFileHeader = new PhotonsFileHeader(file);
-        iFileHeader = photonsFileHeader;
-
-
-
-        return this;
+    /**
+     * Whether this sliced file has associated small preview image
+     * @return true iff it has previews.
+     */
+    public boolean hasPreviewSmall() {
+        return previewTwo != null;
     }
 
-    private PhotonFile readFile(byte[] file, IPhotonProgress iPhotonProgress) throws Exception {
-        iPhotonProgress.showInfo("Reading Photon file header information...");
-        PhotonFileHeader photonFileHeader = new PhotonFileHeader(file);
-        iFileHeader = photonFileHeader;
-
-        iPhotonProgress.showInfo("Reading photon large preview image information...");
-        previewOne = new PhotonFilePreview(photonFileHeader.getPreviewOneOffsetAddress(), file);
-        iPhotonProgress.showInfo("Reading photon small preview image information...");
-        previewTwo = new PhotonFilePreview(photonFileHeader.getPreviewTwoOffsetAddress(), file);
-        if (photonFileHeader.getVersion() > 1) {
-            iPhotonProgress.showInfo("Reading Print parameters information...");
-            photonFileHeader.readParameters(file);
-        }
-        iPhotonProgress.showInfo("Reading photon layers information...");
-        layers = PhotonFileLayer.readLayers(photonFileHeader, file, margin, iPhotonProgress);
-        resetMarginAndIslandInfo();
-
-        return this;
-    }
+    /**
+     * What type of sliced file this is
+     * @return the type of file this is.
+     */
+    public abstract EFileType getType();
 
     public void saveFile(File file) throws Exception {
         FileOutputStream fileOutputStream = new FileOutputStream(file);
@@ -94,78 +134,7 @@ public class PhotonFile {
         fileOutputStream.close();
     }
 
-    private void writeFile(OutputStream outputStream) throws Exception {
-        int antiAliasLevel = iFileHeader.getAALevels();
-
-        int headerPos = 0;
-        int previewOnePos = headerPos + iFileHeader.getByteSize();
-        int previewTwoPos = previewOnePos + previewOne.getByteSize();
-        int layerDefinitionPos = previewTwoPos + previewTwo.getByteSize();
-
-        int parametersPos = 0;
-        int machineInfoPos = 0;
-        if (iFileHeader.getVersion() > 1) {
-            parametersPos = layerDefinitionPos;
-            if (((PhotonFileHeader)iFileHeader).photonFileMachineInfo.getByteSize() > 0) {
-	            machineInfoPos = parametersPos + ((PhotonFileHeader)iFileHeader).photonFilePrintParameters.getByteSize();
-                layerDefinitionPos = machineInfoPos + ((PhotonFileHeader)iFileHeader).photonFileMachineInfo.getByteSize();
-            } else {
-                layerDefinitionPos = parametersPos + ((PhotonFileHeader)iFileHeader).photonFilePrintParameters.getByteSize();
-            }
-        }
-
-        int dataPosition = layerDefinitionPos + (PhotonFileLayer.getByteSize() * iFileHeader.getNumberOfLayers() * antiAliasLevel);
-
-
-        PhotonOutputStream os = new PhotonOutputStream(outputStream);
-
-        ((PhotonFileHeader)iFileHeader).save(os, previewOnePos, previewTwoPos, layerDefinitionPos, parametersPos, machineInfoPos);
-        previewOne.save(os, previewOnePos);
-        previewTwo.save(os, previewTwoPos);
-
-        if (iFileHeader.getVersion() > 1) {
-            ((PhotonFileHeader)iFileHeader).photonFilePrintParameters.save(os);
-            ((PhotonFileHeader)iFileHeader).photonFileMachineInfo.save(os, machineInfoPos);
-        }
-
-        // Optimize order for speed read on photon
-        for (int i = 0; i < iFileHeader.getNumberOfLayers(); i++) {
-            PhotonFileLayer layer = layers.get(i);
-            dataPosition = layer.savePos(dataPosition);
-            if (antiAliasLevel > 1) {
-                for (int a = 0; a < (antiAliasLevel - 1); a++) {
-                    dataPosition = layer.getAntiAlias(a).savePos(dataPosition);
-                }
-            }
-        }
-
-        // Order for backward compatibility with photon/cbddlp version 1
-        for (int i = 0; i < iFileHeader.getNumberOfLayers(); i++) {
-            layers.get(i).save(os);
-        }
-
-        if (antiAliasLevel > 1) {
-            for (int a = 0; a < (antiAliasLevel - 1); a++) {
-                for (int i = 0; i < iFileHeader.getNumberOfLayers(); i++) {
-                    layers.get(i).getAntiAlias(a).save(os);
-                }
-            }
-        }
-
-        // Optimize order for speed read on photon
-        for (int i = 0; i < iFileHeader.getNumberOfLayers(); i++) {
-            PhotonFileLayer layer = layers.get(i);
-            layer.saveData(os);
-            if (antiAliasLevel > 1) {
-                for (int a = 0; a < (antiAliasLevel - 1); a++) {
-                    layer.getAntiAlias(a).saveData(os);
-                }
-            }
-        }
-    }
-
-
-    private byte[] getBinaryData(File entry) throws Exception {
+    protected static byte[] getBinaryData(File entry) throws Exception {
         if (entry.isFile()) {
             int fileSize = (int) entry.length();
             byte[] fileData = new byte[fileSize];
@@ -186,10 +155,25 @@ public class PhotonFile {
     }
 
     public String getInformation() {
-        if (iFileHeader == null) return "";
-        return iFileHeader.getInformation();
+        if (fileHeader == null) return "";
+        return fileHeader.getInformation();
     }
 
+    public SlicedFileHeader getHeader() {
+        return fileHeader;
+    }
+
+    public List<PhotonFileLayer> getLayers() {
+        return layers;
+    }
+
+    public StringBuilder getIslandList() {
+        return islandList;
+    }
+
+    public int getMargin() {
+        return margin;
+    }
 
     public int getIslandLayerCount() {
         if (islandList == null) {
@@ -259,7 +243,7 @@ public class PhotonFile {
             islandList = new StringBuilder();
             islandLayerCount = 0;
             if (layers != null) {
-                for (int i = 0; i < iFileHeader.getNumberOfLayers(); i++) {
+                for (int i = 0; i < fileHeader.getNumberOfLayers(); i++) {
                     PhotonFileLayer layer = layers.get(i);
                     if (layer.getIsLandsCount() > 0) {
                         if (islandLayerCount < 11) {
@@ -279,15 +263,15 @@ public class PhotonFile {
     }
 
     public int getWidth() {
-        return iFileHeader.getResolutionY();
+        return fileHeader.getResolutionY();
     }
 
     public int getHeight() {
-        return iFileHeader.getResolutionX();
+        return fileHeader.getResolutionX();
     }
 
     public int getLayerCount() {
-        return iFileHeader.getNumberOfLayers();
+        return fileHeader.getNumberOfLayers();
     }
 
     public PhotonFileLayer getLayer(int i) {
@@ -307,8 +291,8 @@ public class PhotonFile {
         return total;
     }
 
-    public IFileHeader getPhotonFileHeader() {
-        return iFileHeader;
+    public SlicedFileHeader getPhotonFileHeader() {
+        return fileHeader;
     }
 
     public PhotonFilePreview getPreviewOne() {
@@ -331,12 +315,16 @@ public class PhotonFile {
         if (marginLayers != null) {
             marginLayers.clear();
         }
-        iFileHeader.unLink();
-        iFileHeader = null;
-        previewOne.unLink();
-        previewOne = null;
-        previewTwo.unLink();
-        previewTwo = null;
+        fileHeader.unLink();
+        fileHeader = null;
+        if (previewOne != null) {
+            previewOne.unLink();
+            previewOne = null;
+        }
+        if (previewTwo != null) {
+            previewTwo.unLink();
+            previewTwo = null;
+        }
         System.gc();
     }
 
@@ -344,68 +332,68 @@ public class PhotonFile {
     public void adjustLayerSettings() {
         for (int i = 0; i < layers.size(); i++) {
             PhotonFileLayer layer = layers.get(i);
-            if (i < iFileHeader.getBottomLayers()) {
-                layer.setLayerExposure(iFileHeader.getBottomExposureTimeSeconds());
+            if (i < fileHeader.getBottomLayers()) {
+                layer.setLayerExposure(fileHeader.getBottomExposureTimeSeconds());
             } else {
-                layer.setLayerExposure(iFileHeader.getNormalExposure());
+                layer.setLayerExposure(fileHeader.getExposureTimeSeconds());
             }
-            layer.setLayerOffTimeSeconds(iFileHeader.getOffTimeSeconds());
+            layer.setLayerOffTimeSeconds(fileHeader.getOffTimeSeconds());
         }
     }
-    
+
     public void fixAll(IPhotonProgress progres) throws Exception {
-    	boolean layerWasFixed = false;
-    	do {
-    		do {
-    			// Repeatedly fix layers until none are possible to fix
-    			// Fixing some layers can make other layers auto-fixable
-    			layerWasFixed = fixLayers(progres);
-    		} while(layerWasFixed);
-	    	if(islandLayers.size() > 0) {
-	    		// Nothing can be done further, just remove all layers left
-	    		layerWasFixed = removeAllIslands(progres) || layerWasFixed;
-	    	}
-	    	if(layerWasFixed && islandLayers.size() > 0) {
-	    		// We could've created new islands by removing islands, repeat fixing process
-	    		// until everything is fixed or nothing can be done
-    			progres.showInfo("<br>Some layers were fixed, but " + islandLayers.size() + " still unsupported, repeating...<br>");
-    		}
-    	} while(layerWasFixed);
+        boolean layerWasFixed = false;
+        do {
+            do {
+                // Repeatedly fix layers until none are possible to fix
+                // Fixing some layers can make other layers auto-fixable
+                layerWasFixed = fixLayers(progres);
+            } while(layerWasFixed);
+            if(islandLayers.size() > 0) {
+                // Nothing can be done further, just remove all layers left
+                layerWasFixed = removeAllIslands(progres) || layerWasFixed;
+            }
+            if(layerWasFixed && islandLayers.size() > 0) {
+                // We could've created new islands by removing islands, repeat fixing process
+                // until everything is fixed or nothing can be done
+                progres.showInfo("<br>Some layers were fixed, but " + islandLayers.size() + " still unsupported, repeating...<br>");
+            }
+        } while(layerWasFixed);
     }
-    
+
     public boolean removeAllIslands(IPhotonProgress progres) throws Exception {
-    	boolean layersFixed = false;
-    	progres.showInfo("Removing islands from " + islandLayers.size() + " layers...<br>");
-		PhotonLayer layer = null;
-		for (int layerNo : islandLayers) {
-	        PhotonFileLayer fileLayer = layers.get(layerNo);
-	        if (layer == null) {
+        boolean layersFixed = false;
+        progres.showInfo("Removing islands from " + islandLayers.size() + " layers...<br>");
+        PhotonLayer layer = null;
+        for (int layerNo : islandLayers) {
+            PhotonFileLayer fileLayer = layers.get(layerNo);
+            if (layer == null) {
                 layer = fileLayer.getLayer();
             } else {
                 fileLayer.getUpdateLayer(layer);
             }
             progres.showInfo("Removing islands from layer " + layerNo);
 
-	        int removed = layer.removeIslands();
-	        if(removed == 0) {
-	        	progres.showInfo(", but nothing could be done.");
-	        } else {
-	        	progres.showInfo(", " + removed + " islands removed");
-	            fileLayer.saveLayer(layer);
-	            calculate(layerNo);
-	            if (layerNo < getLayerCount() - 1) {
+            int removed = layer.removeIslands();
+            if(removed == 0) {
+                progres.showInfo(", but nothing could be done.");
+            } else {
+                progres.showInfo(", " + removed + " islands removed");
+                fileLayer.saveLayer(layer);
+                calculate(layerNo);
+                if (layerNo < getLayerCount() - 1) {
                     calculate(layerNo + 1);
                 }
-	            layersFixed = true;
-	        }
-	        progres.showInfo("<br>");
-		}
-		findIslands();
-		return layersFixed;
+                layersFixed = true;
+            }
+            progres.showInfo("<br>");
+        }
+        findIslands();
+        return layersFixed;
     }
 
     public boolean fixLayers(IPhotonProgress progres) throws Exception {
-    	boolean layersFixed = false;
+        boolean layersFixed = false;
         PhotonLayer layer = null;
         for (int layerNo : islandLayers) {
             progres.showInfo("Checking layer " + layerNo);
@@ -451,20 +439,20 @@ public class PhotonFile {
     }
 
     public void calculateAaLayers(IPhotonProgress progres, PhotonAaMatrix photonAaMatrix) throws Exception {
-        PhotonFileLayer.calculateAALayers((PhotonFileHeader) iFileHeader, layers, photonAaMatrix, progres);
+        PhotonFileLayer.calculateAALayers(fileHeader, layers, photonAaMatrix, progres);
     }
 
     public void calculate(IPhotonProgress progres) throws Exception {
-        PhotonFileLayer.calculateLayers((PhotonFileHeader)iFileHeader, layers, margin, progres);
+        PhotonFileLayer.calculateLayers(fileHeader, layers, margin, progres);
         resetMarginAndIslandInfo();
     }
 
     public void calculate(int layerNo) throws Exception {
-        PhotonFileLayer.calculateLayers((PhotonFileHeader)iFileHeader, layers, margin, layerNo);
+        PhotonFileLayer.calculateLayers(fileHeader, layers, margin, layerNo);
         resetMarginAndIslandInfo();
     }
 
-    private void resetMarginAndIslandInfo() {
+    protected void resetMarginAndIslandInfo() {
         islandList = null;
         islandLayerCount = 0;
         islandLayers = new ArrayList<>();
@@ -482,7 +470,7 @@ public class PhotonFile {
     }
 
     public float getZdrift() {
-        float expectedHeight = iFileHeader.getLayerHeight() * (iFileHeader.getNumberOfLayers() - 1);
+        float expectedHeight = fileHeader.getLayerHeight() * (fileHeader.getNumberOfLayers() - 1);
         float actualHeight = layers.get(layers.size() - 1).getLayerPositionZ();
         return expectedHeight - actualHeight;
 
@@ -491,30 +479,30 @@ public class PhotonFile {
     public void fixLayerHeights() {
         int index = 0;
         for (PhotonFileLayer layer : layers) {
-            layer.setLayerPositionZ(index * iFileHeader.getLayerHeight());
+            layer.setLayerPositionZ(index * fileHeader.getLayerHeight());
             index++;
         }
     }
 
     public int getVersion() {
-        return iFileHeader.getVersion();
+        return fileHeader.getInt(EParameter.version);
     }
 
     public boolean hasAA() {
-        return iFileHeader.hasAA();
+        return fileHeader.hasAA();
     }
 
     public int getAALevels() {
-        return iFileHeader.getAALevels();
+        return fileHeader.getAALevels();
     }
 
     public void changeToVersion2() {
-        iFileHeader.setFileVersion(2);
+        fileHeader.put(EParameter.version, 2);
     }
 
     // only call this when recalculating AA levels
     public void setAALevels(int levels) {
-        iFileHeader.setAALevels(levels, layers);
+        fileHeader.setAALevels(levels, layers);
     }
 
 }

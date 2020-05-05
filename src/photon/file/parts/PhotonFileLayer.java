@@ -24,9 +24,16 @@
 
 package photon.file.parts;
 
+import photon.file.SlicedFileHeader;
 import photon.file.parts.photon.PhotonFileHeader;
+import photon.file.ui.PhotonAALevel;
 
+import javax.imageio.ImageIO;
+import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.util.List;
 import java.util.*;
 
 /**
@@ -54,7 +61,13 @@ public class PhotonFileLayer {
     private ArrayList<PhotonFileLayer> antiAliasLayers = new ArrayList<>();
 
     private boolean extendsMargin;
-    private PhotonFileHeader photonFileHeader;
+
+    public void setFileHeader(SlicedFileHeader fileHeader) {
+        this.photonFileHeader = fileHeader;
+        antiAliasLayers.forEach(x->x.setFileHeader(fileHeader));
+    }
+
+    private SlicedFileHeader photonFileHeader;
     public boolean isCalculated;
 
     private PhotonFileLayer(PhotonInputStream ds) throws Exception {
@@ -71,7 +84,11 @@ public class PhotonFileLayer {
         unknown4 = ds.readInt();
     }
 
-    public PhotonFileLayer(PhotonFileLayer photonFileLayer, PhotonFileHeader photonFileHeader) {
+    public PhotonFileLayer() {
+        // blank constructor for filling in later.
+    }
+
+    public PhotonFileLayer(PhotonFileLayer photonFileLayer, SlicedFileHeader photonFileHeader) {
         layerPositionZ = photonFileLayer.layerPositionZ;
         layerExposure = photonFileLayer.layerExposure;
         layerOffTimeSeconds = photonFileLayer.layerOffTimeSeconds;
@@ -205,6 +222,54 @@ public class PhotonFileLayer {
         isLandsCount = photonLayer.setIslands(islandRows);
     }
 
+    /**
+     * Read a photon layer from a normal image file (e.g. a png)
+     * @param width of the image
+     * @param height of the image
+     * @param input stream to read the image from
+     * @param aaLevel The AA level to read the image at
+     * @return a PhotonFileLayer of the image
+     * @throws Exception on failure
+     */
+    public static PhotonFileLayer readLayer(int width, int height, InputStream input, PhotonAALevel aaLevel) throws Exception {
+        PhotonFileLayer[] targets = new PhotonFileLayer[aaLevel.levels];
+        BufferedImage img = ImageIO.read(input);
+        PhotonLayer[] layers = new PhotonLayer[aaLevel.levels];
+        int[] thresholds = new int[aaLevel.levels];
+
+        for (int i = 0; i < aaLevel.levels; i++) {
+            targets[i] = new PhotonFileLayer();
+
+            layers[i] = new PhotonLayer(width, height);
+            layers[i].clear();
+            // +1 on each of these as we want everything to have at least _some_ threshold.
+            thresholds[i] = (int)((float)(i+1) * 255.0f / (aaLevel.levels+1));
+        }
+
+        // TODO:: can we speed this up using .getRaster()? Would need to be pushed inside PhotonLayer I think.
+        for( int y=0; y<height; y++) {
+            for( int x=0; x<width; x++) {
+                // assume the image is greyscale. TODO:: average the values?
+                int pixel = img.getRGB(x,y) & 0xff;
+                for( int a=0; a<aaLevel.levels; a++ ) {
+                    if (pixel >= thresholds[a]) {
+                        layers[a].supported(x, y);
+                    } else {
+                        break;
+                    }
+                }
+            }
+        }
+        for (int i = 0; i < aaLevel.levels; i++) {
+            targets[i].saveLayer(layers[i]);
+        }
+
+        for (int i = 1; i < aaLevel.levels; i++) {
+            targets[0].addAntiAliasLayer(targets[i]);
+        }
+
+        return targets[0];
+    }
 
     public static List<PhotonFileLayer> readLayers(PhotonFileHeader photonFileHeader, byte[] file, int margin, IPhotonProgress iPhotonProgress) throws Exception {
         PhotonLayer photonLayer = new PhotonLayer(photonFileHeader.getResolutionX(), photonFileHeader.getResolutionY());
@@ -213,7 +278,7 @@ public class PhotonFileLayer {
 
         int antiAliasLevel = 1;
         if (photonFileHeader.getVersion() > 1) {
-            antiAliasLevel = photonFileHeader.getAntiAliasingLevel();
+            antiAliasLevel = photonFileHeader.getAALevels();
         }
 
         int layerCount = photonFileHeader.getNumberOfLayers();
@@ -257,7 +322,7 @@ public class PhotonFileLayer {
         antiAliasLayers.add(layer);
     }
 
-    public static void calculateAALayers(PhotonFileHeader photonFileHeader, List<PhotonFileLayer> layers, PhotonAaMatrix photonAaMatrix, IPhotonProgress iPhotonProgress) throws Exception {
+    public static void calculateAALayers(SlicedFileHeader photonFileHeader, List<PhotonFileLayer> layers, PhotonAaMatrix photonAaMatrix, IPhotonProgress iPhotonProgress) throws Exception {
         PhotonLayer photonLayer = new PhotonLayer(photonFileHeader.getResolutionX(), photonFileHeader.getResolutionY());
         int[][] source = new int[photonFileHeader.getResolutionY()][photonFileHeader.getResolutionX()];
 
@@ -288,7 +353,8 @@ public class PhotonFileLayer {
             // Calc
             int[][] target = photonAaMatrix.calc(source);
 
-            int aaTresholdDiff = 255 / photonFileHeader.getAntiAliasingLevel();
+            // TODO:: Ensure this is at least 1 / that we are running on a file which supports AA
+            int aaTresholdDiff = 255 / photonFileHeader.getAALevels();
             int aaTreshold = 0;
             for (PhotonFileLayer aaFileLayer : layer.antiAliasLayers) {
                 photonLayer.clear();
@@ -312,7 +378,7 @@ public class PhotonFileLayer {
 
     }
 
-    public static void calculateLayers(PhotonFileHeader photonFileHeader, List<PhotonFileLayer> layers, int margin, IPhotonProgress iPhotonProgress) throws Exception {
+    public static void calculateLayers(SlicedFileHeader photonFileHeader, List<PhotonFileLayer> layers, int margin, IPhotonProgress iPhotonProgress) throws Exception {
         PhotonLayer photonLayer = new PhotonLayer(photonFileHeader.getResolutionX(), photonFileHeader.getResolutionY());
         ArrayList<BitSet> previousUnpackedImage = null;
         int i = 0;
@@ -337,7 +403,7 @@ public class PhotonFileLayer {
             layer.packedLayerImage = photonLayer.packLayerImage();
             layer.isCalculated = true;
 
-            if (photonFileHeader.getVersion() > 1) {
+            if (photonFileHeader.hasAA()) {
                 for (PhotonFileLayer aaFileLayer : layer.antiAliasLayers) {
                     ArrayList<BitSet> aaUnpackedImage = aaFileLayer.unpackImage(photonFileHeader.getResolutionX(), photonFileHeader.getResolutionY());
                     PhotonLayer aaPhotonLayer = new PhotonLayer(photonFileHeader.getResolutionX(), photonFileHeader.getResolutionY());
@@ -353,7 +419,7 @@ public class PhotonFileLayer {
         System.gc();
     }
 
-    public static void calculateLayers(PhotonFileHeader photonFileHeader, List<PhotonFileLayer> layers, int margin, int layerNo) throws Exception {
+    public static void calculateLayers(SlicedFileHeader photonFileHeader, List<PhotonFileLayer> layers, int margin, int layerNo) throws Exception {
         PhotonLayer photonLayer = new PhotonLayer(photonFileHeader.getResolutionX(), photonFileHeader.getResolutionY());
         ArrayList<BitSet> previousUnpackedImage = null;
 
@@ -469,6 +535,49 @@ public class PhotonFileLayer {
 
         }
         return false;
+    }
+
+
+    public BufferedImage getImage() {
+        if ( antiAliasLayers.isEmpty()) {
+            // No aa, just get current image
+            return getLayer().getImage();
+        }
+
+        List<PhotonLayer> layers = new ArrayList<>();
+        layers.add(getLayer());
+        getAntiAlias().stream().forEach(x-> {layers.add(x.getLayer());});
+
+
+        BufferedImage result = new BufferedImage(photonFileHeader.getResolutionX(),
+                photonFileHeader.getResolutionY(),
+                BufferedImage.TYPE_INT_RGB);
+
+        int[] colourArray = new int[layers.size()+1];
+        for (int i = 0; i <= layers.size() ; i++) {
+            float colourDiv = (float)i / layers.size();
+            colourArray[i] = new Color(colourDiv, colourDiv, colourDiv).getRGB();
+        }
+
+        for (int y = 0; y < photonFileHeader.getResolutionY(); y++) {
+            for (int x = 0; x < photonFileHeader.getResolutionX(); x++) {
+                int colour = 0;
+                for (PhotonLayer l: layers) {
+                    // There really has to be a faster way than this.
+                    switch(l.get(x,y)) {
+                        case PhotonLayer.ISLAND:
+                        case PhotonLayer.SUPPORTED:
+                        case PhotonLayer.CONNECTED:
+                            colour += 1;
+                            break;
+                    }
+                }
+                result.setRGB(x, y, colourArray[colour]);
+            }
+        }
+
+        return result;
+
     }
 
     public PhotonLayer getLayer() {

@@ -24,83 +24,92 @@
 
 package photon.file.parts;
 
+import photon.file.SlicedFileHeader;
+
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.util.Arrays;
 
 public class PhotonFilePrintParameters {
-    public float bottomLiftDistance = 5.0f;
-    public float bottomLiftSpeed = 300.0f;
+    public static final float DEFAULT_DISTANCE = 5.0f;
+    public static final float DEFAULT_LIFT_SPEED = 65.0f;
+    public static final float DEFAULT_RETRACT_SPEED = 150.0f;
+    public static final float DEFAULT_LIGHT_OFF_TIME = 0.0f;
 
-    public float liftingDistance = 5.0f;
-    public float liftingSpeed = 300.0f;
-    public float retractSpeed = 300.0f;
-
-    public float volumeMl = 0;
-    public float weightG =  0;
-    public float costDollars = 0;
-
-    public float bottomLightOffDelay = 0.0f;
-    public float lightOffDelay = 0.0f;
-    public int bottomLayerCount;
-
-    public int p1;
-    public int p2;
-    public int p3;
-    public int p4;
-
-
-    public PhotonFilePrintParameters(int bottomLayerCount) {
-        this.bottomLayerCount = bottomLayerCount;
+    /**
+     * Check if the header has all the fields required for a print parameters block
+     * @param header to check
+     * @return true iff the header has all the required fields.
+     */
+    static public boolean hasPrintParameters(SlicedFileHeader header) {
+        return header.has(EParameter.bottomLiftDistance)
+                && header.has(EParameter.bottomLiftSpeed)
+                && header.has(EParameter.liftDistance)
+                && header.has(EParameter.liftSpeed)
+                && header.has(EParameter.retractSpeed)
+                && header.has(EParameter.volume)
+                && header.has(EParameter.weight)
+                && header.has(EParameter.cost)
+                && header.has(EParameter.bottomLightOffTimeS)
+                && header.has(EParameter.lightOffTimeS)
+                && header.has(EParameter.bottomLayerCount);
     }
 
-    public PhotonFilePrintParameters(int parametersPos, byte[] file) throws Exception {
+    static public void initializePrintParameters(int parametersPos, byte[] file, SlicedFileHeader header) throws IOException {
         byte[] data = Arrays.copyOfRange(file, parametersPos, parametersPos + getByteSize());
         PhotonInputStream ds = new PhotonInputStream(new ByteArrayInputStream(data));
-
-        bottomLiftDistance = ds.readFloat();
-        bottomLiftSpeed = ds.readFloat();
-
-        liftingDistance = ds.readFloat();
-        liftingSpeed = ds.readFloat();
-        retractSpeed = ds.readFloat();
-
-        volumeMl = ds.readFloat();
-        weightG = ds.readFloat();
-        costDollars = ds.readFloat();
-
-        bottomLightOffDelay = ds.readFloat();
-        lightOffDelay = ds.readFloat();
-        bottomLayerCount = ds.readInt();
-
-        p1 = ds.readInt();
-        p2 = ds.readInt();
-        p3 = ds.readInt();
-        p4 = ds.readInt();
+        header.put(EParameter.bottomLiftDistance, ds.readFloat());
+        header.put(EParameter.bottomLiftSpeed, ds.readFloat());
+        header.put(EParameter.liftDistance, ds.readFloat());
+        header.put(EParameter.liftSpeed, ds.readFloat());
+        header.put(EParameter.retractSpeed, ds.readFloat());
+        header.put(EParameter.volume, ds.readFloat());
+        header.put(EParameter.weight, ds.readFloat());
+        header.put(EParameter.cost, ds.readFloat());
+        header.put(EParameter.bottomLightOffTimeS, ds.readFloat());
+        header.put(EParameter.lightOffTimeS, ds.readFloat());
     }
 
-    public void save(PhotonOutputStream os) throws Exception {
-        os.writeFloat(bottomLiftDistance);
-        os.writeFloat(bottomLiftSpeed);
-
-        os.writeFloat(liftingDistance);
-        os.writeFloat(liftingSpeed);
-        os.writeFloat(retractSpeed);
-
-        os.writeFloat(volumeMl);
-        os.writeFloat(weightG);
-        os.writeFloat(costDollars);
-
-        os.writeFloat(bottomLightOffDelay);
-        os.writeFloat(lightOffDelay);
-        os.writeInt(bottomLayerCount);
-
-        os.writeInt(p1);
-        os.writeInt(p2);
-        os.writeInt(p3);
-        os.writeInt(p4);
+    static public void initializePrintParameters(SlicedFileHeader header ) {
+        header.put(EParameter.bottomLiftDistance, DEFAULT_DISTANCE);
+        header.put(EParameter.bottomLiftSpeed, DEFAULT_LIFT_SPEED);
+        header.put(EParameter.liftDistance, DEFAULT_DISTANCE);
+        header.put(EParameter.liftSpeed, DEFAULT_LIFT_SPEED);
+        header.put(EParameter.retractSpeed, DEFAULT_RETRACT_SPEED);
+        header.put(EParameter.volume, 0.0f);
+        header.put(EParameter.weight, 0.0f);
+        header.put(EParameter.cost, 0.0f);
+        header.put(EParameter.bottomLightOffTimeS, DEFAULT_LIGHT_OFF_TIME);
+        header.put(EParameter.lightOffTimeS, DEFAULT_LIGHT_OFF_TIME);
     }
 
-    public int getByteSize() {
+
+
+    static public void save(PhotonOutputStream os, SlicedFileHeader header) throws Exception {
+        // TODO:: VALIDATE? Really could do with logging.
+        os.writeFloat(header.getFloat(EParameter.bottomLiftDistance));
+        os.writeFloat(header.getFloat(EParameter.bottomLiftSpeed));
+
+        os.writeFloat(header.getFloat(EParameter.liftDistance));
+        os.writeFloat(header.getFloat(EParameter.liftSpeed));
+        os.writeFloat(header.getFloat(EParameter.retractSpeed));
+
+        os.writeFloat(header.getFloat(EParameter.volume));
+        os.writeFloat(header.getFloat(EParameter.weight));
+        os.writeFloat(header.getFloat(EParameter.cost));
+
+        os.writeFloat(header.getFloat(EParameter.bottomLightOffTimeS));
+        os.writeFloat(header.getFloat(EParameter.lightOffTimeS));
+        os.writeInt(header.getInt(EParameter.bottomLayerCount));
+
+        // and some padding.
+        os.writeInt(0);
+        os.writeInt(0);
+        os.writeInt(0);
+        os.writeInt(0);
+    }
+
+    static public int getByteSize() {
         return 4+4 +4+4+4 +4+4+4 +4+4+4 +4+4+4+4;
     }
 }

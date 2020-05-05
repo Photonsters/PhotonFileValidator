@@ -25,6 +25,7 @@
 package photon.application.utilities;
 
 import photon.application.MainForm;
+import photon.file.parts.EFileType;
 
 import javax.swing.*;
 import java.awt.*;
@@ -106,7 +107,7 @@ public class MainUtils {
         f.setIconImages(icons);
     }
 
-    public static boolean isPhotonFile(File file) {return file.exists() && file.isFile() && (file.getName().toLowerCase().endsWith("photon") || (file.getName().toLowerCase().endsWith("cbddlp")) || (file.getName().toLowerCase().endsWith("photons")));}
+    public static boolean isPhotonFile(File file) {return file.exists() && file.isFile() &&  (EFileType.isPhotonFile(file.getName()));}
 
     private final static char[] hexArray = "0123456789ABCDEF".toCharArray();
 

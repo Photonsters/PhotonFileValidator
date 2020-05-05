@@ -28,14 +28,16 @@ package photon.file.parts;
  * by bn on 30/06/2018.
  */
 public enum PhotonProjectType {
-    cast (0),
-    lcdMirror (1),
+    cast (0, "Cast"),
+    lcdMirror (1, "LCD_mirror"),
     ;
 
     int projectID;
+    String text;
 
-    PhotonProjectType(int projectID) {
+    PhotonProjectType(int projectID, String text) {
         this.projectID = projectID;
+        this.text = text;
     }
 
     public static PhotonProjectType find(int typeID) {
@@ -47,7 +49,21 @@ public enum PhotonProjectType {
         return lcdMirror;
     }
 
+    public static PhotonProjectType find(String typeText) {
+        for(PhotonProjectType photonProjectType : values()) {
+            if (photonProjectType.text.equalsIgnoreCase(typeText)) {
+                return photonProjectType;
+            }
+        }
+        return lcdMirror;
+    }
+
     public int getProjectID() {
         return projectID;
+    }
+
+    @Override
+    public String toString() {
+        return text;
     }
 }
