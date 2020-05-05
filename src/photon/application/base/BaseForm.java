@@ -24,6 +24,7 @@
 
 package photon.application.base;
 
+import images.BinaryImage;
 import photon.application.render.OnionPanel;
 import photon.application.MainForm;
 import photon.application.dialogs.*;
@@ -87,8 +88,8 @@ public class BaseForm {
                     calcWorker = null;
                 }
 
-                me.saveBtn.setEnabled(false);
-                me.informationBtn.setEnabled(false);
+                me.actionSave.setEnabled(false);
+                me.actionInfo.setEnabled(false);
                 me.tabPreviewLarge.setEnabled(false);
                 me.tabPreviewSmall.setEnabled(false);
                 try {
@@ -130,6 +131,16 @@ public class BaseForm {
         me.fixDialog.setVisible(true);
     }
 
+    protected void showExposureCompensation() {
+        if (me.exposureCompensationDialog == null) {
+            me.exposureCompensationDialog = new ExposureCompensationDialog(me);
+        }
+        me.exposureCompensationDialog.setInformation(photonFile);
+        me.exposureCompensationDialog.setSize(new Dimension(500, 240));
+        me.exposureCompensationDialog.pack();
+        me.exposureCompensationDialog.setLocationRelativeTo(me.frame);
+        me.exposureCompensationDialog.setVisible(true);
+    }
 
     protected void showPrint() {
         if (me.informationDialog == null) {
@@ -260,7 +271,7 @@ public class BaseForm {
         me.layerInfo.setText(photonFile.getLayerInformation());
         me.islandNextBtn.setEnabled(hasIslands);
         me.islandPrevBtn.setEnabled(hasIslands);
-        me.fixBtn.setEnabled(hasIslands);
+        me.actionFix.setEnabled(hasIslands);
 
         boolean hasMargins = photonFile.getMarginLayers().size() > 0;
         me.marginInfo.setForeground(hasMargins ? Color.red : Color.decode("#006600"));

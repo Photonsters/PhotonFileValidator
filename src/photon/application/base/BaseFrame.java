@@ -29,6 +29,8 @@ import photon.application.MainForm;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.AWTEventListener;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 
 /**
@@ -40,6 +42,74 @@ public class BaseFrame extends JFrame implements AWTEventListener {
     public BaseFrame(String title) throws HeadlessException {
         super(title);
         this.getToolkit().addAWTEventListener(this, AWTEvent.KEY_EVENT_MASK);
+    }
+
+    private void initMenu() {
+        JMenuBar menuBar = new JMenuBar();
+
+        // file
+        JMenu fileMenu = new JMenu();
+        fileMenu.setText("File");
+        menuBar.add(fileMenu);
+
+        // file - open
+        JMenuItem openItem = new JMenuItem();
+        openItem.setAction(((MainForm)baseForm).actionOpen);
+        fileMenu.add(openItem);
+
+        // file - save
+        JMenuItem saveItem = new JMenuItem();
+        saveItem.setAction(((MainForm)baseForm).actionSave);
+        fileMenu.add(saveItem);
+
+        JSeparator s0 = new JSeparator();
+        fileMenu.add(s0);
+
+        // file - info
+        JMenuItem infoItem = new JMenuItem();
+        infoItem.setAction(((MainForm)baseForm).actionInfo);
+        fileMenu.add(infoItem);
+
+        JSeparator s1 = new JSeparator();
+        fileMenu.add(s1);
+
+        // file - close
+        JMenuItem closeItem = new JMenuItem();
+        closeItem.setText("Close");
+        closeItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                dispose();
+            }
+        });
+        fileMenu.add(closeItem);
+
+
+        // tools
+        JMenu toolsMenu = new JMenu("Tools");
+        menuBar.add(toolsMenu);
+
+        // tools - convert
+        JMenuItem convertItem = new JMenuItem();
+        convertItem.setAction(((MainForm)baseForm).actionConvert);
+        toolsMenu.add(convertItem);
+
+        JSeparator s2 = new JSeparator();
+        toolsMenu.add(s2);
+
+        // tools - fix
+        JMenuItem fixItem = new JMenuItem();
+        fixItem.setAction(((MainForm)baseForm).actionFix);
+        toolsMenu.add(fixItem);
+
+        // tools - exposure
+        JMenuItem exposureItem = new JMenuItem();
+        exposureItem.setAction(((MainForm)baseForm).actionExposureCompensation);
+        toolsMenu.add(exposureItem);
+
+
+
+        setJMenuBar(menuBar);
     }
 
     @Override
@@ -58,5 +128,7 @@ public class BaseFrame extends JFrame implements AWTEventListener {
     public void setMainForm(MainForm mainForm) {
         baseForm = mainForm;
         mainForm.frame = this;
+
+        initMenu();
     }
 }

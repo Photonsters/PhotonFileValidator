@@ -43,11 +43,11 @@ public class PhotonAaWorker extends SwingWorker<Integer, String> implements IPho
         this.photonAaMatrix = photonAaMatrix;
         mainForm.marginInfo.setText("");
 
-        fixState = mainForm.fixBtn.isEnabled();
-        mainForm.openBtn.setEnabled(false);
+        fixState = mainForm.actionFix.isEnabled();
+        mainForm.actionOpen.setEnabled(false);
         mainForm.saveBtn.setEnabled(false);
-        mainForm.fixBtn.setEnabled(false);
-        mainForm.convertBtn.setEnabled(false);
+        mainForm.actionFix.setEnabled(false);
+        mainForm.actionConvert.setEnabled(false);
         mainForm.playButton.setEnabled(false);
 
     }
@@ -61,10 +61,10 @@ public class PhotonAaWorker extends SwingWorker<Integer, String> implements IPho
 
     @Override
     protected void done() {
-        mainForm.openBtn.setEnabled(true);
+        mainForm.actionOpen.setEnabled(true);
         mainForm.saveBtn.setEnabled(true);
-        mainForm.fixBtn.setEnabled(fixState);
-        mainForm.convertBtn.setEnabled(true);
+        mainForm.actionFix.setEnabled(fixState);
+        mainForm.actionConvert.setEnabled(true);
         mainForm.playButton.setEnabled(true);
     }
 
