@@ -106,10 +106,20 @@ public abstract class SlicedFile {
     abstract public SlicedFile fromSlicedFile(SlicedFile input);
 
     /**
-     * Whether this sliced file has associated preview images
+     * Whether this sliced file has associated large preview image
      * @return true iff it has previews.
      */
-    abstract public boolean hasPreviews();
+    public boolean hasPreviewLarge() {
+        return previewOne != null;
+    }
+
+    /**
+     * Whether this sliced file has associated small preview image
+     * @return true iff it has previews.
+     */
+    public boolean hasPreviewSmall() {
+        return previewTwo != null;
+    }
 
     /**
      * What type of sliced file this is

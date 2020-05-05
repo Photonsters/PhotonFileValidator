@@ -131,12 +131,16 @@ public class ZipFile extends SlicedFile {
     @Override
     public SlicedFile fromSlicedFile(SlicedFile input) {
         fileHeader = new ZipFileHeader(input.getHeader());
-        if( input.hasPreviews() ) {
+        // Get or fake previews
+        if( input.hasPreviewLarge()) {
             previewOne = input.getPreviewOne();
+        } else {
+            previewOne = PhotonFilePreview.getDummyLargePreview();
+        }
+
+        if( input.hasPreviewSmall()) {
             previewTwo = input.getPreviewTwo();
         } else {
-            // need to fake them.
-            previewOne = PhotonFilePreview.getDummyLargePreview();
             previewTwo = PhotonFilePreview.getDummySmallPreview();
         }
         layers = input.getLayers();
@@ -146,11 +150,6 @@ public class ZipFile extends SlicedFile {
         margin = input.getMargin();
         marginLayers = input.getMarginLayers();
         return this;
-    }
-
-    @Override
-    public boolean hasPreviews() {
-        return previewOne != null;
     }
 
     @Override

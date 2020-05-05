@@ -145,14 +145,20 @@ public class PhotonFile extends SlicedFile {
     @Override
     public SlicedFile fromSlicedFile(SlicedFile input) {
         fileHeader = new PhotonFileHeader(input.getHeader());
-        if( input.hasPreviews() ) {
+
+        // Get or fake previews
+        if( input.hasPreviewLarge()) {
             previewOne = input.getPreviewOne();
+        } else {
+            previewOne = PhotonFilePreview.getDummyLargePreview();
+        }
+
+        if( input.hasPreviewSmall()) {
             previewTwo = input.getPreviewTwo();
         } else {
-            // need to fake them.
-            previewOne = PhotonFilePreview.getDummyLargePreview();
             previewTwo = PhotonFilePreview.getDummySmallPreview();
         }
+
         layers = input.getLayers();
         islandList = input.getIslandList();
         islandLayerCount = input.getIslandLayerCount();
@@ -162,11 +168,6 @@ public class PhotonFile extends SlicedFile {
         isValid = PhotonFileMachineInfo.hasMachineInfo(fileHeader)
                 && PhotonFilePrintParameters.hasPrintParameters(fileHeader);
         return this;
-    }
-
-    @Override
-    public boolean hasPreviews() {
-        return true;
     }
 
     @Override

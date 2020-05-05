@@ -21,7 +21,7 @@ import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
 
 public class Sl1File extends SlicedFile {
-    final static PhotonAALevel DEFAULT_AA_LEVEL = PhotonAALevel.AA4;
+    final static PhotonAALevel DEFAULT_AA_LEVEL = PhotonAALevel.AA16;
 
     @Override
     public SlicedFile readFromFile(File file, IPhotonProgress iPhotonProgress) throws Exception {
@@ -60,8 +60,23 @@ public class Sl1File extends SlicedFile {
         Pattern entryPattern = Pattern.compile("0*(\\d+).png");
         while( entries.hasMoreElements() ){
             ZipEntry entry = entries.nextElement();
-            if( entry.getName().equalsIgnoreCase("config.ini")
-                || !entry.getName().startsWith(header.getJobName()) ) {
+            if( entry.getName().equalsIgnoreCase("config.ini")) {
+                continue;
+            }
+
+            if( entry.getName().equalsIgnoreCase("thumbnail/thumbnail800x480.png")) {
+                iPhotonProgress.showInfo("Reading large preview...");
+                previewOne = new PhotonFilePreview(zf.getInputStream(entry));
+                continue;
+            }
+
+            if( entry.getName().equalsIgnoreCase("thumbnail/thumbnail400x400.png")) {
+                iPhotonProgress.showInfo("Reading small preview...");
+                previewTwo = new PhotonFilePreview(zf.getInputStream(entry));
+                continue;
+            }
+
+            if( !entry.getName().startsWith(header.getJobName()) ) {
                 continue;
             }
 
@@ -114,6 +129,18 @@ public class Sl1File extends SlicedFile {
             ImageIO.write(image, "png", zos);
             zos.closeEntry();
         }
+        if( hasPreviewLarge() ) {
+            ZipEntry preview = new ZipEntry("thumbnail/thumbnail800x480.png");
+            zos.putNextEntry(preview);
+            ImageIO.write(previewOne.getImage(), "png", zos);
+            zos.closeEntry();
+        }
+        if( hasPreviewSmall() ) {
+            ZipEntry preview = new ZipEntry("thumbnail/thumbnail400x400.png");
+            zos.putNextEntry(preview);
+            ImageIO.write(previewTwo.getImage(), "png", zos);
+            zos.closeEntry();
+        }
         zos.close();
     }
 
@@ -129,11 +156,6 @@ public class Sl1File extends SlicedFile {
         margin = input.getMargin();
         marginLayers = input.getMarginLayers();
         return this;
-    }
-
-    @Override
-    public boolean hasPreviews() {
-        return false;
     }
 
     @Override

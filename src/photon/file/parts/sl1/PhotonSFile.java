@@ -30,11 +30,6 @@ public class PhotonSFile extends SlicedFile {
     }
 
     @Override
-    public boolean hasPreviews() {
-        return true;
-    }
-
-    @Override
     public EFileType getType() {
         return EFileType.PhotonS;
     }

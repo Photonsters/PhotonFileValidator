@@ -225,7 +225,7 @@ public class BaseForm {
                         me.zoomSlider.setEnabled(false);
                     }
 
-                    if(me.photonFile.hasPreviews()) {
+                    if(me.photonFile.hasPreviewLarge()) {
                         PhotonFilePreview preview = me.photonFile.getPreviewOne();
                         ((PhotonPreviewImage) me.previewLargePanel).reInit(preview.getResolutionX(), preview.getResolutionY());
                         ((PhotonPreviewImage) me.previewLargePanel).drawImage(preview);
@@ -235,8 +235,9 @@ public class BaseForm {
 
                         ScrollUtil.scrollTo(me.previewLargeScrollPane, ScrollPosition.HorizontalCenter);
                         ScrollUtil.scrollTo(me.previewLargeScrollPane, ScrollPosition.VerticalCenter);
-
-                        preview = me.photonFile.getPreviewTwo();
+                    }
+                    if(me.photonFile.hasPreviewSmall()) {
+                        PhotonFilePreview preview = me.photonFile.getPreviewTwo();
                         ((PhotonPreviewImage) me.previewSmallPanel).reInit(preview.getResolutionX(), preview.getResolutionY());
                         ((PhotonPreviewImage) me.previewSmallPanel).drawImage(preview);
                         me.tabbedPane.setEnabledAt(3, true);
