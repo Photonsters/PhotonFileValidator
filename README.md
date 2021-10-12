@@ -1,3 +1,9 @@
+# PHOTON FILE VIEWER IS NO LONGER MANTAINED OR DEVELOPED!
+
+Use [UVTools](https://github.com/sn4k3/UVtools/blob/master/README.md) by Master Photonster Tiago Conceição instead
+
+------
+
 # Photon File Viewer
 A file viewer application for AnyCubic Photon sliced files (*.photon and *.cbddlp). The viewer can show you preview images, print information and all layers with information on overhang and islands issues, and edit layers manually or automatically.
 
