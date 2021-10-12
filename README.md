@@ -1,6 +1,10 @@
-# PHOTON FILE VIEWER IS NO LONGER MANTAINED OR DEVELOPED!
+## PHOTON FILE VIEWER IS NO LONGER MANTAINED OR DEVELOPED!
 
 Use [UVTools](https://github.com/sn4k3/UVtools/blob/master/README.md) by Master Photonster Tiago Conceição instead
+
+------
+
+------
 
 ------
 
